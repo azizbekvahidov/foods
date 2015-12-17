@@ -1,0 +1,300 @@
+2015/04/02 08:46:49 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (164)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 09:08:36 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (164)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 09:08:36 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (164)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 09:38:57 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (164)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 10:50:16 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 10:50:16 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 10:51:01 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 10:51:01 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 11:26:15 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (131)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 11:28:07 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (133)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 11:28:32 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 11:35:11 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:33:34 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:38:12 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:46:02 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:47:05 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:47:29 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:48:42 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (264)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:51:32 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:56:28 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:56:56 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:57:24 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/02 14:57:41 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/04 08:26:16 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/04 08:26:16 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/04 08:37:28 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (264)
+in Z:\home\kafe\www\index.php (13)
+2015/04/04 08:37:55 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (264)
+in Z:\home\kafe\www\index.php (13)
+2015/04/04 09:00:48 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (264)
+in Z:\home\kafe\www\index.php (13)
+2015/04/04 09:01:53 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (264)
+in Z:\home\kafe\www\index.php (13)
+2015/04/04 10:45:53 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/04 10:46:18 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (264)
+in Z:\home\kafe\www\index.php (13)
+2015/04/22 08:08:30 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (133)
+in Z:\home\kafe\www\index.php (13)
+2015/04/22 08:18:54 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (133)
+in Z:\home\kafe\www\index.php (13)
+2015/04/22 08:19:23 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (133)
+in Z:\home\kafe\www\index.php (13)
+2015/04/22 08:19:47 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (133)
+in Z:\home\kafe\www\index.php (13)
+2015/04/22 08:20:31 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (133)
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 10:26:49 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 10:26:49 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 10:31:49 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 10:31:49 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (166)
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 10:32:23 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (133)
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 10:32:46 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (264)
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 11:50:10 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (226)
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 14:33:48 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 14:33:50 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/04/27 14:36:08 [warning] [application] Не удалось присвоить небезопасный атрибут "provider_id" класса "Provider".
+in Z:\home\kafe\www\protected\controllers\ProviderController.php (289)
+in Z:\home\kafe\www\index.php (13)
+2015/05/02 08:46:44 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/05/02 08:47:16 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/05/02 08:47:30 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/05/02 10:37:47 [warning] [application] Не удалось присвоить небезопасный атрибут "provider_id" класса "Inexpense".
+in Z:\home\kafe\www\protected\controllers\InexpenseController.php (107)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:33:30 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (134)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:35:52 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:36:25 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:36:25 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:36:25 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:36:25 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:36:36 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:36:45 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:44:58 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (134)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:48:49 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 10:48:56 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 11:00:48 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/09 11:01:52 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/10 11:42:44 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (265)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 11:46:40 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 11:46:48 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 11:47:12 [warning] [application] Не удалось присвоить небезопасный атрибут "product_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 11:47:12 [warning] [application] Не удалось присвоить небезопасный атрибут "department_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 11:49:10 [warning] [application] Не удалось присвоить небезопасный атрибут "product_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 11:49:10 [warning] [application] Не удалось присвоить небезопасный атрибут "department_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 11:51:16 [warning] [application] Не удалось присвоить небезопасный атрибут "product_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 11:51:16 [warning] [application] Не удалось присвоить небезопасный атрибут "department_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 12:13:42 [warning] [application] Не удалось присвоить небезопасный атрибут "product_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 12:13:42 [warning] [application] Не удалось присвоить небезопасный атрибут "department_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 12:13:58 [warning] [application] Не удалось присвоить небезопасный атрибут "product_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 12:13:58 [warning] [application] Не удалось присвоить небезопасный атрибут "department_id" класса "Products".
+in Z:\home\kafe\www\protected\controllers\ProductsController.php (266)
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 12:17:54 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/05/14 12:18:14 [warning] [application] Не удалось присвоить небезопасный атрибут "file" класса "CrudCode".
+in Z:\home\kafe\www\index.php (13)
+2015/05/27 14:44:17 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (228)
+in Z:\home\kafe\www\index.php (13)
+2015/06/02 09:30:26 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (228)
+in Z:\home\kafe\www\index.php (13)
+2015/06/02 11:44:09 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (134)
+in Z:\home\kafe\www\index.php (13)
+2015/06/02 11:50:37 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (228)
+in Z:\home\kafe\www\index.php (13)
+2015/06/05 08:27:59 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (134)
+in Z:\home\kafe\www\index.php (13)
+2015/06/05 08:31:27 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (134)
+in Z:\home\kafe\www\index.php (13)
+2015/06/05 08:33:46 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in Z:\home\kafe\www\protected\controllers\HalfstaffController.php (228)
+in Z:\home\kafe\www\index.php (13)
+2015/06/05 08:34:30 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (167)
+in Z:\home\kafe\www\index.php (13)
+2015/06/05 08:34:30 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in Z:\home\kafe\www\protected\controllers\DishesController.php (167)
+in Z:\home\kafe\www\index.php (13)
+2015/07/02 11:06:14 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\DishesController.php (265)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/02 11:06:14 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\DishesController.php (265)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/17 11:27:07 [warning] [application] Не удалось присвоить небезопасный атрибут "type" класса "Inexpense".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\InexpenseController.php (254)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/21 07:24:28 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (264)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/21 07:27:49 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\DishesController.php (308)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/22 07:38:07 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (264)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/22 08:26:56 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (264)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/22 08:36:51 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (264)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/22 08:52:00 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (264)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/22 07:47:51 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (264)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/22 09:40:16 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (264)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/22 10:06:25 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (264)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/22 10:24:30 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\HalfstaffController.php (170)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/27 06:54:13 [warning] [application] Не удалось присвоить небезопасный атрибут "department_id" класса "Dishes".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\DishesController.php (210)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/29 10:50:08 [warning] [application] Не удалось присвоить небезопасный атрибут "type" класса "Inexpense".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\InexpenseController.php (230)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/07/29 10:55:23 [warning] [application] Не удалось присвоить небезопасный атрибут "type" класса "Inexpense".
+in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\InexpenseController.php (230)
+in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
