@@ -21,7 +21,7 @@ class SettingsController extends Controller{
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('prodPrice','refresh','MbalanceRefresh','percent','exportList','prodRelation','prodRelList','setPrice','setInfo'),
+                'actions'=>array('calculateList','prodPrice','refresh','MbalanceRefresh','percent','exportList','prodRelation','prodRelList','setPrice','setInfo'),
                 'roles'=>array('2'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -445,6 +445,24 @@ class SettingsController extends Controller{
             'dates'=>$dates
         ));
     }
+
+    public function actionCalculate(){
+        $dep = CHtml::listData(Department::model()->findAll(),'department_id','name');
+        $this->render('calculate',array('dep'=>$dep));
+    }
+
+    public function actionCalculateList(){
+        $id = $_POST['id'];
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dishes d')
+            ->where('d.department_id = :depId',array(':depId'=>$id))
+            ->queryAll();
+        $this->renderPartial('calculateList',array(
+            'model'=>$model,
+        ));
+    }
+
 
 
 

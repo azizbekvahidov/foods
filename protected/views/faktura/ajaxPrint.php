@@ -36,7 +36,7 @@
         <tr>
             <td><?=$cnt?></td>
             <td><?=$val['Pname']?> (<?=$val['Mname']?>)</td>
-            <td class="center"><?=number_format($countSum,0,',',' ')?></td>
+            <td class="center"><?=number_format($countSum,2,',',' ')?></td>
             <td class="center"><?=number_format($price,0,',',' ')?></td>
             <td class="center"><?=number_format($countSum*$price,0,',',' ')?></td>
             <? foreach ($dep as $key => $value) {

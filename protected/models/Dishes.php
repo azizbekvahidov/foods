@@ -180,23 +180,31 @@ class Dishes extends CActiveRecord
     public function getProd($id){
         $result = array();
         $result2 = array();
-        $model = Dishes::model()->with('dishStruct','halfstuff')->findByPk($id);
+        $model = Dishes::model()->with('dishStruct')->findByPk($id);
 
         foreach ($model->getRelated('dishStruct') as $val) {
             $result[$val->prod_id] = $result[$val->prod_id] + $val->amount;
         }
-        /*foreach ($model->getRelated('halfstuff') as $val) {
 
-            $stuff = new Halfstaff();
-            $result2 = $stuff->getStuff($val->halfstuff_id);
-            $result = $stuff->sumArray($result,$result2);
-        }*/
 
         return $result;
 
     }
 
+    public function getStuff($id){
+        $result = array();
+        $result2 = array();
+        $model = Dishes::model()->with('halfstuff')->findByPk($id);
 
+        foreach ($model->getRelated('halfstuff') as $val) {
+            $result[$val->halfstuff_id] = $result[$val->halfstuff_id] + $val->amount;
+
+            //$result = $stuff->sumArray($result,$result2);
+        }
+
+        return $result;
+
+    }
 
 
 
@@ -220,26 +228,7 @@ class Dishes extends CActiveRecord
             }
         }
 
-        /*
-        $products = $this->getDishProducts($id);
-        $price = array();
-        $costPrice = array();
-        $model = Faktura::model()->with('realize')->findAll(
-            array(
-                'condition'=>'t.realize_date < :dates',
-                'order'=>'realize_date ASC',
-                'params'=>array(':dates'=>$order_date)
-            )
-        );
-        foreach ($model as $value) {
-            foreach ($value->getRelated('realize') as $val) {
-                $price[$val->prod_id] = $val->price;
-            }
-        }
-        foreach ($products as $key => $value) {
-            echo $key." = = ".$value." -- ".$price[$key]."<br>";
-            $costPrice[$key] = $value*$price[$key];
-        }*/
+
         return array_sum($costPrice);
     }
     
