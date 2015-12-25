@@ -100,6 +100,7 @@ class DepStorageController extends Controller
             $tempBalance = $balance->getDepBalanceSumm($tempDate,$depId);
             $startCount[$tempDate] = $tempBalance[0];
             $endCount[$tempDate] = $tempBalance[1];
+            $curEndCount[$tempDate] = $tempBalance[2];
         }
         $this->renderPartial('monthStorage',array(
             'tempDate'=>$listDate,
@@ -107,6 +108,7 @@ class DepStorageController extends Controller
             'expenses'=>$expenses,
             'startCount'=>$startCount,
             'endCount'=>$endCount,
+            'curEndCount'=>$curEndCount,
             'depId'=>$depId,
         ));
     }

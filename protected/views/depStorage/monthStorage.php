@@ -14,7 +14,9 @@
         <th>Начальное сальдо</th>
         <th>Приход</th>
         <th>Расход</th>
-        <th>Конечное сальдо</th>
+        <th>План кон. сальдо</th>
+        <th>Факт кон. сальдо</th>
+        <th>Разница</th>
     </tr>
     </thead>
     <tbody>
@@ -25,9 +27,11 @@
             <td><?=number_format($realized[$value],0,',',' ')?></td>
             <td><?=number_format($expenses[$value],0,',',' ')?></td>
             <td><?=number_format($endCount[$value],0,',',' ')?></td>
+            <td><?=number_format($curEndCount[$value],0,',',' ')?></td>
+            <td><?=number_format($endCount[$value]-$curEndCount[$value],0,',',' ')?></td>
         </tr>
         <tr class="tempTr">
-            <td colspan="5"></td>
+            <td colspan="7"></td>
         </tr>
     <?}?>
     </tbody>

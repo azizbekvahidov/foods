@@ -251,6 +251,11 @@ class Halfstaff extends CActiveRecord
         return $result;
     }
 
+    public function getName($id){
+        $model = $this->model()->findByPk($id);
+        return $model->name;
+    }
+
     public function getStuff($id){
         $result = array();
         $result2 = array();
@@ -298,7 +303,6 @@ class Halfstaff extends CActiveRecord
         $costPrice = array();
         $model = Halfstaff::model()->with('stuffStruct')->findByPk($id);
         foreach ($model->getRelated('stuffStruct') as $value) {
-            //echo $value->prod_id." => ".$model->count."<br>";
             if($value->types == 2){
                 $costPrice[$value->prod_id] = $this->getCostPrice($value->prod_id,$order_date)*$value->amount/$model->count;
             }

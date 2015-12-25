@@ -183,7 +183,7 @@ class Dishes extends CActiveRecord
         $model = Dishes::model()->with('dishStruct')->findByPk($id);
 
         foreach ($model->getRelated('dishStruct') as $val) {
-            $result[$val->prod_id] = $result[$val->prod_id] + $val->amount;
+            $result[$val->prod_id] = $result[$val->prod_id] + $val->amount/$model->count;
         }
 
 

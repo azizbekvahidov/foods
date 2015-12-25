@@ -12,7 +12,7 @@
     var pluginOptions = {
       attr : "href",
       url : false,
-      message: "Please wait while we create your document" 
+      message: "Пожалуйста подождите пока мы создаем документ"
     };
     $.extend(pluginOptions, options);
 

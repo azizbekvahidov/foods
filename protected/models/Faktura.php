@@ -183,5 +183,29 @@ class Faktura extends CActiveRecord
 
     }
 
+    public function getFakCount($dates,$depId,$prod_id){
+        $dates = date('Y-m-d',strtotime($dates));
+        if($depId != 0) {
+            $model = Yii::app()->db->createCommand()
+                ->select('sum(dr.count) as summ')
+                ->from('dep_faktura df')
+                ->join('dep_realize dr', 'dr.dep_faktura_id = df.dep_faktura_id')
+                ->where('date(df.real_date) = :dates AND df.department_id = :depId AND df.fromDepId = :fromDepId AND dr.prod_id = :prod_id',
+                    array(':dates' => $dates, ':depId' => $depId, ':fromDepId' => 0, ':prod_id' => $prod_id))
+                ->queryRow();
+        }
+        else{
+            $model = Yii::app()->db->createCommand()
+                ->select('sum(ord.count) as summ')
+                ->from('expense ex')
+                ->join('orders ord','ord.expense_id = ex.expense_id')
+                ->where('date(ex.order_date) = :dates AND ex.kind = :kind AND ord.just_id = :prod_id',
+                    array(':dates' => $dates, ':kind' => 1, ':prod_id' => $prod_id))
+                ->queryRow();
+        }
+        return $model['summ'];
+    }
+
+
 
 }

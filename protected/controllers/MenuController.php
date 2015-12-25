@@ -104,12 +104,13 @@ class MenuController extends Controller
 	{
 
 		$model=new Menu;
+        $depId = array();
+        $depBalance = new DepBalance();
         
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 		if(isset($_POST['dish']) || isset($_POST['stuff']) || isset($_POST['product']))
 		{
-                  
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
 				$messageType='warning';
@@ -132,6 +133,7 @@ class MenuController extends Controller
                             $this->priceAdd($val,$_POST['mType'],$value['price'][$key],1);
                             Dishes::model()->updateByPk($val,array('price'=>$value['price'][$key],'department_id'=>$value['dep'][$key]));
 			                   $message .= "Блюда";
+                            $depId[$value['dep'][$key]] = $value['dep'][$key];
                         }
                     }
                     if($keys == 'stuff'){
@@ -151,6 +153,7 @@ class MenuController extends Controller
                             $this->priceAdd($val,$_POST['mType'],$value['price'][$key],2);
                             Halfstaff::model()->updateByPk($val,array('price'=>$value['price'][$key],'department_id'=>$value['dep'][$key]));
 			                   $message .= ", Полуфабрикаты";
+                            $depId[$value['dep'][$key]] = $value['dep'][$key];
                         }
                     }
                     if($keys == 'product'){
@@ -169,10 +172,15 @@ class MenuController extends Controller
                             $this->priceAdd($val,$_POST['mType'],$value['price'][$key],3);
                                Products::model()->updateByPk($val,array('price'=>$value['price'][$key],'department_id'=>$value['dep'][$key]));
 			                   $message .= ", Продукты ";
+                            $depId[$value['dep'][$key]] = $value['dep'][$key];
                         }
                     }
                 }
-                    $message .= "Успешно добавлены</strong>";                    
+                foreach ($depId as $val) {
+                    $depBalance->refreshBalance($val);
+                }
+
+                $message .= "Успешно добавлены</strong>";
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 				

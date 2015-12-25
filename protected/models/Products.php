@@ -159,17 +159,12 @@ class Products extends CActiveRecord
         
         return $scope;
     }
-
-
-    public function getStuffProd($id){
-
-    }
-
+    //получить ед.измерения по id
     public function getMeasure($id){
         $model = Products::model()->with('measure')->findByPk($id);
         return $model->getRelated('measure')->name;
     }
-
+    //получить
     public function getProdName($depId){
         $dish = new Dishes();
         $result = array();
@@ -194,7 +189,7 @@ class Products extends CActiveRecord
 
         return $result;
     }
-
+    //получить название продукта по id
     public function getName($id){
         $model = $this->model()->findByPk($id);
         return $model->name;

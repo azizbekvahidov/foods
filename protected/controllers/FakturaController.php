@@ -70,26 +70,24 @@ class FakturaController extends Controller
         ));
 	}
 
-    public function actionViewFaktura($id)
+    public function actionViewFaktura($dates)
     {
-
-        $dates = date('Y-m-d');
         $dep = CHtml::listData(Department::model()->findAll(),'department_id','name');
         $model = Yii::app()->db->createCommand()
-            ->select('r.request_id,r.provider_id,rp.prod_id,p.name as Pname,m.name as Mname')
-            ->from('request r')
-            ->join('request_prod rp','rp.request_id = r.request_id')
-            ->join('products p','p.product_id = rp.prod_id')
+            ->select('f.realize_date,pr.name as PRname,r.prod_id,p.name as Pname,m.name as Mname,r.price,su(r.count)')
+            ->from('faktura f')
+            ->join('provider pr','pr.provider_id = f.provider_id')
+            ->join('realize r','r.faktura_id = f.faktura_id')
+            ->join('products p','p.product_id = r.prod_id')
             ->join('measurement m','m.measure_id = p.measure_id')
-            ->where('r.request_id = :id',array(':id'=>$id))
-            ->group('rp.prod_id')
+            ->where('date(f.faktura_id) = :dates',array(':dates'=>$dates))
+            ->group('r.prod_id')
             ->queryAll();
-        /*$this->render('view',array(
-            'id'=>$id,
+        $this->render('viewFaktura',array(
             'dates'=>$dates,
             'model'=>$model,
             'dep'=>$dep
-        ));*/
+        ));
     }
 
     public function actionAjaxPrint($id){

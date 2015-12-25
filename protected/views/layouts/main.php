@@ -192,6 +192,7 @@
                         <li><?=CHtml::link('<i class="fa fa-cog"></i> Цены на продукты',array('settings/prodPrice'))?></li>
                         <li><?=CHtml::link('<i class="fa fa-file"></i> Архивировать базу',array('settings/dumbDb'))?></li>
                         <li><?=Chtml::link('<i class="fa fa-file"></i> Получить список',array('settings/exportList'))?></li>
+                        <li><?=Chtml::link('<i class="fa fa-file"></i> Список калькуляций',array('settings/calculate'))?></li>
                         <li><?=Chtml::link('<i class="fa fa-file"></i> Использование продукта',array('settings/prodRelation'))?></li>
                     </ul>
                 </li>

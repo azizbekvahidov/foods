@@ -21,8 +21,9 @@
     </thead>
     <tbody>
     <? foreach ($model as $val) {
-        $countSum = $faktura->getReqSumCount($val['prod_id'],$id);
-        $price = $product->getCostPrice($val['prod_id'],$dates);
+
+        $countSum = $val['count'];
+        $price = $val['price'];
 
         $summ = $summ + $countSum*$price; ?>
         <tr>
@@ -32,27 +33,27 @@
             <td><?=number_format($price,0,',',' ')?></td>
             <td><?=number_format($countSum*$price,0,',',' ')?></td>
             <? foreach ($dep as $key => $value) {
-                $count = $faktura->getReqCount($val['request_id'],$key,$val['prod_id']);
+                $count = $faktura->getFakCount($val['realize_date'],$key,$val['prod_id']);
                 $sum[$key] = $sum[$key] + $count*$price?>
                 <td><?=number_format($count,2,',',' ')?></td>
             <?}?>
-            <?$sum[0] = $sum[0] + $faktura->getReqCount($val['request_id'],0,$val['prod_id'])*$price?>
-            <td><?=number_format($faktura->getReqCount($val['request_id'],0,$val['prod_id']),2,',',' ')?></td>
+            <?$sum[0] = $sum[0] + $faktura->getFakCount($val['realize_date'],0,$val['prod_id'])*$price?>
+            <td><?=number_format($faktura->getFakCount($val['realize_date'],0,$val['prod_id']),2,',',' ')?></td>
         </tr>
         <?$cnt++;}?>
     </tbody>
     <tfoot>
-        <tr>
-            <th></th>
-            <th>Итого</th>
-            <th></th>
-            <th></th>
-            <th><?=number_format($summ,0,',',' ')?></th>
-            <? foreach ($dep as $key => $val) {?>
-                <th><?=number_format($sum[$key],0,',',' ')?></th>
-            <?}?>
-            <th><?=number_format($sum[0],0,',',' ')?></th>
-        </tr>
+    <tr>
+        <th></th>
+        <th>Итого</th>
+        <th></th>
+        <th></th>
+        <th><?=number_format($summ,0,',',' ')?></th>
+        <? foreach ($dep as $key => $val) {?>
+            <th><?=number_format($sum[$key],0,',',' ')?></th>
+        <?}?>
+        <th><?=number_format($sum[0],0,',',' ')?></th>
+    </tr>
     </tfoot>
 </table>
 

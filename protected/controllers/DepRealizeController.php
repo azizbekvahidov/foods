@@ -137,7 +137,7 @@ class DepRealizeController extends Controller
             }
         }
 
-        $realizeStorageProd = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) = :real_date',array(':real_date'=>$dates));
+        $realizeStorageProd = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) = :real_date AND fromDepId = :fromDepId',array(':real_date'=>$dates,':fromDepId'=>0));
         
         foreach($realizeStorageProd as $value){
             foreach($value->getRelated('realizedProd') as $val){
@@ -179,6 +179,7 @@ class DepRealizeController extends Controller
 				$messageType='warning';
 				$message = "There are some errors ";
                 $newModel = new DepFaktura;
+                $depBalance = new DepBalance();
                 $newModel->real_date = $dates;
                 $newModel->department_id = $_POST['department'];
                 
@@ -192,6 +193,7 @@ class DepRealizeController extends Controller
                             $realizeModel->price = 0;
                             $realizeModel->count = $this->changeToFloat($val);
                             $realizeModel->save();
+                            $depBalance->addProd($key,$_POST['department']);
                         }
 				    }
 					$messageType = 'success';

@@ -380,6 +380,10 @@ class ReportController extends Controller
         $model = array();
         $model2 = array();
         $model3 = array();
+        $expense = new Expense();
+        $prod = new Products();
+        $stuff = new Halfstaff();
+        $measure = new Measurement();
         if($key == 'begin'){
             $model = Yii::app()->db->createCommand()
                 ->select('db.startCount as count,db.prod_id,p.name as name,m.name as Mname')
@@ -479,6 +483,92 @@ class ReportController extends Controller
                 ->where('date(ex.order_date) = :dates AND ex.kind  = :kind AND ord.type = :type',
                     array(':dates'=>$dates,':kind'=>1,':type'=>3))
                 ->group('ord.just_id')
+                ->queryAll();
+        }
+        if($key == 'costPrice'){
+            $temp = $expense->getDishProd($depId,$dates);
+            $count = 0;
+            foreach ($temp as $key => $val) {
+                $model[$count]['count'] = $val;
+                $model[$count]['prod_id'] = $key;
+                $model[$count]['name'] = $prod->getName($key);
+                $model[$count]['Mname'] = $measure->getMeasure($key,'prod');
+                $count++;
+            }
+            $temp2 = $expense->getDishStuff($depId,$dates);
+            $count = 0;
+            foreach ($temp2 as $key => $val) {
+                $model2[$count]['count'] = $val;
+                $model2[$count]['prod_id'] = $key;
+                $model2[$count]['name'] = $stuff->getName($key);
+                $model2[$count]['Mname'] = $measure->getMeasure($key,'stuff');
+                $count++;
+            }
+            /*$model = Yii::app()->db->createCommand()
+                ->select('sum(ord.count) as count,ord.just_id as prod_id,p.name as name,ex.mType,ord.type')
+                ->from('expense ex')
+                ->join('orders ord','ord.expense_id = ex.expense_id')
+                ->join('products p','p.product_id = ord.just_id')
+                ->where('date(ex.order_date) = :dates AND p.department_id = :DepId AND ord.type = :type',
+                    array(':dates'=>$dates,':DepId'=>$depId,':type'=>3))
+                ->group('ord.just_id')
+                ->queryAll();
+            $model2 = Yii::app()->db->createCommand()
+                ->select('sum(ord.count) as count,ord.just_id as prod_id,h.name as name,ex.mType,ord.type')
+                ->from('expense ex')
+                ->join('orders ord','ord.expense_id = ex.expense_id')
+                ->join('halfstaff h','h.halfstuff_id = ord.just_id')
+                ->where('date(ex.order_date) = :dates AND h.department_id = :DepId AND ord.type = :type',
+                    array(':dates'=>$dates,':DepId'=>$depId,':type'=>2))
+                ->group('ord.just_id')
+                ->queryAll();
+            $model3 = Yii::app()->db->createCommand()
+                ->select('sum(ord.count) as count,ord.just_id as prod_id,d.name as name,ex.mType,ord.type')
+                ->from('expense ex')
+                ->join('orders ord','ord.expense_id = ex.expense_id')
+                ->join('dishes d','d.dish_id = ord.just_id')
+                ->where('date(ex.order_date) = :dates AND d.department_id = :DepId AND ord.type = :type',
+                    array(':dates'=>$dates,':DepId'=>$depId,':type'=>1))
+                ->group('ord.just_id')
+                ->queryAll();*/
+
+        }
+        if($key == 'inRealize'){
+            $model = Yii::app()->db->createCommand()
+                ->select('dr.count as count,dr.prod_id,p.name as name,m.name as Mname')
+                ->from('dep_faktura df')
+                ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+                ->join('products p','p.product_id = dr.prod_id')
+                ->join('measurement m','m.measure_id = p.measure_id')
+                ->where('date(df.real_date) = :dates AND df.department_id = :depId AND df.fromDepId != :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0))
+                ->queryAll();
+
+            $model2 = Yii::app()->db->createCommand()
+                ->select('inord.count as count,inord.stuff_id as prod_id,h.name as name,m.name as Mname')
+                ->from('inexpense inexp')
+                ->join('inorder inord','inord.inexpense_id = inexp.inexpense_id')
+                ->join('halfstaff h','h.halfstuff_id = inord.stuff_id')
+                ->join('measurement m','m.measure_id = h.stuff_type')
+                ->where('date(inexp.inexp_date) = :dates AND inexp.department_id = :depId AND inexp.fromDepId != :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0))
+                ->queryAll();
+        }
+        if($key == 'inExp'){
+            $model = Yii::app()->db->createCommand()
+                ->select('dr.count as count,dr.prod_id,p.name as name,m.name as Mname')
+                ->from('dep_faktura df')
+                ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+                ->join('products p','p.product_id = dr.prod_id')
+                ->join('measurement m','m.measure_id = p.measure_id')
+                ->where('date(df.real_date) = :dates AND df.department_id != :depId AND df.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>$depId))
+                ->queryAll();
+
+            $model2 = Yii::app()->db->createCommand()
+                ->select('inord.count as count,inord.stuff_id as prod_id,h.name as name,m.name as Mname')
+                ->from('inexpense inexp')
+                ->join('inorder inord','inord.inexpense_id = inexp.inexpense_id')
+                ->join('halfstaff h','h.halfstuff_id = inord.stuff_id')
+                ->join('measurement m','m.measure_id = h.stuff_type')
+                ->where('date(inexp.inexp_date) = :dates AND inexp.department_id != :depId AND inexp.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>$depId))
                 ->queryAll();
         }
         $this->renderPartial('ajaxDetail',array(

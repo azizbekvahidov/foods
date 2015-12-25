@@ -44,8 +44,8 @@
                 $sum[$key] = $sum[$key] + $count*$price?>
                 <td class="center"><?=number_format($count,2,',',' ')?></td>
             <?}?>
-            <?$sum[0] = $faktura->getReqCount($val['request_id'],0,$val['prod_id'])*$price?>
-            <td class="center"><?=number_format($faktura->getReqCount($val['request_id'],2,$val['prod_id']),0,',',' ')?></td>
+            <?$sum[0] = $sum[0] + $faktura->getReqCount($val['request_id'],0,$val['prod_id'])*$price?>
+            <td class="center"><?=number_format($faktura->getReqCount($val['request_id'],0,$val['prod_id']),2,',',' ')?></td>
         </tr>
         <?$cnt++;}?>
     </tbody>

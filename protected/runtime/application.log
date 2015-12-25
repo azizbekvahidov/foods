@@ -298,3 +298,9 @@ in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
 2015/07/29 10:55:23 [warning] [application] Не удалось присвоить небезопасный атрибут "type" класса "Inexpense".
 in E:\OpenServer\OpenServer\domains\kafe\protected\controllers\InexpenseController.php (230)
 in E:\OpenServer\OpenServer\domains\kafe\index.php (13)
+2015/12/22 08:43:10 [warning] [application] Не удалось присвоить небезопасный атрибут "department_id" класса "Dishes".
+in D:\OpenServer\domains\foods\protected\controllers\DishesController.php (305)
+in D:\OpenServer\domains\foods\index.php (13)
+2015/12/22 08:43:10 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in D:\OpenServer\domains\foods\protected\controllers\DishesController.php (305)
+in D:\OpenServer\domains\foods\index.php (13)

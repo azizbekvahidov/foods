@@ -142,4 +142,23 @@ class Measurement extends CActiveRecord
         
         return $scope;
     }
+    public function getMeasure($id,$type){
+        if($type == 'prod'){
+            $model = Yii::app()->db->createCommand()
+                ->select('m.name')
+                ->from('products p')
+                ->join('measurement m','m.measure_id = p.measure_id')
+                ->where('p.product_id = :prod_id',array('prod_id'=>$id))
+                ->queryRow();
+        }
+        if($type == 'stuff'){
+            $model = Yii::app()->db->createCommand()
+                ->select('m.name')
+                ->from('halfstaff h')
+                ->join('measurement m','m.measure_id = h.stuff_type')
+                ->where('h.halfstuff_id = :prod_id',array('prod_id'=>$id))
+                ->queryRow();
+        }
+        return $model['name'];
+    }
 }

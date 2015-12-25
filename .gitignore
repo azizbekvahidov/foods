@@ -1,4 +1,9 @@
-.idea
-assets
-framework
-database.php
+# Created by https://www.gitignore.io/api/yii
+
+### Yii ###
+assets/*
+!assets/.gitignore
+protected/runtime/*
+!protected/runtime/.gitignore
+protected/data/*.db
+themes/classic/views/

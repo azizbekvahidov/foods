@@ -167,4 +167,116 @@ class DepBalance extends CActiveRecord
         
         return $scope;
     }
+
+    public function refreshBalance($depId){
+        $dish = Dishes::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
+        foreach ($dish as $value) {
+            $this->addDish($value->dish_id,$depId);
+        }
+
+        $stuff = Halfstaff::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
+        foreach ($stuff as $value) {
+            $this->addStuff($value->halfstuff_id,$depId);
+        }
+
+        $prod = Products::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
+        foreach ($prod as $value) {
+            $this->addProd($value->product_id,$depId);
+        }
+
+    }
+
+    public function checkProd($id,$depId){
+        $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
+
+        $curDepProd = DepBalance::model()->findAll('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date->b_date,':types'=>1,':depId'=>$depId));
+
+        foreach($curDepProd as $value){
+            if($value->prod_id == $id){
+                $result = true;
+                break;
+            }
+            else{
+                $result = false;
+            }
+        }
+        return $result;
+    }
+
+    public function checkStuff($id,$depId){
+        $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
+
+        $curDepProd = DepBalance::model()->findAll('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date->b_date,':types'=>2,':depId'=>$depId));
+
+        foreach($curDepProd as $value){
+
+            if($value->prod_id == $id){
+                $result = true;
+                break;
+            }
+            else{
+                $result = false;
+            }
+        }
+        return $result;
+    }
+
+    public function addProd($id,$depId){
+        if($this->checkProd($id,$depId) != true){
+            $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
+            $model = new DepBalance;
+            $model->b_date = $max_date->b_date;
+            $model->prod_id = $id;
+            $model->startCount = 0;
+            $model->endCount = 0;
+            $model->department_id = $depId;
+            $model->type = 1;
+            $model->save();
+        }
+    }
+
+    public function addStuff($id,$depId){
+        if($this->checkStuff($id,$depId) != true) {
+            $max_date = DepBalance::model()->find(array('select' => 'MAX(b_date) as b_date'));
+            $model = new DepBalance;
+            $model->b_date = $max_date->b_date;
+            $model->prod_id = $id;
+            $model->startCount = 0;
+            $model->endCount = 0;
+            $model->department_id = $depId;
+            $model->type = 2;
+            $model->save();
+        }
+        //Список полуфабрикатов и их продуктов
+        //$dishStruct = Halfstaff::model()->with('stuffStruct.Struct')->findByPk($id,'stuffStruct.types = :types',array(':types'=>1));
+
+        $model = Halfstaff::model()->with('stuffStruct')->findByPk($id);
+        $prod = '';
+        foreach ($model->getRelated('stuffStruct') as $val) {
+            if($val->types == 2) {
+                $this->addStuff($val->prod_id,$depId);
+            }
+            else{
+                $this->addProd($val->prod_id,$depId);
+            }
+        }
+        return $prod;
+
+
+    }
+    public function addDish($id,$depId){
+        //Корневые продукты блюда выбранного отдела
+        $dishProducts = Dishes::model()->with('products')->findByPk($id,'t.department_id = :depId',array(':depId'=>$depId));
+        if(!empty($dishProducts))
+            foreach($dishProducts->getRelated('products') as $val){
+                $this->addProd($val->product_id,$depId);
+            }
+
+        //Корневые полуфабрикаты блюда выбранного отдела
+        $DishStuff = Dishes::model()->with('stuff')->findByPk($id,'t.department_id = :depId',array(':depId'=>$depId));
+        if(!empty($DishStuff))
+            foreach($DishStuff->getRelated('stuff') as $val){
+                $this->addStuff($val->halfstuff_id,$depId);
+            }
+    }
 }

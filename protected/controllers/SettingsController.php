@@ -56,51 +56,6 @@ class SettingsController extends Controller{
 
         $this->redirect(array('site/index'));
     }
-    public function actionInterval(){
-
-
-    }
-    public function actionMbalanceRefresh(){
-
-        if(!empty($_POST)) {
-            $from = $_POST['from'];
-            $to = $_POST['to'];
-            $days = strtotime($to)-strtotime($from);
-            $newModel = Expense::model()->findAll(array('condition' => 'kind = 0', 'group' => 'date(order_date)'));
-            $count = 0;
-            $expense = new Expense();
-
-            $summ = array();
-            $summP = array();
-            $dateList = array();
-            for ($i = 0; $i < $days/(3600*24); $i++) {
-
-                $mBalance = MBalance::model()->find('t.b_date = :dates', array(':dates' => date('Y-m-d',strtotime($from)+(3600*24*$i))));
-
-                $temp = $expense->getSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
-
-                if (!empty($mBalance)) {
-                    $mBalance->procProceeds = $temp[1];
-                    $mBalance->proceeds = $temp[2];
-                    $mBalance->cost = 0;
-                    $mBalance->save();
-                } else {
-                    $mBalance = new MBalance();
-                    $mBalance->b_date = date('Y-m-d',strtotime($from)+(3600*24*$i));
-                    $mBalance->procProceeds = $temp[1];
-                    $mBalance->proceeds = $temp[2];
-                    $mBalance->cost = 0;
-                    $mBalance->save();
-                }
-            }
-
-            $this->redirect('/');
-        }
-
-        $this->render('interval',array(
-
-        ));
-    }
 
     public function checkProd($id,$depId){
         $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
@@ -196,6 +151,51 @@ class SettingsController extends Controller{
             }
     }
 
+    public function actionInterval(){
+
+
+    }
+    public function actionMbalanceRefresh(){
+
+        if(!empty($_POST)) {
+            $from = $_POST['from'];
+            $to = $_POST['to'];
+            $days = strtotime($to)-strtotime($from);
+            $newModel = Expense::model()->findAll(array('condition' => 'kind = 0', 'group' => 'date(order_date)'));
+            $count = 0;
+            $expense = new Expense();
+
+            $summ = array();
+            $summP = array();
+            $dateList = array();
+            for ($i = 0; $i < $days/(3600*24); $i++) {
+
+                $mBalance = MBalance::model()->find('t.b_date = :dates', array(':dates' => date('Y-m-d',strtotime($from)+(3600*24*$i))));
+
+                $temp = $expense->getSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
+
+                if (!empty($mBalance)) {
+                    $mBalance->procProceeds = $temp[1];
+                    $mBalance->proceeds = $temp[2];
+                    $mBalance->cost = 0;
+                    $mBalance->save();
+                } else {
+                    $mBalance = new MBalance();
+                    $mBalance->b_date = date('Y-m-d',strtotime($from)+(3600*24*$i));
+                    $mBalance->procProceeds = $temp[1];
+                    $mBalance->proceeds = $temp[2];
+                    $mBalance->cost = 0;
+                    $mBalance->save();
+                }
+            }
+
+            $this->redirect('/');
+        }
+
+        $this->render('interval',array(
+
+        ));
+    }
 	public function actionPercent(){
 		$model = Percent::model()->find(array('order'=>'t.percent_date DESC'));
 
@@ -460,8 +460,22 @@ class SettingsController extends Controller{
             ->queryAll();
         $this->renderPartial('calculateList',array(
             'model'=>$model,
+            'id'=>$id
         ));
     }
+
+    public function actionAjaxPrintCalculate($id){
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dishes d')
+            ->where('d.department_id = :depId',array(':depId'=>$id))
+            ->queryAll();
+        $this->renderPartial('ajaxPrintCalculate',array(
+            'model'=>$model,
+            'id'=>$id
+        ));
+    }
+
 
 
 
