@@ -164,7 +164,7 @@ class Products extends CActiveRecord
         $model = Products::model()->with('measure')->findByPk($id);
         return $model->getRelated('measure')->name;
     }
-    //получить
+    //получить id и name продуктов по их отношению тому или иному отделу
     public function getProdName($depId){
         $dish = new Dishes();
         $result = array();
@@ -194,7 +194,7 @@ class Products extends CActiveRecord
         $model = $this->model()->findByPk($id);
         return $model->name;
     }
-
+    //получить приходную сумму продукта по его id и дате прихода
     public function getCostPrice($id,$dates){
         $costPrice = 0;
         $dates = date('Y-m-d',strtotime($dates));
@@ -223,4 +223,19 @@ class Products extends CActiveRecord
         }
         return $costPrice;
     }
+
+    // получить лист используемых продуктов
+    public function getUseProdList(){
+        $result = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('product_id,name')
+            ->from('products')
+            ->where('status = :status',array(':status'=>0))
+            ->queryAll();
+        echo "<pre>";
+        print_r($model);
+        echo "</pre>";
+        //return $result;
+    }
+
 }

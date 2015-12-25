@@ -32,7 +32,7 @@ class ProductsController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('index','view','create','update','admin','delete','export','import','editable','toggle'),
+				'actions'=>array('index','view','create','update','admin','delete','export','import','editable','toggle','ajaxCheckProd'),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -72,6 +72,11 @@ class ProductsController extends Controller
         $modelss->message = $message;
         $modelss->save();
     }
+
+    public function actionAjaxCheckProd(){
+        
+    }
+
 	/**
 	 * Creates a new model.
 	 * If creation is successful, the browser will be redirected to the 'view' page.
@@ -199,7 +204,9 @@ class ProductsController extends Controller
 		if(Yii::app()->request->isPostRequest)
 		{
 			// we only allow deletion via POST request
-			$this->loadModel($id)->deleteByPk($id);
+			$this->loadModel($id)->updateByPk($id,array(
+                'status'=>1
+            ));
 
             $this->logs('delete','products',$id,'delete');
 			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
@@ -240,7 +247,7 @@ class ProductsController extends Controller
 	 */
 	public function actionAdmin()
 	{
-        $newModel = Products::model()->with('measure')->findAll();
+        $newModel = Products::model()->with('measure')->findAll('status = :status',array(':status'=>0));
 		
 		$model=new Products('search');
 		$model->unsetAttributes();  // clear any default values

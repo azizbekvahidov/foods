@@ -12,12 +12,9 @@
 	<?php echo $form->errorSummary($model); ?>
 
 <?php echo $form->textFieldRow($model,'name',array('class'=>'span5','maxlength'=>100)); ?><br />
-<div class="span9">
-<div class="span3"><?php echo $form->dropDownListRow($model,'measure_id',CHtml::listData(Measurement::model()->findAll(),'measure_id','name'),array('class'=>'span2')); ?></div>
-<div class="span3"><?php echo $form->dropDownListRow($model,'department_id',CHtml::listData(Department::model()->findAll(),'department_id','name'),array('empty'=>'выберите отдел')); ?></div>
-<!--<label for="">Группа</label>-->
-<? //echo $form->dropDownList($model,'groupProd_id',CHtml::listData(GroupProd::model()->findAll(),'groupProd_id','name'),array('empty' => '--Выберите группу--','class'=>'span2'))?>
-</div>
+
+<div ><?php echo $form->dropDownListRow($model,'measure_id',CHtml::listData(Measurement::model()->findAll(),'measure_id','name'),array('class'=>'span2')); ?></div>
+
 
 <div class="form-actions span9">
 	<?php $this->widget('bootstrap.widgets.TbButton', array(
@@ -26,5 +23,30 @@
 			'label'=>$model->isNewRecord ? 'Сохранить' : 'Сохранить',
 		)); ?>
 </div>
+<script>
+    var delay = (function(){
+        var timer = 0;
+        return function(callback, ms){
+            clearTimeout (timer);
+            timer = setTimeout(callback, ms);
+        };
+    })();
+    $('#Products_name').keyup(function() {
+        delay(function(){
+            $.ajax({
+                type: "POST",
+                url: "<?php echo Yii::app()->createUrl('products/ajaxCheckProd'); ?>",
+                success: function(data){
+                    if(data == 1){
+                        alert('asad');
+                    }
+                    else{
+                        alert("1213");
+                    }
+                }
+            });
+        }, 500 );
+    });
+</script>
 
 <?php $this->endWidget(); ?>

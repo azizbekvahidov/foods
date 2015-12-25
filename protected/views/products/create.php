@@ -2,11 +2,6 @@
 /* @var $this ProductsController */
 /* @var $model Products */
 
-$this->breadcrumbs=array(
-	'Продукты'=>array('index'),
-	'Добавить',
-);
-
 $menu=array();
 require(dirname(__FILE__).DIRECTORY_SEPARATOR.'_menu.php');
 $this->menu=array(
