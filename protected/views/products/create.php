@@ -36,6 +36,6 @@ $this->menu=array(
 		        'danger'=>array('block'=>true, 'fade'=>true, 'closeText'=>'&times;'), //success, info, warning, error or danger
 		    ),
 		));
-		?>		
+		?>
 <?php echo $this->renderPartial('_form', array('model'=>$model)); ?>
 <?php $this->endWidget(); ?>

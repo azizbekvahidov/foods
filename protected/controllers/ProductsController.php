@@ -74,7 +74,17 @@ class ProductsController extends Controller
     }
 
     public function actionAjaxCheckProd(){
-        
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from('products')
+            ->where('name = :name',array(':name'=>$_POST['value']))
+            ->queryRow();
+        if(!empty($model)){
+            echo 1;
+        }
+        else{
+            echo 0;
+        }
     }
 
 	/**
@@ -100,7 +110,7 @@ class ProductsController extends Controller
 				    $this->addProd($model->product_id);
                     $this->logs('create','products',$model->product_id,$model->name);
 					$messageType = 'success';
-					$message = "<strong>Well done!</strong> You successfully create data ";
+					$message = "<strong>Поздравляю!</strong> Вы успешно добавили продукт ";
 					
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
@@ -257,9 +267,9 @@ class ProductsController extends Controller
 		$this->render('admin',array(
 			'model'=>$model,
             'newModel'=>$newModel,
-					));
+        ));
 		
-			}
+    }
 
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.

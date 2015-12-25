@@ -8,7 +8,6 @@
 	// 'htmlOptions'=>array('enctype'=>'multipart/form-data'),
 )); ?>
 
-
 	<?php echo $form->errorSummary($model); ?>
 
 <?php echo $form->textFieldRow($model,'name',array('class'=>'span5','maxlength'=>100)); ?><br />
@@ -32,16 +31,16 @@
         };
     })();
     $('#Products_name').keyup(function() {
+        var value = $(this).val();
         delay(function(){
             $.ajax({
                 type: "POST",
                 url: "<?php echo Yii::app()->createUrl('products/ajaxCheckProd'); ?>",
+                data: 'value='+value,
                 success: function(data){
                     if(data == 1){
-                        alert('asad');
-                    }
-                    else{
-                        alert("1213");
+                        alert("Такой продукт существует");
+                        $("#Products_name").val('');
                     }
                 }
             });
