@@ -24,49 +24,7 @@
     <favorites_list name="foods" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="MenuController.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/protected/controllers/MenuController.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-13.269231" vertical-offset="1491" max-vertical-offset="11016">
-              <caret line="108" column="33" selection-start-line="108" selection-start-column="33" selection-end-line="108" selection-end-column="33" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Dishes.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/protected/models/Dishes.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-14.615385" vertical-offset="3683" max-vertical-offset="4352">
-              <caret line="239" column="57" selection-start-line="239" selection-start-column="57" selection-end-line="239" selection-end-column="57" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="struct.php" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/protected/views/menu/struct.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.06538462" vertical-offset="0" max-vertical-offset="3043">
-              <caret line="2" column="153" selection-start-line="2" selection-start-column="153" selection-end-line="2" selection-end-column="153" />
-              <folding>
-                <element signature="n#style#0;n#th#1;n#tr#0;n#thead#0;n#table#0;n#div#0;n#!!top" expanded="true" />
-                <marker date="1451113059917" expanded="false" signature="7081:7099" placeholder="..." />
-                <marker date="1451113059917" expanded="false" signature="7195:7213" placeholder="..." />
-                <marker date="1451113059917" expanded="false" signature="7317:7335" placeholder="..." />
-                <marker date="1451113059917" expanded="false" signature="8005:8023" placeholder="..." />
-                <marker date="1451113059917" expanded="false" signature="8120:8138" placeholder="..." />
-                <marker date="1451113059917" expanded="false" signature="8243:8261" placeholder="..." />
-                <marker date="1451113059917" expanded="false" signature="8915:8933" placeholder="..." />
-                <marker date="1451113059917" expanded="false" signature="9032:9050" placeholder="..." />
-                <marker date="1451113059917" expanded="false" signature="9157:9175" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -81,9 +39,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/protected/views/faktura/ajaxSetRequest.php" />
-        <option value="$PROJECT_DIR$/protected/models/Balance.php" />
-        <option value="$PROJECT_DIR$/protected/views/storage/allstorage.php" />
         <option value="$PROJECT_DIR$/protected/views/storage/monthStorage.php" />
         <option value="$PROJECT_DIR$/protected/views/report/ajaxDetail.php" />
         <option value="$PROJECT_DIR$/protected/views/settings/calculate.php" />
@@ -132,6 +87,9 @@
         <option value="$PROJECT_DIR$/protected/models/Halfstaff.php" />
         <option value="$PROJECT_DIR$/protected/controllers/MenuController.php" />
         <option value="$PROJECT_DIR$/protected/views/menu/struct.php" />
+        <option value="$PROJECT_DIR$/protected/models/Employee.php" />
+        <option value="$PROJECT_DIR$/protected/controllers/EmployeeController.php" />
+        <option value="$PROJECT_DIR$/protected/controllers/ProviderController.php" />
       </list>
     </option>
   </component>
@@ -139,8 +97,8 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1382" />
-    <option name="height" value="744" />
+    <option name="width" value="1296" />
+    <option name="height" value="1000" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -218,130 +176,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="protected" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="views" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="realize" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="protected" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="views" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="products" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="protected" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="views" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="menu" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="protected" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="views" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="dishes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="protected" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="models" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="foods" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="protected" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="controllers" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
@@ -376,15 +210,15 @@
       <BehatRunner />
       <method />
     </configuration>
+    <configuration default="true" type="PhpUnitRemoteRunConfigurationType" factoryName="PHPUnit on Server">
+      <method />
+    </configuration>
     <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
       <node-options />
       <gulpfile />
       <tasks />
       <pass-parent-env-vars>false</pass-parent-env-vars>
       <envs />
-      <method />
-    </configuration>
-    <configuration default="true" type="PhpUnitRemoteRunConfigurationType" factoryName="PHPUnit on Server">
       <method />
     </configuration>
     <list size="0" />
@@ -423,8 +257,8 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1296" height="1000" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32935154" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -433,7 +267,7 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24962178" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980332" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18305598" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18608414" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32905295" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32935154" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -469,6 +303,40 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/protected/controllers/MenuController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1836" max-vertical-offset="10846">
+          <caret line="108" column="8" selection-start-line="108" selection-start-column="8" selection-end-line="108" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protected/models/Dishes.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="4012" max-vertical-offset="4114">
+          <caret line="236" column="0" selection-start-line="236" selection-start-column="0" selection-end-line="236" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protected/views/menu/struct.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3060">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.06378987" vertical-offset="0" max-vertical-offset="533">
@@ -480,7 +348,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="969">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -488,7 +355,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.7767355" vertical-offset="266" max-vertical-offset="799">
           <caret line="40" column="106" selection-start-line="40" selection-start-column="106" selection-end-line="40" selection-end-column="106" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -504,7 +370,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.3923077" vertical-offset="51" max-vertical-offset="1921">
           <caret line="15" column="51" selection-start-line="15" selection-start-column="51" selection-end-line="15" selection-end-column="51" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -512,7 +377,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.7519231" vertical-offset="3604" max-vertical-offset="9078">
           <caret line="235" column="28" selection-start-line="235" selection-start-column="28" selection-end-line="237" selection-end-column="33" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -520,15 +384,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-2.6153846" vertical-offset="4182" max-vertical-offset="7803">
           <caret line="250" column="34" selection-start-line="250" selection-start-column="34" selection-end-line="250" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/protected/models/Products.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.93621016" vertical-offset="3802" max-vertical-offset="4454">
-          <caret line="253" column="5" selection-start-line="241" selection-start-column="4" selection-end-line="253" selection-end-column="5" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -536,7 +391,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.41463414" vertical-offset="102" max-vertical-offset="1802">
           <caret line="19" column="51" selection-start-line="19" selection-start-column="51" selection-end-line="19" selection-end-column="51" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -544,7 +398,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.7767355" vertical-offset="334" max-vertical-offset="867">
           <caret line="44" column="108" selection-start-line="44" selection-start-column="108" selection-end-line="44" selection-end-column="108" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -552,7 +405,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.7767355" vertical-offset="283" max-vertical-offset="816">
           <caret line="41" column="31" selection-start-line="40" selection-start-column="62" selection-end-line="41" selection-end-column="31" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -560,26 +412,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5884615" vertical-offset="612" max-vertical-offset="2618">
           <caret line="54" column="43" selection-start-line="54" selection-start-column="31" selection-end-line="54" selection-end-column="43" />
-          <folding>
-            <marker date="1451110112612" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451110112612" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -587,7 +419,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="1.2232646" vertical-offset="62" max-vertical-offset="850">
           <caret line="42" column="69" selection-start-line="42" selection-start-column="69" selection-end-line="42" selection-end-column="69" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -595,7 +426,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.79615384" vertical-offset="283" max-vertical-offset="833">
           <caret line="41" column="119" selection-start-line="41" selection-start-column="119" selection-end-line="41" selection-end-column="119" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -603,7 +433,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="3.1442308" vertical-offset="4009" max-vertical-offset="9911">
           <caret line="332" column="26" selection-start-line="332" selection-start-column="26" selection-end-line="332" selection-end-column="26" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -611,20 +440,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.19615385" vertical-offset="102" max-vertical-offset="2057">
           <caret line="12" column="32" selection-start-line="12" selection-start-column="32" selection-end-line="12" selection-end-column="32" />
-          <folding>
-            <marker date="1451111417296" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="true" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="false" signature="-1:-1" placeholder="..." />
-            <marker date="1451111417296" expanded="true" signature="-1:-1" placeholder="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -632,7 +447,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.6269231" vertical-offset="5896" max-vertical-offset="10812">
           <caret line="366" column="23" selection-start-line="366" selection-start-column="13" selection-end-line="366" selection-end-column="23" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -640,42 +454,72 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.7129456" vertical-offset="5298" max-vertical-offset="5933">
           <caret line="334" column="57" selection-start-line="334" selection-start-column="57" selection-end-line="334" selection-end-column="57" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protected/views/menu/struct.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.16978776" vertical-offset="34" max-vertical-offset="3043">
+          <caret line="10" column="16" selection-start-line="10" selection-start-column="16" selection-end-line="10" selection-end-column="16" />
+          <folding>
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+            <marker date="1451141278003" expanded="false" signature="-1:-1" placeholder="..." />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/protected/models/Dishes.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-14.615385" vertical-offset="3683" max-vertical-offset="4352">
-          <caret line="239" column="57" selection-start-line="239" selection-start-column="57" selection-end-line="239" selection-end-column="57" />
+        <state vertical-scroll-proportion="0.87265915" vertical-offset="3551" max-vertical-offset="4352">
+          <caret line="250" column="0" selection-start-line="250" selection-start-column="0" selection-end-line="250" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/protected/controllers/MenuController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-13.269231" vertical-offset="1491" max-vertical-offset="11016">
-          <caret line="108" column="33" selection-start-line="108" selection-start-column="33" selection-end-line="108" selection-end-column="33" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="2006" max-vertical-offset="11016">
+          <caret line="118" column="8" selection-start-line="118" selection-start-column="8" selection-end-line="118" selection-end-column="8" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/protected/views/menu/struct.php">
+    <entry file="file://$PROJECT_DIR$/protected/controllers/ProviderController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.06538462" vertical-offset="0" max-vertical-offset="3043">
-          <caret line="2" column="153" selection-start-line="2" selection-start-column="153" selection-end-line="2" selection-end-column="153" />
-          <folding>
-            <element signature="n#style#0;n#th#1;n#tr#0;n#thead#0;n#table#0;n#div#0;n#!!top" expanded="true" />
-            <marker date="1451113059917" expanded="false" signature="7081:7099" placeholder="..." />
-            <marker date="1451113059917" expanded="false" signature="7195:7213" placeholder="..." />
-            <marker date="1451113059917" expanded="false" signature="7317:7335" placeholder="..." />
-            <marker date="1451113059917" expanded="false" signature="8005:8023" placeholder="..." />
-            <marker date="1451113059917" expanded="false" signature="8120:8138" placeholder="..." />
-            <marker date="1451113059917" expanded="false" signature="8243:8261" placeholder="..." />
-            <marker date="1451113059917" expanded="false" signature="8915:8933" placeholder="..." />
-            <marker date="1451113059917" expanded="false" signature="9032:9050" placeholder="..." />
-            <marker date="1451113059917" expanded="false" signature="9157:9175" placeholder="..." />
-          </folding>
+        <state vertical-scroll-proportion="0.5093633" vertical-offset="3366" max-vertical-offset="7038">
+          <caret line="222" column="49" selection-start-line="222" selection-start-column="49" selection-end-line="222" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protected/controllers/EmployeeController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.16978776" vertical-offset="3213" max-vertical-offset="6749">
+          <caret line="197" column="22" selection-start-line="197" selection-start-column="22" selection-end-line="197" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protected/models/Employee.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.1253071" vertical-offset="1073" max-vertical-offset="2193">
+          <caret line="117" column="34" selection-start-line="117" selection-start-column="34" selection-end-line="117" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protected/models/Products.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.32186732" vertical-offset="3614" max-vertical-offset="4454">
+          <caret line="228" column="8" selection-start-line="228" selection-start-column="8" selection-end-line="238" selection-end-column="23" />
+          <folding />
         </state>
       </provider>
     </entry>

@@ -106,4 +106,18 @@ class Employee extends CActiveRecord
 	{
 		return parent::model($className);
 	}
+
+    public function getWorkEmpList(){
+        $result = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('employee_id,name')
+            ->from('employee')
+            ->where('status = :status',array(':status'=>0))
+            ->queryAll();
+        foreach ($model as $val) {
+            $result[$val['employee_id']] = $val['name'];
+        }
+
+        return $result;
+    }
 }
