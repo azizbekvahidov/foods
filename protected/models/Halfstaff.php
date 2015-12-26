@@ -312,4 +312,32 @@ class Halfstaff extends CActiveRecord
         }
         return array_sum($costPrice);
     }
+
+    public function getUseStuffList(){
+        $result = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('halfstuff_id,name')
+            ->from('Halfstaff')
+            ->where('status = :status',array(':status'=>0))
+            ->queryAll();
+        foreach ($model as $val) {
+            $result[$val['halfstuff_id']] = $val['name'];
+        }
+
+        return $result;
+    }
+
+    public function getNotUseStuffList(){
+        $result = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('halfstuff_id,name')
+            ->from('Halfstaff')
+            ->where('status = :status',array(':status'=>1))
+            ->queryAll();
+        foreach ($model as $val) {
+            $result[$val['halfstuff_id']] = $val['name'];
+        }
+
+        return $result;
+    }
 }

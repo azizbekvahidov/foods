@@ -82,6 +82,13 @@ class MenuController extends Controller
     public function actionStruct(){
         $id = $_POST['type_id'];
         $mType = $_POST['mType'];
+        $products = new Products();
+        $stuff = new Halfstaff();
+        $dish = new Dishes();
+
+        $prodList = $products->getUseProdList();
+        $stuffList = $stuff->getUseStuffList();
+        $dishList = $dish->getUseDishList();
 
         $dishModel = Menu::model()->with('dish')->findAll('t.type_id = :typeId AND mType = :mType',array(':typeId'=>$id,':mType'=>$mType));
 
@@ -96,7 +103,10 @@ class MenuController extends Controller
             'listDep'=>$listDep,
             'dishModel'=>$dishModel,
             'prodModel'=>$prodModel,
-            'stuffModel'=>$stuffModel,    
+            'stuffModel'=>$stuffModel,
+            'prodList'=>$prodList,
+            'stuffList'=>$stuffList,
+            'dishList'=>$dishList
         ));
         
     }

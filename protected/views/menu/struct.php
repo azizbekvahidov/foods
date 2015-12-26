@@ -1,8 +1,7 @@
 <? $prices = new Prices()?>
-<?php echo CHtml::dropDownList('dish_id','',CHtml::listData(Dishes::model()->findAll(),'dish_id','name'),array('empty' => '--Выберите блюда--','class'=>'','id'=>'dish')); ?>&nbsp; &nbsp;
-<?php// echo CHtml::dropDownList('halfstuff_id','',CHtml::listData(Halfstaff::model()->findAll(),'halfstuff_id','name'),array('empty' => '--Выберите полуфабрикат--','class'=>'','id'=>'stuff')); ?>&nbsp; &nbsp;
-<?php echo CHtml::dropDownList('product_id','',CHtml::listData(Products::model()->findAll(),'product_id','name'),array('empty' => '--Выберите продукт--','class'=>'','id'=>'product')); ?>&nbsp; &nbsp;
-<?php echo CHtml::dropDownList('halfstuff_id','',CHtml::listData(Halfstaff::model()->findAll(),'halfstuff_id','name'),array('empty' => '--Выберите полуфабрикат--','class'=>'','id'=>'halfstuff')); ?>&nbsp; &nbsp;
+<?php echo CHtml::dropDownList('dish_id','',$dishList,array('empty' => '--Выберите блюда--','class'=>'','id'=>'dish')); ?>&nbsp; &nbsp;
+<?php echo CHtml::dropDownList('halfstuff_id','',$stuffList,array('empty' => '--Выберите полуфабрикат--','class'=>'','id'=>'halfstuff')); ?>&nbsp; &nbsp;
+<?php echo CHtml::dropDownList('product_id','',$prodList,array('empty' => '--Выберите продукт--','class'=>'','id'=>'product')); ?>&nbsp; &nbsp;
 </div>
 <br /><br />
 <div class="form-group">

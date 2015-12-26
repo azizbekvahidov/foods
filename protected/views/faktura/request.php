@@ -16,8 +16,8 @@
     // 'htmlOptions'=>array('enctype'=>'multipart/form-data'),
 )); ?>
 <div class="form-group">
-    <?= CHtml::dropDownList('provider','',CHtml::listData(Provider::model()->findAll(),'provider_id','name'),array('empty' => '--Выберите поставщика--','id'=>'provider'))?>&nbsp; &nbsp;
-    <?= CHtml::dropDownList('products','',CHtml::listData(Products::model()->findAll(),'product_id','name'),array('empty' => '--Выберите продукт--','id'=>'product'))?>&nbsp; &nbsp;
+    <?= CHtml::dropDownList('provider','',$provList,array('empty' => '--Выберите поставщика--','id'=>'provider'))?>&nbsp; &nbsp;
+    <?= CHtml::dropDownList('products','',$prodList,array('empty' => '--Выберите продукт--','id'=>'product'))?>&nbsp; &nbsp;
 
 </div><br /><br />
 <div class="form-group">

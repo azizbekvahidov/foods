@@ -2,10 +2,6 @@
 /* @var $this DishesController */
 /* @var $model Dishes */
 
-$this->breadcrumbs=array(
-	'Блюда'=>array('index'),
-	'Добавить',
-);
 
 $menu=array();
 require(dirname(__FILE__).DIRECTORY_SEPARATOR.'_menu.php');
@@ -41,6 +37,7 @@ $this->menu=array(
 		        'danger'=>array('block'=>true, 'fade'=>true, 'closeText'=>'&times;'), //success, info, warning, error or danger
 		    ),
 		));
-		?>		
-<?php echo $this->renderPartial('_form', array('model'=>$model)); ?>
+		?>
+<?php echo $this->renderPartial('_form', array('model'=>$model,'prodList'=>$prodList,'chosenProd'=>$chosenProdod,'stuffList'=>$stuffList,
+    'chosenStuff'=>$chosenStuff)); ?>
 <?php $this->endWidget(); ?>

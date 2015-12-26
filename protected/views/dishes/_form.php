@@ -17,31 +17,18 @@
         <div class="span4">
             <?php echo $form->textFieldRow($model,'count',array('class'=>'span3','maxlength'=>100)); ?>
         </div>
-        <div class="span4">
-            <?php echo $form->dropDownListRow($model,'department_id',CHtml::listData(Department::model()->findAll(),'department_id','name'),array('empty'=>'Выбрать отдел','class'=>'span3','maxlength'=>100)); ?>
-        </div>
     </div>
     <div class="span10" >
         <div class="span3" >
             <h3>Продукты</h3>
-            <?php echo $form->listBox($model,'dishStruct',$this->allProduct,array('class'=>'span2 left all_product listbox','id'=>'all_product'));?>
+            <?php echo $form->dropDownList($model,'dishStruct',$prodList,array('class'=>'span2 left all_product listbox','id'=>'all_product','empty'=>'--Выберите продукт--'));?>
             
-            
-            
-            <?php //echo $form->listBox($model,'dishStruct',$this->chosenProduct,array('multiple'=>'multiple','class'=>'span2 chosen_product listbox')); ?>
         </div>
         <div class="span3" >
             <h3>Полуфабрикаты</h3>
-            <?php echo $form->listBox($model,'halfstuff',$this->allHalfstuff,array('class'=>'span2 left all_halfstuff listbox','id'=>'all_halfstuff')); ?>
+            <?php echo $form->dropDownList($model,'halfstuff',$stuffList,array('class'=>'span2 left all_halfstuff listbox','id'=>'all_halfstuff','empty'=>'--Выберите полуфабрикат--')); ?>
             
-            <?php //echo $form->listBox($model,'halfstuff',$this->chosenHalfstuff,array('multiple'=>'multiple','class'=>'span2 chosen_halfstuff listbox')); ?>
        </div>
-       <!--<div class="span3" >
-            <h3>Блюда</h3>
-            <?php echo CHtml::listbox('dish','',$this->allDishes,array('class'=>'span2 left all_dishes listbox','id'=>'all_dishes')); ?>
-            
-            <?php //echo $form->listBox($model,'halfstuff',$this->chosenHalfstuff,array('multiple'=>'multiple','class'=>'span2 chosen_halfstuff listbox')); ?>
-       </div>-->
        <div class="form-group">
         <table id="structList" class="table table-striped table-hover ">
             <thead>
@@ -53,8 +40,8 @@
             </thead>
             <tbody>
                 <tr style="display: none;"></tr>
-                <? if($this->chosenProduct != ''){?>
-                    <? foreach($this->chosenProduct as $key => $val){
+                <? if($chosenProd != ''){?>
+                    <? foreach($chosenProd as $key => $val){
                         $struct = $val->getRelated('Struct');?>
                         <tr>
                             <td style='text-align:center;'><input type='text' style='display: none;' name='product_id[]' value='<?=$val['product_id']?>' /><?=$val['name']?></td>
@@ -63,18 +50,9 @@
                         </tr>
                     <?}?> 
                 <?}?>
-                <!--<? if($this->chosenDishes != ''){?>
-                    <? foreach($this->chosenDishes as $key => $val){
-                        $struct = $val->getRelated('Struct');?>
-                        <tr>
-                            <td style='text-align:center;'><input type='text' style='display: none;' name='stuff_id[]' value='<?=$val['halfstuff_id']?>' /><?=$val['name']?></td>
-                            <td style='text-align:center;'><input class='span1' type='text' name='stuff[]' value="<?=$struct[0]['amount']?>" /></td>
-                            <td style='text-align:center;'><a href='javascript:;' class = 'deleteRow'><i class='icon-trash '></i></a>
-                        </tr>
-                    <?}?> 
-                <?}?>-->
-                <? if($this->chosenHalfstuff != ''){?>
-                    <? foreach($this->chosenHalfstuff as $key => $val){
+
+                <? if($chosenStuff != ''){?>
+                    <? foreach($chosenStuff as $key => $val){
                         $struct = $val->getRelated('Struct');?>
                         <tr>
                             <td style='text-align:center;'><input type='text' style='display: none;' name='stuff_id[]' value='<?=$val['halfstuff_id']?>' /><?=$val['name']?></td>

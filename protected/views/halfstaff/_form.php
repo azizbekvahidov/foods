@@ -15,16 +15,16 @@
     <?php echo $form->textFieldRow($model,'name',array('class'=>'span5')); ?><br />
 <div class="span3"><?php echo $form->dropDownListRow($model,'stuff_type',CHtml::listData(Measurement::model()->findAll(),'measure_id','name')); ?></div>
     <div class="span3"><?php echo $form->textFieldRow($model,'count',array()); ?></div>
-<div class="span3"><?php echo $form->dropDownListRow($model,'department_id',CHtml::listData(Department::model()->findAll(),'department_id','name'),array('empty'=>'Выбрать отдел','class'=>'span3','maxlength'=>100)); ?></div>
+
         <div >
             <div class="">
                 <div class="span3">
                     <h3>Продукты</h3>
-                    <?php echo $form->listBox($model,'stuffStruct',CHtml::listData(Products::model()->findAll(),'product_id','name'),array('class'=>'span2 left all_options listbox','style'=>'height:200px!important','id'=>'all_product')); ?>
+                    <?php echo $form->dropDownList($model,'stuffStruct',$prodList,array('class'=>'span2 left all_options listbox','style'=>'height:200px!important','id'=>'all_product','empty'=>'Выберите продукт')); ?>
                 </div>
                 <div class="span3">
                     <h3>Полуфабрикаты</h3>
-                    <?php echo $form->listBox($model,'stuffStruct',CHtml::listData(Halfstaff::model()->findAll(),'halfstuff_id','name'),array('class'=>'span2 left all_options listbox','style'=>'height:200px!important','id'=>'all_stuff')); ?>
+                    <?php echo $form->dropDownList($model,'stuffStruct',$stuffList,array('class'=>'span2 left all_options listbox','style'=>'height:200px!important','id'=>'all_stuff','empty'=>'Выберите полуфабрикат')); ?>
                 </div>
                 <div class="form-group">
                     <table id="prodList" class="table table-striped table-hover ">

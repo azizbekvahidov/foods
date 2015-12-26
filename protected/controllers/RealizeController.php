@@ -187,9 +187,10 @@ class RealizeController extends Controller
 	 */
 	public function actionCreate()
 	{
-		$this->allProducts = CHtml::listData(Products::model()->findAll(),'product_id','name');	
-		$this->allProvider = CHtml::listData(Provider::model()->findAll(),'provider_id','name');
-        //$this->allGroups = CHtml::listData(GroupProd::model()->findAll(),'groupProd_id','name');
+        $products = new Products();
+        $provider = new Provider();
+        $prodList = $products->getUseProdList();
+        $provList = $provider->getProvList();
 		$model=new Realize;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -233,6 +234,8 @@ class RealizeController extends Controller
 
 		$this->render('create',array(
 			'model'=>$model,
+            'prodList'=>$prodList,
+            'provList'=>$provList
 					));
 		
 				

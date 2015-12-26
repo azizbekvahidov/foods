@@ -145,9 +145,12 @@ class HalfstaffController extends Controller
 	 */
 	public function actionCreate()
 	{
-        $chosenProduct = array();	
+        $chosenProduct = array();
+        $products = new Products();
 				
 		$model=new Halfstaff;
+        $prodList = $products->getUseProdList();
+        $stuffList = $model->getUseStuffList();
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -219,6 +222,8 @@ class HalfstaffController extends Controller
 
 		$this->render('create',array(
 			'model'=>$model,
+            'prodList'=>$prodList,
+            'stuffList'=>$stuffList
 					));
 		
 				
@@ -243,6 +248,10 @@ class HalfstaffController extends Controller
             $chosenStuff[$key] = HalfstuffStructure::model()->with('stuff')->findAllByPk($key,'t.halfstuff_id = :halfstuff_id AND types = :types',array(':halfstuff_id'=>$id,':types'=>2));            
          }
 		$model=$this->loadModel($id);
+        $products = new Products();
+
+        $prodList = $products->getUseProdList();
+        $stuffList = $model->getUseStuffList();
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -321,6 +330,8 @@ class HalfstaffController extends Controller
 			'model'=>$model,
             'chosenProduct'=>$chosenProduct,
             'chosenStuff'=>$chosenStuff,
+            'prodList'=>$prodList,
+            'stuffList'=>$stuffList
             
 					));
 		
@@ -368,8 +379,10 @@ class HalfstaffController extends Controller
 		if(Yii::app()->request->isPostRequest)
 		{
 			// we only allow deletion via POST request
-            $this->loadModel($id)->deleteByPk($id);
-            HalfstuffStructure::model()->deleteAll('halfstuff_id=:halfstuff_id', array(':halfstuff_id'=>$id));
+            $this->loadModel($id)->updateByPk($id,array(
+                'status'=>1
+            ));
+            //HalfstuffStructure::model()->deleteAll('halfstuff_id=:halfstuff_id', array(':halfstuff_id'=>$id));
 			$this->logs('delete','halfstuff',$id,'delete');
 			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
 			if(!isset($_GET['ajax']))
@@ -410,7 +423,7 @@ class HalfstaffController extends Controller
 	public function actionAdmin()
 	{
 		
-		$newModel = Halfstaff::model()->findAll();
+		$newModel = Halfstaff::model()->findAll('status = :status',array(':status'=>0));
 		$model=new Halfstaff('search');
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['Halfstaff']))

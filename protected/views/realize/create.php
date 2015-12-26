@@ -38,5 +38,5 @@ require(dirname(__FILE__).DIRECTORY_SEPARATOR.'_menu.php');
 		    ),
 		));
 		?>		
-<?php echo $this->renderPartial('_form', array('model'=>$model)); ?>
+<?php echo $this->renderPartial('_form', array('model'=>$model,'prodList'=>$prodList,'provList'=>$provList)); ?>
 <?php $this->endWidget(); ?>

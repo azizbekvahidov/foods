@@ -246,6 +246,11 @@ class FakturaController extends Controller
     }
 
     public function actionRequest(){
+        $products = new Products();
+            $provider = new Provider();
+            $prodList = $products->getUseProdList();
+            $provList = $provider->getProvList();
+
         $depId = Department::model()->findAll();
         $dates = date('Y-m-d H:i:s');
         $command = Yii::app()->db->createCommand();
@@ -270,7 +275,11 @@ class FakturaController extends Controller
             }
             $this->redirect(array('view','id'=>$lastId));
         }
-        $this->render('request',array('depId'=>$depId));
+        $this->render('request',array(
+            'depId'=>$depId,
+            'prodList'=>$prodList,
+            'provList'=>$provList
+        ));
     }
 
     public function actionAjaxRequest(){

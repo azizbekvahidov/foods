@@ -13,8 +13,8 @@
 	<?php echo $form->errorSummary($model); ?>
 
 <div class="form-group">
-    <?= CHtml::dropDownList('provider','',$this->allProvider,array('empty' => '--Выберите поставщика--','id'=>'provider'))?>&nbsp; &nbsp;
-    <?= CHtml::dropDownList('products','',$this->allProducts,array('empty' => '--Выберите продукт--','id'=>'product'))?>&nbsp; &nbsp;
+    <?= CHtml::dropDownList('provider','',$provList,array('empty' => '--Выберите поставщика--','id'=>'provider'))?>&nbsp; &nbsp;
+    <?= CHtml::dropDownList('products','',$prodList,array('empty' => '--Выберите продукт--','id'=>'product'))?>&nbsp; &nbsp;
     <!--
     <?php echo $form->textFieldRow($model,'prod_id',array('class'=>'span5')); ?>
     <?php echo $form->textFieldRow($model,'price',array('class'=>'span5')); ?>

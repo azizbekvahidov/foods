@@ -39,5 +39,7 @@ $this->menu=array(
 		        'danger'=>array('block'=>true, 'fade'=>true, 'closeText'=>'&times;'), //success, info, warning, error or danger
 		    ),
 		));
-		?><?php echo $this->renderPartial('_form',array('model'=>$model,'chosenProduct'=>$chosenProduct,'chosenStuff'=>$chosenStuff)); ?>
+		?><?php echo $this->renderPartial('_form',array('model'=>$model,'chosenProduct'=>$chosenProduct,'chosenStuff'=>$chosenStuff,
+                        'prodList'=>$prodList,'stuffList'=>$stuffList
+    )); ?>
 <?php $this->endWidget(); ?>

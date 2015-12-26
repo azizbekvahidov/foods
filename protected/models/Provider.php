@@ -143,4 +143,18 @@ class Provider extends CActiveRecord
         
         return $scope;
     }
+
+    public function getProvList(){
+        $result = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('provider_id,name')
+            ->from('provider')
+            ->queryAll();
+        foreach ($model as $val) {
+            $result[$val['provider_id']] = $val['name'];
+        }
+
+        return $result;
+    }
+
 }

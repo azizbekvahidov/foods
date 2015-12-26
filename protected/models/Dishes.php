@@ -231,6 +231,20 @@ class Dishes extends CActiveRecord
 
         return array_sum($costPrice);
     }
+
+    public function getUseDishList(){
+        $result = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('dish_id,name')
+            ->from('dishes')
+            ->where('status = :status',array(':status'=>0))
+            ->queryAll();
+        foreach ($model as $val) {
+            $result[$val['dish_id']] = $val['name'];
+        }
+
+        return $result;
+    }
     
     
 }

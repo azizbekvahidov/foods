@@ -232,10 +232,25 @@ class Products extends CActiveRecord
             ->from('products')
             ->where('status = :status',array(':status'=>0))
             ->queryAll();
-        echo "<pre>";
-        print_r($model);
-        echo "</pre>";
-        //return $result;
+        foreach ($model as $val) {
+            $result[$val['product_id']] = $val['name'];
+        }
+
+        return $result;
+    }
+
+    public function getNotUseProdList(){
+        $result = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('product_id,name')
+            ->from('products')
+            ->where('status = :status',array(':status'=>1))
+            ->queryAll();
+        foreach ($model as $val) {
+            $result[$val['product_id']] = $val['name'];
+        }
+
+        return $result;
     }
 
 }

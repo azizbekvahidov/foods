@@ -179,15 +179,14 @@ class DishesController extends Controller
 	 */
     
 	public function actionCreate()
-	{	
-		$this->allProduct = CHtml::listData(Products::model()->findAll(),'product_id','name');
-        $this->chosenProduct = array();
-        
-		$this->allHalfstuff = CHtml::listData(Halfstaff::model()->findAll(),'halfstuff_id','name');
-        $this->chosenHalfstuff = array();
-        
-        $this->allDishes = CHtml::listData(Dishes::model()->findAll(),'dish_id','name');
-        $this->chosenDishes = array();
+	{
+        $products = new Products();
+        $prodList = $products->getUseProdList();
+        $chosenProd = array();
+        $stuff = new Halfstaff();
+		$stuffList = $stuff->getUseStuffList();
+        $chosenStuff = array();
+
         
 		$model=new Dishes;
 		// Uncomment the following line if AJAX validation is needed
@@ -264,6 +263,10 @@ class DishesController extends Controller
 
 		$this->render('create',array(
 			'model'=>$model,
+            'prodList'=>$prodList,
+            'chosenProd'=>$chosenProd,
+            'stuffList'=>$stuffList,
+            'chosenStuff'=>$chosenStuff
 					));
 		
 				
@@ -276,17 +279,17 @@ class DishesController extends Controller
 	 */
 	public function actionUpdate($id)
 	{
+        $products = new Products();
+        $stuff = new Halfstaff();
+        $prodList = $products->getUseProdList();
         $prod_id = CHtml::listData(DishStructure::model()->findAll(array("condition"=>"dish_id = $id")),'struct_id','prod_id');
         $stuff_id = CHtml::listData(DishStructure2::model()->findAll(array("condition"=>"dish_id = $id")),'struct2_id','halfstuff_id');
 //        $dish_id = CHtml::listData(DishStructure3::model()->findAll(array("condition"=>"dish_id = $id")),'struct3_id','dishes_id');
-        
-        $this->allProduct = CHtml::listData(Products::model()->findAll(),'product_id','name');
-        $this->chosenProduct = Products::model()->with('Struct')->findAllByPk($prod_id,'Struct.dish_id = :dish_id',array(':dish_id'=>$id));
-        $this->allHalfstuff = CHtml::listData(Halfstaff::model()->findAll(),'halfstuff_id','name');
-        $this->chosenHalfstuff = Halfstaff::model()->with('Struct')->findAllByPk($stuff_id,'Struct.dish_id = :dish_id',array(':dish_id'=>$id));
-        $this->allDishes= CHtml::listData(Dishes::model()->findAll(),'dish_id','name');
-        //$this->chosenDishes = Dishes::model()->with('dishStruct')->findAllByPk($dish_id,'dishStruct.dish_id = :dish_id',array(':dish_id'=>$id));
-        
+
+        $chosenProd = Products::model()->with('Struct')->findAllByPk($prod_id,'Struct.dish_id = :dish_id',array(':dish_id'=>$id));
+        $stuffList = $stuff->getUseStuffList();
+        $chosenStuff = Halfstaff::model()->with('Struct')->findAllByPk($stuff_id,'Struct.dish_id = :dish_id',array(':dish_id'=>$id));
+
         $model=$this->loadModel($id);
 
 		// Uncomment the following line if AJAX validation is needed
@@ -360,6 +363,10 @@ class DishesController extends Controller
 
 		$this->render('update',array(
 			'model'=>$model,
+            'prodList'=>$prodList,
+            'chosenProd'=>$chosenProd,
+            'stuffList'=>$stuffList,
+            'chosenStuff'=>$chosenStuff
 		));
 
     }
@@ -415,9 +422,11 @@ class DishesController extends Controller
 		if(Yii::app()->request->isPostRequest)
 		{
 			// we only allow deletion via POST request
-			$this->loadModel($id)->deleteByPk($id);
-            DishStructure::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));
-            DishStructure2::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));
+			$this->loadModel($id)->updateByPk($id,array(
+                'status'=>1
+            ));
+            /*DishStructure::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));
+            DishStructure2::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));*/
             $this->logs('delete','dishes',$id,'delete');
 			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
 			if(!isset($_GET['ajax']))
@@ -439,7 +448,7 @@ class DishesController extends Controller
 		));
 		*/
         
-        $DishModel = Dishes::model()->findAll();
+        $DishModel = Dishes::model()->findAll('status = :status',array(':status'=>0));
         $model=new Dishes('search');
         $model->unsetAttributes();  // clear any default values
 		if(isset($_GET['Dishes']))
@@ -458,7 +467,7 @@ class DishesController extends Controller
 	public function actionAdmin()
 	{
 		
-        $DishModel = Dishes::model()->findAll();
+        $DishModel = Dishes::model()->findAll('status = :status',array(':status'=>0));
 		$model=new Dishes('search');
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['Dishes']))
