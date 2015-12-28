@@ -304,3 +304,15 @@ in D:\OpenServer\domains\foods\index.php (13)
 2015/12/22 08:43:10 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
 in D:\OpenServer\domains\foods\protected\controllers\DishesController.php (305)
 in D:\OpenServer\domains\foods\index.php (13)
+2015/12/28 09:10:49 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in D:\OpenServer\domains\foods\protected\controllers\DishesController.php (308)
+in D:\OpenServer\domains\foods\index.php (13)
+2015/12/28 09:10:49 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in D:\OpenServer\domains\foods\protected\controllers\DishesController.php (308)
+in D:\OpenServer\domains\foods\index.php (13)
+2015/12/28 10:01:14 [warning] [application] Не удалось присвоить небезопасный атрибут "dishStruct" класса "Dishes".
+in D:\OpenServer\domains\foods\protected\controllers\DishesController.php (308)
+in D:\OpenServer\domains\foods\index.php (13)
+2015/12/28 10:01:14 [warning] [application] Не удалось присвоить небезопасный атрибут "halfstuff" класса "Dishes".
+in D:\OpenServer\domains\foods\protected\controllers\DishesController.php (308)
+in D:\OpenServer\domains\foods\index.php (13)

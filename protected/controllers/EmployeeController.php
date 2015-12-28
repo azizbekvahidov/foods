@@ -200,7 +200,9 @@ class EmployeeController extends Controller
 		if(Yii::app()->request->isPostRequest)
 		{
 			// we only allow deletion via POST request
-			$this->loadModel($id)->deleteByPk($id);
+			$this->loadModel($id)->updateByPk($id,array(
+                'status'=>1
+            ));
 
 			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
 			if(!isset($_GET['ajax']))
@@ -243,7 +245,7 @@ class EmployeeController extends Controller
 		if(isset($_GET['Employee']))
 			$model->attributes=$_GET['Employee'];
 
-        $models=Employee::model()->findAll('role < :role',array(':role'=>3));
+        $models=Employee::model()->findAll('role < :role AND status = :status',array(':role'=>3,':status'=>0));
 		$this->render('admin',array(
 			'model'=>$model,
             'models'=>$models

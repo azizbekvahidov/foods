@@ -187,12 +187,18 @@ class DepBalance extends CActiveRecord
     }
 
     public function checkProd($id,$depId){
-        $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
+        $max_date = Yii::app()->db->createCommand()
+            ->select('MAX(b_date) as b_date')
+            ->from('dep_balance')
+            ->queryRow();
 
-        $curDepProd = DepBalance::model()->findAll('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date->b_date,':types'=>1,':depId'=>$depId));
-
+        $curDepProd = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dep_balance t')
+            ->where('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date['b_date'],':types'=>1,':depId'=>$depId))
+            ->queryAll();
         foreach($curDepProd as $value){
-            if($value->prod_id == $id){
+            if($value['prod_id'] == $id){
                 $result = true;
                 break;
             }
@@ -204,13 +210,20 @@ class DepBalance extends CActiveRecord
     }
 
     public function checkStuff($id,$depId){
-        $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
+        $max_date = Yii::app()->db->createCommand()
+            ->select('MAX(b_date) as b_date')
+            ->from('dep_balance')
+            ->queryRow();
 
-        $curDepProd = DepBalance::model()->findAll('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date->b_date,':types'=>2,':depId'=>$depId));
+        $curDepProd = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dep_balance t')
+            ->where('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date['b_date'],':types'=>2,':depId'=>$depId))
+            ->queryAll();
 
         foreach($curDepProd as $value){
 
-            if($value->prod_id == $id){
+            if($value['prod_id'] == $id){
                 $result = true;
                 break;
             }
