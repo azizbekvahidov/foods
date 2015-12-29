@@ -300,7 +300,8 @@ class Halfstaff extends CActiveRecord
 
     public function getCostPrice($id,$order_date){
         $log = new Logs();
-        $model = $log->getStructure($order_date,$id,'halfstuff');
+        $model = $log->getStructure($order_date,$id,$this->tableName());
+
         $products = new Products();
         $costPrice = array();
         $stuff = Yii::app()->db->createCommand()

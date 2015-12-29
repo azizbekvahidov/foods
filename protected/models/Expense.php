@@ -473,33 +473,35 @@ class Expense extends CActiveRecord
         $stuff = new Halfstaff();
         $prod = new Products();
         $model = Yii::app()->db->createCommand()
-            ->select('ord.just_id,ord.count')
+            ->select('ord.just_id,sum(ord.count) as count')
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('dishes d','d.dish_id = ord.just_id')
             ->where('date(ex.order_date) = :dates AND ord.type = :types AND ex.status = :status AND d.department_id = :depId',array(':dates'=>$dates,':types'=>1,':status'=>0,':depId'=>$depId))
+            ->group('ord.just_id')
             ->queryAll();
         foreach ($model as $val) {
             $summ = $summ + $dish->getCostPrice($val['just_id'],$dates)*$val['count'];
         }
-
         $model2 = Yii::app()->db->createCommand()
-            ->select('ord.just_id,ord.count')
+            ->select('ord.just_id,sum(ord.count) as count')
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('halfstaff h','h.halfstuff_id = ord.just_id')
             ->where('date(ex.order_date) = :dates AND ord.type = :types AND ex.status = :status AND h.department_id = :depId',array(':dates'=>$dates,':types'=>2,':status'=>0,':depId'=>$depId))
+            ->group('ord.just_id')
             ->queryAll();
         foreach ($model2 as $val) {
             $summ = $summ + $stuff->getCostPrice($val['just_id'],$dates)*$val['count'];
         }
 
         $model3 = Yii::app()->db->createCommand()
-            ->select('ord.just_id,ord.count')
+            ->select('ord.just_id,sum(ord.count) as count')
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('products p','p.product_id = ord.just_id')
             ->where('date(ex.order_date) = :dates AND ord.type = :types AND ex.status = :status AND p.department_id = :depId',array(':dates'=>$dates,':types'=>3,':status'=>0,':depId'=>$depId))
+            ->group('ord.just_id')
             ->queryAll();
         foreach ($model3 as $val) {
             $summ = $summ + $prod->getCostPrice($val['just_id'],$dates)*$val['count'];

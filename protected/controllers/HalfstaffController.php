@@ -171,7 +171,7 @@ class HalfstaffController extends Controller
 				if($model->save()){
 				    if($_POST['product_id'] !=null){
 				        $count = 0;
-                        $prodMes = "prod >";
+                        $prodMes = "prod>";
 				        for($i = 0; $i < count($_POST['product_id']); $i++){
 				            
                             $ss = $this->changeToFloat($_POST['prod'][$i]);
@@ -188,7 +188,7 @@ class HalfstaffController extends Controller
 				    }
                     if($_POST['stuff_id'] !=null){
 				        $count = 0;
-                        $stuffMes = "stuff >";
+                        $stuffMes = "stuff>";
 				        for($i = 0; $i < count($_POST['stuff_id']); $i++){
 				            
                             $ss = $this->changeToFloat($_POST['stuff'][$i]);
@@ -206,7 +206,7 @@ class HalfstaffController extends Controller
 					$messageType = 'success';
 					$message = "<strong>Well done!</strong> You successfully create data ";
 					
-                    $this->logs('create','halfstuff',$model->halfstuff_id,$model->name." -> ".$prodMes."=>".$stuffMes);
+                    $this->logs('create','halfstaff',$model->halfstuff_id,$model->name."->".$prodMes."=>".$stuffMes);
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('view','id'=>$model->halfstuff_id));
@@ -275,7 +275,7 @@ class HalfstaffController extends Controller
 				    HalfstuffStructure::model()->deleteAll('halfstuff_id=:halfstuff_id', array(':halfstuff_id'=>$id));
                     if($_POST['product_id'] !=null){
 				        $count = 0;
-                        $prodMes = "prod >";
+                        $prodMes = "prod>";
 				        for($i = 0; $i < count($_POST['product_id']); $i++){
 				            
                             $ss = $this->changeToFloat($_POST['prod'][$i]);				            
@@ -294,7 +294,7 @@ class HalfstaffController extends Controller
                     
                     if($_POST['stuff_id'] !=null){
 				        $count = 0;
-                        $stuffMes = "stuff >";
+                        $stuffMes = "stuff>";
 				        for($i = 0; $i < count($_POST['stuff_id']); $i++){
 				            
                             $ss = $this->changeToFloat($_POST['stuff'][$i]);
@@ -309,7 +309,7 @@ class HalfstaffController extends Controller
                             $count++;
 				        }
 				    }                  
-					$this->logs('update','halfstuff',$model->halfstuff_id,$model->name." -> ".$prodMes."=>".$stuffMes);
+					$this->logs('update','halfstaff',$model->halfstuff_id,$model->name."->".$prodMes."=>".$stuffMes);
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('view','id'=>$model->halfstuff_id));
