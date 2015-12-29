@@ -194,7 +194,7 @@ class MenuController extends Controller
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 				
-					$this->redirect(array('index'));
+					//$this->redirect(array('index'));
 								
                 //$this->redirect(array('index'));
 			}

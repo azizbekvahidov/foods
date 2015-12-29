@@ -206,29 +206,30 @@ class Dishes extends CActiveRecord
 
     }
 
-
-
     public function getCostPrice($id,$order_date){
+        $log = new Logs();
+        $model = $log->getStructure($order_date,$id,$this->tableName());
+        $dish = Yii::app()->db->createCommand()
+            ->select('count')
+            ->from('dishes')
+            ->where('dish_id = :id',array(':id'=>$id))
+            ->queryRow();
         $stuff = new Halfstaff();
 
         $costPrice = array();
         $products = new Products();
-
-        //$modela = $this->model()->with('dishStruct','halfstuff')->findByPk(292);
-
-        $model = $this->model()->with('dishStruct','halfstuff')->findByPk($id);
         if(!empty($model)) {
-            foreach ($model->getRelated('dishStruct') as $value) {
-                $costPrice[$value->prod_id] = $products->getCostPrice($value->prod_id, $order_date) * $value->amount / $model->count;
+            if(!empty($model['prod']))
+                foreach ($model['prod'] as $key => $value) {
+                    $costPrice[$key] = $products->getCostPrice($key, $order_date) * $value / $dish['count'];
 
-            }
-            foreach ($model->getRelated('halfstuff') as $value) {
-                $costPrice[$value->halfstuff_id] = $stuff->getCostPrice($value->halfstuff_id, $order_date) * $value->amount / $model->count;
+                }
+            if(!empty($model['stuff']))
+                foreach ($model['stuff'] as $key => $value) {
+                    $costPrice[$key] = $stuff->getCostPrice($key, $order_date) * $value / $dish['count'];
 
-            }
+                }
         }
-
-
         return array_sum($costPrice);
     }
 

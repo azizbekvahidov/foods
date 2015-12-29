@@ -198,21 +198,15 @@ class Products extends CActiveRecord
     public function getCostPrice($id,$dates){
         $costPrice = 0;
         $dates = date('Y-m-d',strtotime($dates));
-        $model = Faktura::model()->with('realize')->findAll(
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('faktura f')
+            ->join('realize r','r.faktura_id = f.faktura_id')
+            ->where('date(f.realize_date) <= :dates AND r.prod_id = :prod_id',array(':dates'=>$dates,':prod_id'=>$id))
+            ->order('f.realize_date DESC')
+            ->queryRow();
 
-            array(
-                'condition'=>'date(t.realize_date) <= :dates AND realize.prod_id = :prod_id',
-                'order'=>'t.realize_date DESC',
-                'limit'=>1,
-                "together" => true,
-                'params'=>array(':dates'=>$dates,':prod_id'=>$id),
-            )
-        );
-        foreach ($model as $value) {
-            foreach ($value->getRelated('realize') as $val) {
-                $costPrice = $val->price;
-            }
-        }
+                $costPrice = $model['price'];
         if($costPrice == 0){
             $model = Yii::app()->db->createCommand()
                 ->select('price')
