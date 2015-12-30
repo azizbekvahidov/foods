@@ -160,7 +160,10 @@ class Logs extends CActiveRecord
             ->where('log_date <= :dates AND curId = :id AND table_name = :table',array(':dates'=>$dates,':id'=>$id,':table'=>$table))
             ->order('log_date DESC')
             ->queryRow();
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
         $name = explode('->',$model['message']);
         $struct = explode('=>',$name[1]);
         $prod = explode('>',$struct[0]);
@@ -168,16 +171,40 @@ class Logs extends CActiveRecord
 
         $prodStruct = explode(',',$prod[1]);
         foreach ($prodStruct as $val) {
+<<<<<<< HEAD
             $temp = explode(':',$val);
             if(!empty($val)){
                 $result[str_replace(" ","",$prod[0])][$temp[0]] = floatval($temp[1]);
+=======
+            $type = str_replace(" ", "", $prod[0]);
+            $temp = explode(':',$val);
+            $count = floatval($temp[1]);
+            if(!empty($val)) {
+                if ($count == 0) {
+                    $result[$type][$temp[0]] = $this->getRealCount($table, $id, $type, $temp[0]);
+                } else {
+                    $result[$type][$temp[0]] = $count;
+                }
+>>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
             }
         }
         $stufStruct = explode(',',$stuff[1]);
         foreach ($stufStruct as $val) {
+<<<<<<< HEAD
             $temp = explode(':',$val);
             if(!empty($val)){
                 $result[str_replace(" ","",$stuff[0])][$temp[0]] = floatval($temp[1]);
+=======
+            $type = str_replace(" ", "", $stuff[0]);
+            $temp = explode(':',$val);
+            $count = floatval($temp[1]);
+            if(!empty($val)) {
+                if ($count == 0) {
+                    $result[$type][$temp[0]] = $this->getRealCount($table, $id, $type, $temp[0]);
+                } else {
+                    $result[$type][$temp[0]] = $count;
+                }
+>>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
             }
         }
 
@@ -185,5 +212,49 @@ class Logs extends CActiveRecord
 
     }
 
+<<<<<<< HEAD
+=======
+    public function getRealCount($table,$id,$type,$prod_id){
+        if($table == 'dishes'){
+            if($type == 'prod') {
+                $model = Yii::app()->db->createCommand()
+                    ->select('ds.amount')
+                    ->from('dishes d')
+                    ->join('dish_structure ds', 'ds.dish_id = d.dish_id')
+                    ->where('d.dish_id = :id AND ds.prod_id = :prod_id', array(':id' => $id,':prod_id' => $prod_id))
+                    ->queryRow();
+            }
+            elseif($type == 'stuff'){
+                $model = Yii::app()->db->createCommand()
+                    ->select('ds.amount')
+                    ->from('dishes d')
+                    ->join('dish_structure2 ds', 'ds.dish_id = d.dish_id')
+                    ->where('d.dish_id = :id AND ds.halfstuff_id = :prod_id', array(':id' => $id,':prod_id' => $prod_id))
+                    ->queryRow();
+            }
+        }
+        if($table == 'halfstaff'){
+            if($type == 'prod') {
+                $model = Yii::app()->db->createCommand()
+                    ->select('hs.amount')
+                    ->from('halfstaff h')
+                    ->join('halfstuff_structure hs', 'hs.halfstuff_id = h.halfstuff_id')
+                    ->where('h.halfstuff_id = :id AND hs.prod_id = :prod_id AND hs.types = :types', array(':id' => $id,':prod_id' => $prod_id,':types'=>1))
+                    ->queryRow();
+            }
+            elseif($type == 'stuff'){
+                $model = Yii::app()->db->createCommand()
+                    ->select('hs.amount')
+                    ->from('halfstaff h')
+                    ->join('halfstuff_structure hs', 'hs.halfstuff_id = h.halfstuff_id')
+                    ->where('h.halfstuff_id = :id AND hs.prod_id = :prod_id AND hs.types = :types', array(':id' => $id,':prod_id' => $prod_id,':types'=>2))
+                    ->queryRow();
+            }
+        }
+        return $model['amount'];
+    }
+
+
+>>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
 
 }

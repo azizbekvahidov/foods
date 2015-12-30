@@ -208,7 +208,7 @@ class DishesController extends Controller
 				if($model->save()){
 				    if($_POST['product_id'] !=null){
 				        $count = 0;
-                        $prodMes = "prod >";              
+                        $prodMes = "prod>";
 				        for($i = 0; $i < count($_POST['product_id']); $i++){
 				            
                             $ss = $this->changeToFloat($_POST['prod'][$i]);
@@ -223,7 +223,7 @@ class DishesController extends Controller
 				        }
 				    }
                     if($_POST['stuff_id'] !=null){
-                        $stuffMes = "stuff >";
+                        $stuffMes = "stuff>";
 				        for($i = 0; $i < count($_POST['stuff_id']); $i++){
 				            
                             $ss = $this->changeToFloat($_POST['stuff'][$i]);
@@ -248,7 +248,7 @@ class DishesController extends Controller
                     $messageType = 'success';
 					$message = "<strong>Well done!</strong> You successfully create data ";
 					
-					$this->logs('create','dishes',$model->dish_id,$model->name." -> ".$prodMes."=>".$stuffMes);
+					$this->logs('create','dishes',$model->dish_id,$model->name."->".$prodMes."=>".$stuffMes);
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					//$this->redirect(array('view','id'=>$model->dish_id));
@@ -315,7 +315,7 @@ class DishesController extends Controller
                     DishStructure2::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));
                     if($_POST['product_id'] !=null){
 				        $count = 0;
-                        $prodMes = "prod >";    
+                        $prodMes = "prod>";
 				        for($i = 0; $i < count($_POST['product_id']); $i++){
 				            
                             $ss = $this->changeToFloat($_POST['prod'][$i]);
@@ -330,7 +330,7 @@ class DishesController extends Controller
 				        }
 				    }
                     if($_POST['stuff_id'] !=null){  
-                        $stuffMes = "stuff >";                    
+                        $stuffMes = "stuff>";
 				        for($i = 0; $i < count($_POST['stuff_id']); $i++){
 				            
                             $ss = $this->changeToFloat($_POST['stuff'][$i]);
@@ -343,7 +343,7 @@ class DishesController extends Controller
                                 $stuffMes .= $struct2->halfstuff_id.":".$struct2->amount.",";}
 				        }
 				    }
-                    $this->logs('update','dishes',$model->dish_id,$model->name." -> ".$prodMes."=>".$stuffMes);
+                    $this->logs('update','dishes',$model->dish_id,$model->name."->".$prodMes."=>".$stuffMes);
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('view','id'=>$model->dish_id));
