@@ -1,32 +1,32 @@
 <?$cnt = 1; $expense = new Expense();
 $depRealize = new DepFaktura(); $sumCostPrice = 0; $sumPrice = 0; $beforeSumCostPrice = 0; $beforeSumPrice = 0; $balance = new Balance();
 $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount = 0; $curEndCount = 0; $sumFaktCost =0;?>
-<style>
-    td,th{
-        font-size: 12px;
-    }
-    .green{
-        color: green;
-    }
-    .red{
-        color: red;
-    }
-    .rait{
-        padding: 0 8px!important;
-    }
-    .view{
-        float: right;
-    }
-    .table-hover tbody tr:hover>td, .table-hover tbody tr:hover>th {
-        background-color: #D9F2F5;
-    }
-    .modal{
-        width: 100%;
-        left: 19%;
-    }
-</style>
-<table class="table table-bordered table-hover" id="dataTable">
-    <thead>
+    <style>
+        td,th{
+            font-size: 12px;
+        }
+        .green{
+            color: green;
+        }
+        .red{
+            color: red;
+        }
+        .rait{
+            padding: 0 8px!important;
+        }
+        .view{
+            float: right;
+        }
+        .table-hover tbody tr:hover>td, .table-hover tbody tr:hover>th {
+            background-color: #D9F2F5;
+        }
+        .modal{
+            width: 100%;
+            left: 19%;
+        }
+    </style>
+    <table class="table table-bordered table-hover" id="dataTable">
+        <thead>
         <tr>
             <th></th>
             <th>Наимен. Отдела</th>
@@ -44,71 +44,78 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
             <th>наценка план</th>
             <th>наценка факт</th>
             <th>отклон (+,-)</th>
-           <!-- <th>тренд ср.стат.</th>-->
+            <!-- <th>тренд ср.стат.</th>-->
         </tr>
-    </thead>
-    <tbody>
-    <?foreach ($model as $val) {
-        //$beforeDates = date('Y-m-d',strtotime($dates)-86400);
-        $costPrice = $expense->getDepCost($val['department_id'],$dates);
-        $realized = $depRealize->getDepRealizesSumm($dates,$val['department_id']);
-        $inRealized = $depRealize->getDepInRealizesSumm($dates,$val['department_id']);
-        $inexp = $depRealize->getDepInExp($dates,$val['department_id']);
-        $price = $expense->getDepIncome($val['department_id'],$dates);
-        $tempBalance = $balance->getDepBalanceSumm($dates,$val['department_id']);
-        //$beforeTempBalance = $balance->getDepBalanceSumm($beforeDates,$val['department_id']);
-        //$beforeCostPrice = $expense->getDepCost($val['department_id'],$beforeDates);
-        //$beforePrice = $expense->getDepIncome($val['department_id'],$beforeDates);
-        $sumCostPrice = $sumCostPrice + $costPrice ;
-        $sumPrice = $sumPrice + $price;
-        $startCount = $startCount + $tempBalance[0];
-        $endCount = $endCount + $tempBalance[1];
-        $curEndCount = $curEndCount + $tempBalance[2];
-        $sumRealized = $sumRealized + $realized ;
-        $sumInRealized = $sumInRealized + $inRealized;
-        $sumInExp = $sumInExp + $inexp;
-        //$beforeSumCostPrice = $beforeSumCostPrice + $beforeCostPrice;
-        //$beforeSumPrice = $beforeSumPrice + $beforePrice;
-        $factCostPrice = $tempBalance[0]+$realized+$inRealized-$inexp-$tempBalance[2];
-        $sumFaktCost = $sumFaktCost + $factCostPrice;
-        
-        
-        ?>
-        <tr>
-            <td><?=$cnt?></td>
-            <td><?=$val['name']?></td>
-            <td><?=number_format($tempBalance[0],0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|begin',array('class'=>'view'))?></td>
-            <td><?=number_format($realized,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|realize',array('class'=>'view'))?></td>
-            <td><?=number_format($inRealized,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|inRealize',array('class'=>'view'))?></td>
-            <td><?=number_format($inexp,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|inExp',array('class'=>'view'))?></td>
-            <td><?=number_format($costPrice,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|costPrice',array('class'=>'view'))?></td>
-            <td><?=number_format($factCostPrice,0,',',' ')?></td>
-            <td><?=number_format($tempBalance[1],0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|end',array('class'=>'view'))?></td>
-            <td><?=number_format($tempBalance[2],0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|curEnd',array('class'=>'view'))?></td>
-            <td><?=number_format($price,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|price',array('class'=>'view'))?></td>
-            <?if($price != 0){?>
-            <td><?=number_format($price*100/($costPrice),0,',',' ')?></td>
-            <td><?=number_format($price*100/($factCostPrice),0,',',' ')?></td>
-            <?}else{?>
-                <td>0</td>
-                <td>0</td>
-            <?}?>
-            <td><?=number_format($factCostPrice/2,0,',',' ')?></td>
-            <td><?=number_format($price-$factCostPrice,0,',',' ')?></td>
-            <td><?=number_format(($price-$factCostPrice)-$factCostPrice/2,0,',',' ')?></td>
-            <!--<td>
+        </thead>
+        <tbody>
+        <?foreach ($model as $val) {
+            //$beforeDates = date('Y-m-d',strtotime($dates)-86400);
+            $costPrice = $expense->getDepCost($val['department_id'],$dates);
+
+            $realized = $depRealize->getDepRealizesSumm($dates,$val['department_id']);
+            $inRealized = $depRealize->getDepInRealizesSumm($dates,$val['department_id']);
+            $inexp = $depRealize->getDepInExp($dates,$val['department_id']);
+            $price = $expense->getDepIncome($val['department_id'],$dates);
+            $tempBalance = $balance->getDepBalanceSumm($dates,$val['department_id']);
+            //$beforeTempBalance = $balance->getDepBalanceSumm($beforeDates,$val['department_id']);
+            //$beforeCostPrice = $expense->getDepCost($val['department_id'],$beforeDates);
+            //$beforePrice = $expense->getDepIncome($val['department_id'],$beforeDates);
+            $sumCostPrice = $sumCostPrice + $costPrice ;
+            $sumPrice = $sumPrice + $price;
+            $startCount = $startCount + $tempBalance[0];
+            $endCount = $endCount + $tempBalance[1];
+            $curEndCount = $curEndCount + $tempBalance[2];
+            $sumRealized = $sumRealized + $realized ;
+            $sumInRealized = $sumInRealized + $inRealized;
+            $sumInExp = $sumInExp + $inexp;
+            //$beforeSumCostPrice = $beforeSumCostPrice + $beforeCostPrice;
+            //$beforeSumPrice = $beforeSumPrice + $beforePrice;
+            $factCostPrice = $tempBalance[0]+$realized+$inRealized-$inexp-$tempBalance[2];
+            $sumFaktCost = $sumFaktCost + $factCostPrice;
+
+
+            ?>
+            <tr>
+                <td><?=$cnt?></td>
+                <td><?=$val['name']?></td>
+                <td><?=number_format($tempBalance[0],0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|begin',array('class'=>'view'))?></td>
+                <td><?=number_format($realized,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|realize',array('class'=>'view'))?></td>
+                <td><?=number_format($inRealized,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|inRealize',array('class'=>'view'))?></td>
+                <td><?=number_format($inexp,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|inExp',array('class'=>'view'))?></td>
+                <td><?=number_format($costPrice,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|costPrice',array('class'=>'view'))?></td>
+                <td><?=number_format($factCostPrice,0,',',' ')?></td>
+                <td><?=number_format($tempBalance[1],0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|end',array('class'=>'view'))?></td>
+                <td><?=number_format($tempBalance[2],0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|curEnd',array('class'=>'view'))?></td>
+                <td><?=number_format($price,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|price',array('class'=>'view'))?></td>
+                <?if($price != 0){ if($costPrice == 0){?>
+                        <td><?=number_format(0,0,',',' ')?></td>
+                    <?}else{?>
+                        <td><?=number_format($price*100/($costPrice),0,',',' ')?></td>
+                    <?} if($factCostPrice == 0){?>
+                        <td><?=number_format(0,0,',',' ')?></td>
+                    <?}else{?>
+                        <td><?=number_format($price*100/($factCostPrice),0,',',' ')?></td>
+                    <?}?>
+                <?}else{?>
+                    <td>0</td>
+                    <td>0</td>
+                <?}?>
+                <td><?=number_format($factCostPrice/2,0,',',' ')?></td>
+                <td><?=number_format($price-$factCostPrice,0,',',' ')?></td>
+                <td><?=number_format(($price-$factCostPrice)-$factCostPrice/2,0,',',' ')?></td>
+                <!--<td>
                 <?//if(($price-$costPrice)-$costPrice/2 > ($beforePrice-$beforeCostPrice)-$beforeCostPrice/2){?>
                     <span class="green"><i class="fa fa-caret-up"></i></span>
                 <?//}elseif(($price-$costPrice)-$costPrice/2 < ($beforePrice-$beforeCostPrice)-$beforeCostPrice/2){?>
                     <span class="red"><i class="fa fa-caret-down"></i></span>
                 <?//}else{}?>
             </td>-->
-        </tr>
-    <?$cnt++;}
+            </tr>
+            <?$cnt++;}
 
-    $expRealize =$balance->getExpBalance($dates);
-    $sumCostPrice = $sumCostPrice + $expRealize;
-    $sumRealized = $sumRealized + $expRealize;?>
+        $expRealize =$balance->getExpBalance($dates);
+        $sumCostPrice = $sumCostPrice + $expRealize;
+        $sumRealized = $sumRealized + $expRealize;?>
         <tr>
             <td><?=$cnt++?></td>
             <td>Внутренний расход</td>
@@ -127,8 +134,8 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
             <td></td>
             <td></td>
         </tr>
-    </tbody>
-    <tfoot>
+        </tbody>
+        <tfoot>
         <tr>
             <th></th>
             <th>Итого</th>
@@ -148,22 +155,22 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
             <th><?=number_format(($sumPrice-$sumFaktCost)-$sumFaktCost/2,0,',',' ')?></th>
             <!--<th></th>-->
         </tr>
-    </tfoot>
-</table>
-<script>
-    $(document).ready(function(){
-        $("#dataTable a.view").click(function(){
-            data=$(this).attr("href").split("|")
-            $("#myModalHeader").html(data[1]);
-            $("#myModalBody").load("/report/ajaxDetail?depId="+data[0]+"&key="+data[2]+'&dates=<?=$dates?>');
-            $("#myModal").modal();
-            return false;
+        </tfoot>
+    </table>
+    <script>
+        $(document).ready(function(){
+            $("#dataTable a.view").click(function(){
+                data=$(this).attr("href").split("|")
+                $("#myModalHeader").html(data[1]);
+                $("#myModalBody").load("/report/ajaxDetail?depId="+data[0]+"&key="+data[2]+'&dates=<?=$dates?>');
+                $("#myModal").modal();
+                return false;
+            });
         });
-    });
-    jQuery(document).on('click','#dataTable a.view',function(){
-        
-    });
-</script>
+        jQuery(document).on('click','#dataTable a.view',function(){
+
+        });
+    </script>
 
 <?php  $this->beginWidget(
     'bootstrap.widgets.TbModal',

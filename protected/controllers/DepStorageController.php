@@ -126,6 +126,7 @@ class DepStorageController extends Controller
         }
         
         $departMoveOut = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id = :depId AND t.fromDepId <> :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0));
+
         foreach($departMoveOut as $key => $val){
             foreach($val->getRelated('realizedProd') as $value){
                 $depIn[$value->prod_id] = $depIn[$value->prod_id] + $value->count;

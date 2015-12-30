@@ -299,16 +299,24 @@ class Halfstaff extends CActiveRecord
     }
 
     public function getCostPrice($id,$order_date){
+        $log = new Logs();
+        $model = $log->getStructure($order_date,$id,'halfstuff');
         $products = new Products();
         $costPrice = array();
-        $model = Halfstaff::model()->with('stuffStruct')->findByPk($id);
-        foreach ($model->getRelated('stuffStruct') as $value) {
-            if($value->types == 2){
-                $costPrice[$value->prod_id] = $this->getCostPrice($value->prod_id,$order_date)*$value->amount/$model->count;
-            }
-            else{
-                $costPrice[$value->prod_id] = $products->getCostPrice($value->prod_id,$order_date)*$value->amount/$model->count;
-            }
+        $stuff = Yii::app()->db->createCommand()
+            ->select('count')
+            ->from('halfstaff')
+            ->where('halfstuff_id = :id',array(':id'=>$id))
+            ->queryRow();
+        if(!empty($model)) {
+            if(!empty($model['prod']))
+                foreach ($model['prod'] as $key => $value) {
+                    $costPrice[$key] = $products->getCostPrice($key,$order_date)*$value/$stuff['count'];
+                }
+            if(!empty($model['stuff']))
+                foreach ($model['stuff'] as $key => $value) {
+                    $costPrice[$key] = $this->getCostPrice($key,$order_date)*$value/$stuff['count'];
+                }
         }
         return array_sum($costPrice);
     }

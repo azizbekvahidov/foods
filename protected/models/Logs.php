@@ -150,4 +150,40 @@ class Logs extends CActiveRecord
         
         return $scope;
     }
+
+    public function getStructure($dates,$id,$table){
+        $result = array();
+        
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('logs')
+            ->where('log_date <= :dates AND curId = :id AND table_name = :table',array(':dates'=>$dates,':id'=>$id,':table'=>$table))
+            ->order('log_date DESC')
+            ->queryRow();
+
+        $name = explode('->',$model['message']);
+        $struct = explode('=>',$name[1]);
+        $prod = explode('>',$struct[0]);
+        $stuff = explode('>',$struct[1]);
+
+        $prodStruct = explode(',',$prod[1]);
+        foreach ($prodStruct as $val) {
+            $temp = explode(':',$val);
+            if(!empty($val)){
+                $result[str_replace(" ","",$prod[0])][$temp[0]] = floatval($temp[1]);
+            }
+        }
+        $stufStruct = explode(',',$stuff[1]);
+        foreach ($stufStruct as $val) {
+            $temp = explode(':',$val);
+            if(!empty($val)){
+                $result[str_replace(" ","",$stuff[0])][$temp[0]] = floatval($temp[1]);
+            }
+        }
+
+        return $result;
+
+    }
+
+
 }
