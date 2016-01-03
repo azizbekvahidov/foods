@@ -8,8 +8,6 @@
     	'enableAjaxValidation'=>false,
     	// 'htmlOptions'=>array('enctype'=>'multipart/form-data'),
     )); ?>
-    
-    	<p class="note">Поля с <span class="required">*</span> Объязательны.</p>
     <div>
     	<?php echo $form->errorSummary($model); ?>
 <div class="form-group">
@@ -18,17 +16,22 @@
             <?php echo $form->textFieldRow($model,'count',array('class'=>'span3','maxlength'=>100)); ?>
         </div>
     </div>
-    <div class="span10" >
-        <div class="span3" >
-            <h3>Продукты</h3>
-            <?php echo $form->dropDownList($model,'dishStruct',$prodList,array('class'=>'span2 left all_product listbox','id'=>'all_product','empty'=>'--Выберите продукт--'));?>
-            
+    <div class="span12" >
+        <div id="add">
+            <div class="span3" >
+                <h3>Продукты</h3>
+                <?php echo $form->dropDownList($model,'dishStruct',$prodList,array('class'=>'span2 left all_product listbox','id'=>'all_product','empty'=>'--Выберите продукт--'));?>
+
+            </div>
+            <div class="span3" >
+                <h3>Полуфабрикаты</h3>
+                <?php echo $form->dropDownList($model,'halfstuff',$stuffList,array('class'=>'span2 left all_halfstuff listbox','id'=>'all_halfstuff','empty'=>'--Выберите полуфабрикат--')); ?>
+
+           </div>
         </div>
-        <div class="span3" >
-            <h3>Полуфабрикаты</h3>
-            <?php echo $form->dropDownList($model,'halfstuff',$stuffList,array('class'=>'span2 left all_halfstuff listbox','id'=>'all_halfstuff','empty'=>'--Выберите полуфабрикат--')); ?>
-            
-       </div>
+        <div class="span3">
+            <a href="javascript:;" id="refresh"><i class="icon-refresh"></i></a>
+        </div>
        <div class="form-group">
         <table id="structList" class="table table-striped table-hover ">
             <thead>
@@ -99,24 +102,9 @@
                     </tr>\
                 ");
             }
-        }); 
-        $("#all_dishes").chosen({
-            no_results_text: "Oops, nothing found!",
-        }).change(function(){
-            var dishValue = $(this).val();
-            var dishText = $(this).children('option:selected').text();
-            if(dishValue != ''){
-                $('#structList tr:last').after("\
-                    <tr>\
-                        <td style='text-align:center;'><input type='text' style='display: none;' name='dish_id[]' value='"+dishValue+"' />"+dishText+"</td>\
-                        <td style='text-align:center;'><input class='span1' type='text' name='dish[]' /></td>\
-                        <td style='text-align:center;'><a href='javascript:;' class = 'deleteRow'><i class='icon-trash '></i></a>\
-                    </tr>\
-                ");
-            }
-        }); 
+        });
       </script>
-      
+
     </div>
 </div>
     <div class="form-actions span9">
@@ -130,7 +118,17 @@
     
     <?php $this->endWidget(); ?>
 </div>
-  
+  <script>
+      $('#refresh').click(function(){
+          $.ajax({
+              type: "POST",
+              url: "<?php echo Yii::app()->createUrl('dishes/refreshAdd'); ?>",
+              success: function(data){
+                  $('#add').html(data);
+              }
+          })
+      });
+  </script>
 <?php
 Yii::app()->clientScript->registerScript("multiselect", "
 
