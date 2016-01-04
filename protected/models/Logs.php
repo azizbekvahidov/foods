@@ -160,10 +160,6 @@ class Logs extends CActiveRecord
             ->where('log_date <= :dates AND curId = :id AND table_name = :table',array(':dates'=>$dates,':id'=>$id,':table'=>$table))
             ->order('log_date DESC')
             ->queryRow();
-<<<<<<< HEAD
-
-=======
->>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
         $name = explode('->',$model['message']);
         $struct = explode('=>',$name[1]);
         $prod = explode('>',$struct[0]);
@@ -171,11 +167,7 @@ class Logs extends CActiveRecord
 
         $prodStruct = explode(',',$prod[1]);
         foreach ($prodStruct as $val) {
-<<<<<<< HEAD
             $temp = explode(':',$val);
-            if(!empty($val)){
-                $result[str_replace(" ","",$prod[0])][$temp[0]] = floatval($temp[1]);
-=======
             $type = str_replace(" ", "", $prod[0]);
             $temp = explode(':',$val);
             $count = floatval($temp[1]);
@@ -185,16 +177,11 @@ class Logs extends CActiveRecord
                 } else {
                     $result[$type][$temp[0]] = $count;
                 }
->>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
             }
         }
         $stufStruct = explode(',',$stuff[1]);
         foreach ($stufStruct as $val) {
-<<<<<<< HEAD
             $temp = explode(':',$val);
-            if(!empty($val)){
-                $result[str_replace(" ","",$stuff[0])][$temp[0]] = floatval($temp[1]);
-=======
             $type = str_replace(" ", "", $stuff[0]);
             $temp = explode(':',$val);
             $count = floatval($temp[1]);
@@ -204,7 +191,6 @@ class Logs extends CActiveRecord
                 } else {
                     $result[$type][$temp[0]] = $count;
                 }
->>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
             }
         }
 
@@ -212,8 +198,6 @@ class Logs extends CActiveRecord
 
     }
 
-<<<<<<< HEAD
-=======
     public function getRealCount($table,$id,$type,$prod_id){
         if($table == 'dishes'){
             if($type == 'prod') {
@@ -255,6 +239,5 @@ class Logs extends CActiveRecord
     }
 
 
->>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
 
 }

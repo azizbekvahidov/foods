@@ -87,8 +87,8 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
                 <td><?=number_format($tempBalance[1],0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|end',array('class'=>'view'))?></td>
                 <td><?=number_format($tempBalance[2],0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|curEnd',array('class'=>'view'))?></td>
                 <td><?=number_format($price,0,',',' ')?> <?=CHtml::link('<i class="icon-eye-open"></i>',$val['department_id'].'|'.$val['name'].'|price',array('class'=>'view'))?></td>
-                <?if($price != 0){ if($costPrice == 0){?>
-<<<<<<< HEAD
+                <?if($price != 0){
+                    if($costPrice == 0){?>
                         <td><?=number_format(0,0,',',' ')?></td>
                     <?}else{?>
                         <td><?=number_format($price*100/($costPrice),0,',',' ')?></td>
@@ -97,16 +97,6 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
                     <?}else{?>
                         <td><?=number_format($price*100/($factCostPrice),0,',',' ')?></td>
                     <?}?>
-=======
-                    <td><?=number_format(0,0,',',' ')?></td>
-                <?}else{?>
-                    <td><?=number_format($price*100/($costPrice),0,',',' ')?></td>
-                <?} if($factCostPrice == 0){?>
-                    <td><?=number_format(0,0,',',' ')?></td>
-                <?}else{?>
-                    <td><?=number_format($price*100/($factCostPrice),0,',',' ')?></td>
-                <?}?>
->>>>>>> 1e5712995925a234862facd9eddc9aa8fac15923
                 <?}else{?>
                     <td>0</td>
                     <td>0</td>

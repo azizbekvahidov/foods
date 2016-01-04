@@ -46,7 +46,7 @@ class DishesController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('index','view','create','update','admin','delete','export','import','editable','toggle','structSave','copy','checkMargin'),
+				'actions'=>array('refreshAdd','index','view','create','update','admin','delete','export','import','editable','toggle','structSave','copy','checkMargin'),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -626,5 +626,17 @@ class DishesController extends Controller
         		)
     	);
 	}
+
+    public function actionRefreshAdd(){
+        $prod = new Products();
+        $prodList = $prod->getUseProdList();
+        $stuff = new Halfstaff();
+        $stuffList = $stuff->getUseStuffList();
+        $this->renderPartial('refreshAdd',array(
+            'stuffList'=>$stuffList,
+            'prodList'=>$prodList,
+            'form'=>$_POST['form']
+        ));
+    }
 
 }

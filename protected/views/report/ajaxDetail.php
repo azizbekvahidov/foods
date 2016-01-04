@@ -16,12 +16,15 @@
     </thead>
     <tbody>
         <?if(!empty($model)){
+            echo "<pre>";
+            print_r($model);
+            echo "</pre>";
             foreach ($model as $val) {
                 if($val['count']!=0){?>
                 <tr>
                     <td><?=$cnt?></td>
                     <td><?=$val['name']?></td>
-                    <td><?=number_format($val['count'],2,',','')?> <?=$val['Mname']?></td>
+                    <td><?//=number_format($val['count'],2,',','')?> <?=$val['Mname']?></td>
                     <?if($key == 'price'){?>
                         <td><?=number_format($price->getPrice($val['prod_id'],$val['mType'],$val['type'],$dates)*$val['count'],0,',',' ')?></td>
                         <? $sum = $sum + $price->getPrice($val['prod_id'],$val['mType'],$val['type'],$dates)*$val['count']?>

@@ -158,9 +158,10 @@ class Expense extends CActiveRecord
     }
     
     public function getDishProd($depId,$dates){
-        $dishProd = Expense::model()->with('order.dish')->findAll('date(order_date) = :dates AND dish.department_id = :department_id AND t.kind = :kind AND order.type =:types',array(':kind'=>0,':dates'=>$dates,':department_id'=>$depId,':types'=>1));
-        /*$dishes = new Dishes();
+        //$dishProd = Expense::model()->with('order.dish')->findAll('date(order_date) = :dates AND dish.department_id = :department_id AND t.kind = :kind AND order.type =:types',array(':kind'=>0,':dates'=>$dates,':department_id'=>$depId,':types'=>1));
+        $dishes = new Dishes();
         $stuff = new Halfstaff();
+        $result = array();
         $model = Yii::app()->db->createCommand()
                 ->select('ord.just_id,ord.count')
                 ->from('expense ex')
@@ -171,9 +172,9 @@ class Expense extends CActiveRecord
                 foreach($model as $val){
                     $temp = $dishes->getProd($val['just_id']);
                     $temporary = [$stuff->multiplyArray($temp,$val['count']),$val['count']];
-                    $result = $stuff->sumArray($result,$temp2);
+                    $result = $stuff->sumArray($result,$temporary);
                 }
-*/
+/*
         $result = array();
         if(!empty($dishProd)){
             foreach($dishProd as $value){
@@ -188,7 +189,7 @@ class Expense extends CActiveRecord
                 }
         //                $outProduct[$vals->prod_id] = $outProduct[$vals->prod_id] + $vals->amount / $val->getRelated('dish')->count * $val->count;
              }
-        }
+        }*/
 
 
         $Prod = Expense::model()->with('order.products')->findAll('date(order_date) = :dates AND products.department_id = :department_id AND t.kind = :kind AND order.type',array(':kind'=>0,':dates'=>$dates,':department_id'=>$depId));

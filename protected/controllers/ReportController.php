@@ -361,15 +361,6 @@ class ReportController extends Controller
             ->select('')
             ->from('department')
             ->queryAll();
-        /*$model = Yii::app()->db->createCommand()
-            ->select('dep.name,sum((select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1)*ord.count) as sum')
-            ->from('expense ex')
-            ->join('orders ord','ord.expense_id = ex.expense_id')
-            ->join('dishes d','d.dish_id = ord.just_id')
-            ->join('department dep','dep.department_id = d.department_id')
-            ->where('date(ex.order_date) BETWEEN :from AND :to AND ord.type = :types AND ex.status = :status',array(':from'=>$from,':to'=>$to,':types'=>1,':status'=>0))
-            ->group('d.department_id')
-            ->queryAll();*/
         $this->renderPartial('ajaxDepIncome',array(
             'dates'=>$dates,
             'model'=>$model
