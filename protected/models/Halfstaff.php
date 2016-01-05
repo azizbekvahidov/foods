@@ -303,19 +303,28 @@ class Halfstaff extends CActiveRecord
         $model = $log->getStructure($order_date,$id,$this->tableName());
         $products = new Products();
         $costPrice = array();
-        $stuff = Yii::app()->db->createCommand()
-            ->select('count')
-            ->from('halfstaff')
-            ->where('halfstuff_id = :id',array(':id'=>$id))
-            ->queryRow();
+        if(!empty($model['prod']) && !empty($model['stuff']) && !empty($model['count'])) {
+            if ($model['count'] == 0) {
+                $stuff = Yii::app()->db->createCommand()
+                    ->select('count')
+                    ->from('halfstaff')
+                    ->where('halfstuff_id = :id',array(':id'=>$id))
+                    ->queryRow();
+                $model['count'] = $stuff['count'];
+            }
+        }
+        else{
+            $model = $this->getStruct($id);
+        }
+
         if(!empty($model)) {
             if(!empty($model['prod']))
                 foreach ($model['prod'] as $key => $value) {
-                    $costPrice[$key] = $products->getCostPrice($key,$order_date)*$value/$stuff['count'];
+                    $costPrice[$key] = $products->getCostPrice($key,$order_date)*$value/$model['count'];
                 }
             if(!empty($model['stuff']))
                 foreach ($model['stuff'] as $key => $value) {
-                    $costPrice[$key] = $this->getCostPrice($key,$order_date)*$value/$stuff['count'];
+                    $costPrice[$key] = $this->getCostPrice($key,$order_date)*$value/$model['count'];
                 }
         }
         return array_sum($costPrice);
@@ -346,6 +355,34 @@ class Halfstaff extends CActiveRecord
             $result[$val['halfstuff_id']] = $val['name'];
         }
 
+        return $result;
+    }
+
+    public function getStruct($id){
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('halfstaff h')
+            ->join('halfstuff_structure hs','hs.halfstuff_id = h.halfstuff_id')
+            ->where('h.halfstuff_id = :id AND types =:types',array(':id'=>$id,':types'=>1))
+            ->queryAll();
+        foreach ($model as $val) {
+            $result['prod'][$val['prod_id']] = $val['amount'];
+        }
+        $model2 = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('halfstaff h')
+            ->join('halfstuff_structure hs','hs.halfstuff_id = h.halfstuff_id')
+            ->where('h.halfstuff_id = :id AND types =:types',array(':id'=>$id,':types'=>2))
+            ->queryAll();
+        foreach ($model2 as $val) {
+            $result['stuff'][$val['prod_id']] = $val['amount'];
+        }
+        $stuff = Yii::app()->db->createCommand()
+            ->select('count')
+            ->from('halfstaff')
+            ->where('halfstuff_id = :id',array(':id'=>$id))
+            ->queryRow();
+        $result['count'] = $stuff['count'];
         return $result;
     }
 }

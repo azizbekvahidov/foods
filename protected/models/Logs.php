@@ -153,11 +153,11 @@ class Logs extends CActiveRecord
 
     public function getStructure($dates,$id,$table){
         $result = array();
-        
+
         $model = Yii::app()->db->createCommand()
             ->select('')
             ->from('logs')
-            ->where('log_date <= :dates AND curId = :id AND table_name = :table',array(':dates'=>$dates,':id'=>$id,':table'=>$table))
+            ->where('log_date <= :dates AND curId = :id AND table_name = :table AND actions != :action',array(':dates'=>$dates,':id'=>$id,':table'=>$table,':action'=>'delete'))
             ->order('log_date DESC')
             ->queryRow();
         $name = explode('->',$model['message']);
@@ -193,7 +193,7 @@ class Logs extends CActiveRecord
                 }
             }
         }
-
+        $result['count'] = $model['count'];
         return $result;
 
     }

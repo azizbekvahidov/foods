@@ -149,8 +149,8 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
             <th><?=number_format($endCount,0,',',' ')?></th>
             <th><?=number_format($curEndCount,0,',',' ')?></th>
             <th><?=number_format($sumPrice,0,',',' ')?></th>
-            <th><?=number_format($sumPrice*100/($sumCostPrice),0,',',' ')?></th>
-            <th><?=number_format($sumPrice*100/($startCount+$sumRealized-$curEndCount),0,',',' ')?></th>
+            <th><?//=number_format($sumPrice*100/($sumCostPrice),0,',',' ')?></th>
+            <th><?//=number_format($sumPrice*100/($startCount+$sumRealized-$curEndCount),0,',',' ')?></th>
             <th><?=number_format($sumFaktCost/2,0,',',' ')?></th>
             <th><?=number_format($sumPrice-$sumFaktCost,0,',',' ')?></th>
             <th><?=number_format(($sumPrice-$sumFaktCost)-$sumFaktCost/2,0,',',' ')?></th>

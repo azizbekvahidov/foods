@@ -571,3 +571,9 @@ in D:\WebServer\OpenServer\domains\foods\index.php (13)
 in D:\WebServer\OpenServer\domains\foods\protected\controllers\DishesController.php (206)
 in D:\WebServer\OpenServer\domains\foods\index.php (13)
 >>>>>>> 9b5a8ef8f5c7f184e5a3f071cea2bcbe8b9d2d21
+2016/01/05 06:17:14 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in D:\OpenServer\domains\foods\protected\controllers\HalfstaffController.php (269)
+in D:\OpenServer\domains\foods\index.php (13)
+2016/01/05 06:18:06 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
+in D:\OpenServer\domains\foods\protected\controllers\HalfstaffController.php (269)
+in D:\OpenServer\domains\foods\index.php (13)

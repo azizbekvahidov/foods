@@ -209,11 +209,19 @@ class Dishes extends CActiveRecord
     public function getCostPrice($id,$order_date){
         $log = new Logs();
         $model = $log->getStructure($order_date,$id,$this->tableName());
-        $dish = Yii::app()->db->createCommand()
-            ->select('count')
-            ->from('dishes')
-            ->where('dish_id = :id',array(':id'=>$id))
-            ->queryRow();
+        if(!empty($model['prod']) && !empty($model['stuff']) && !empty($model['count'])) {
+            if ($model['count'] == 0) {
+                $dish = Yii::app()->db->createCommand()
+                    ->select('count')
+                    ->from('dishes')
+                    ->where('dish_id = :id', array(':id' => $id))
+                    ->queryRow();
+                $model['count'] = $dish['count'];
+            }
+        }
+        else{
+            $model = $this->getStruct($id);
+        }
         $stuff = new Halfstaff();
 
         $costPrice = array();
@@ -221,13 +229,11 @@ class Dishes extends CActiveRecord
         if(!empty($model)) {
             if(!empty($model['prod']))
                 foreach ($model['prod'] as $key => $value) {
-                    $costPrice[$key] = $products->getCostPrice($key, $order_date) * $value / $dish['count'];
-
+                    $costPrice[$key] = $products->getCostPrice($key, $order_date) * $value / $model['count'];
                 }
             if(!empty($model['stuff']))
                 foreach ($model['stuff'] as $key => $value) {
-                    $costPrice[$key] = $stuff->getCostPrice($key, $order_date) * $value / $dish['count'];
-
+                    $costPrice[$key] = $stuff->getCostPrice($key, $order_date) * $value / $model['count'];
                 }
         }
         return array_sum($costPrice);
@@ -247,5 +253,32 @@ class Dishes extends CActiveRecord
         return $result;
     }
     
-    
+    public function getStruct($id){
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dishes d')
+            ->join('dish_structure dsh','dsh.dish_id = d.dish_id')
+            ->where('d.dish_id = :id',array(':id'=>$id))
+            ->queryAll();
+        foreach ($model as $val) {
+            $result['prod'][$val['prod_id']] = $val['amount'];
+        }
+        $model2 = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dishes d')
+            ->join('dish_structure2 dsh','dsh.dish_id = d.dish_id')
+            ->where('d.dish_id = :id',array(':id'=>$id))
+            ->queryAll();
+        foreach ($model2 as $val) {
+            $result['stuff'][$val['halfstuff_id']] = $val['amount'];
+        }
+        $dish = Yii::app()->db->createCommand()
+            ->select('count')
+            ->from('dishes')
+            ->where('dish_id = :id', array(':id' => $id))
+            ->queryRow();
+        $result['count'] = $dish['count'];
+        return $result;
+    }
+
 }
