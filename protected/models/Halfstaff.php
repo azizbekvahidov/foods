@@ -300,6 +300,8 @@ class Halfstaff extends CActiveRecord
 
     public function getCostPrice($id,$order_date){
         $log = new Logs();
+        $stuffSum = 0;
+        $prodSum = 0;
         $model = $log->getStructure($order_date,$id,$this->tableName());
         $products = new Products();
         $costPrice = array();
@@ -320,14 +322,20 @@ class Halfstaff extends CActiveRecord
         if(!empty($model)) {
             if(!empty($model['prod']))
                 foreach ($model['prod'] as $key => $value) {
-                    $costPrice[$key] = $products->getCostPrice($key,$order_date)*$value/$model['count'];
+                    $costPrice['prod'][$key] = $products->getCostPrice($key,$order_date)*$value/$model['count'];
                 }
             if(!empty($model['stuff']))
                 foreach ($model['stuff'] as $key => $value) {
-                    $costPrice[$key] = $this->getCostPrice($key,$order_date)*$value/$model['count'];
+                    $costPrice['stuff'][$key] = $this->getCostPrice($key,$order_date)*$value/$model['count'];
                 }
         }
-        return array_sum($costPrice);
+        if(!empty($costPrice['prod'])){
+            $prodSum = array_sum($costPrice['prod']);
+        }
+        elseif(!empty($costPrice['stuff'])){
+            $stuffSum = array_sum($costPrice['stuff']);
+        }
+        return $prodSum + $stuffSum;
     }
 
     public function getUseStuffList(){

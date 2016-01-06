@@ -206,8 +206,10 @@ class Dishes extends CActiveRecord
 
     }
 
-    public function getCostPrice($id,$order_date){
+    public function     getCostPrice($id,$order_date){
         $log = new Logs();
+        $stuffSum = 0;
+        $prodSum = 0;
         $model = $log->getStructure($order_date,$id,$this->tableName());
         if(!empty($model['prod']) && !empty($model['stuff']) && !empty($model['count'])) {
             if ($model['count'] == 0) {
@@ -229,14 +231,20 @@ class Dishes extends CActiveRecord
         if(!empty($model)) {
             if(!empty($model['prod']))
                 foreach ($model['prod'] as $key => $value) {
-                    $costPrice[$key] = $products->getCostPrice($key, $order_date) * $value / $model['count'];
+                    $costPrice['prod'][$key] = $products->getCostPrice($key, $order_date) * $value / $model['count'];
                 }
             if(!empty($model['stuff']))
                 foreach ($model['stuff'] as $key => $value) {
-                    $costPrice[$key] = $stuff->getCostPrice($key, $order_date) * $value / $model['count'];
+                    $costPrice['stuff'][$key] = $stuff->getCostPrice($key, $order_date) * $value / $model['count'];
                 }
         }
-        return array_sum($costPrice);
+        if(!empty($costPrice['prod'])){
+            $prodSum = array_sum($costPrice['prod']);
+        }
+        if(!empty($costPrice['stuff'])){
+            $stuffSum = array_sum($costPrice['stuff']);
+        }
+        return $prodSum + $stuffSum;
     }
 
     public function getUseDishList(){
