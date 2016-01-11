@@ -276,33 +276,42 @@ class ReportController extends Controller
     public function actionAjaxDishIncome(){
         $prices = new Prices();
         $dishCnt = array();
+        $dCount = array();
+        $prodCnt = array();
+        $pCount = array();
+        $stuffCnt = array();
+        $sCount = array();
         $dish = new Dishes();
         $stuff = new Halfstaff();
         $prod = new Products();
         $model = Expense::model()->with('order.dish')->findAll('date(t.order_date) BETWEEN :from AND :to',array(':from'=>$_POST['from'],':to'=>$_POST['to']));
-        foreach($model as $value){
-            foreach($value->getRelated('order') as $val){
-                $dishes[$val->just_id] = $val->getRelated('dish')->name;
-                $dishCnt[$val->just_id] = $dishCnt[$val->just_id] + $val->count*$prices->getPrice($val->just_id,$value->mType,$val->type,$value->order_date)-$dish->getCostPrice($val->just_id,$value->order_date);
-                $dCount[$val->just_id] = $dCount[$val->just_id] + $val->count;
+        if(!empty($model)) {
+            foreach ($model as $value) {
+                foreach ($value->getRelated('order') as $val) {
+                    $dishes[$val->just_id] = $val->getRelated('dish')->name;
+                    $dishCnt[$val->just_id] = $dishCnt[$val->just_id] + $val->count * $prices->getPrice($val->just_id, $value->mType, $val->type, $value->order_date) - $dish->getCostPrice($val->just_id, $value->order_date);
+                    $dCount[$val->just_id] = $dCount[$val->just_id] + $val->count;
+                }
             }
         }
-
         $model2 = Expense::model()->with('order.halfstuff')->findAll('date(t.order_date) BETWEEN :from AND :to',array(':from'=>$_POST['from'],':to'=>$_POST['to']));
-        foreach($model2 as $value){
-            foreach($value->getRelated('order') as $val){
-                $halfstuff[$val->just_id] = $val->getRelated('halfstuff')->name;
-                $stuffCnt[$val->just_id] = $stuffCnt[$val->just_id] + $val->count*$prices->getPrice($val->just_id,$value->mType,$val->type,$value->order_date)-$stuff->getCostPrice($val->just_id,$value->order_date);
-                $sCount[$val->just_id] = $sCount[$val->just_id] + $val->count;
+        if(!empty($model2)) {
+            foreach ($model2 as $value) {
+                foreach ($value->getRelated('order') as $val) {
+                    $halfstuff[$val->just_id] = $val->getRelated('halfstuff')->name;
+                    $stuffCnt[$val->just_id] = $stuffCnt[$val->just_id] + $val->count * $prices->getPrice($val->just_id, $value->mType, $val->type, $value->order_date) - $stuff->getCostPrice($val->just_id, $value->order_date);
+                    $sCount[$val->just_id] = $sCount[$val->just_id] + $val->count;
+                }
             }
         }
-
         $model3 = Expense::model()->with('order.products')->findAll('date(t.order_date) BETWEEN :from AND :to',array(':from'=>$_POST['from'],':to'=>$_POST['to']));
-        foreach($model3 as $value){
-            foreach($value->getRelated('order') as $val){
-                $products[$val->just_id] = $val->getRelated('products')->name;
-                $prodCnt[$val->just_id] = $prodCnt[$val->just_id] + $val->count*$prices->getPrice($val->just_id,$value->mType,$val->type,$value->order_date)-$prod->getCostPrice($val->just_id,$value->order_date);
-                $pCount[$val->just_id] = $pCount[$val->just_id] + $val->count;
+        if(!empty($model3)) {
+            foreach ($model3 as $value) {
+                foreach ($value->getRelated('order') as $val) {
+                    $products[$val->just_id] = $val->getRelated('products')->name;
+                    $prodCnt[$val->just_id] = $prodCnt[$val->just_id] + $val->count * $prices->getPrice($val->just_id, $value->mType, $val->type, $value->order_date) - $prod->getCostPrice($val->just_id, $value->order_date);
+                    $pCount[$val->just_id] = $pCount[$val->just_id] + $val->count;
+                }
             }
         }
 

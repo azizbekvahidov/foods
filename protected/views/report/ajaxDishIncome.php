@@ -1,4 +1,23 @@
-
+<?
+    if(empty($dishCnt)){
+        $dishCnt = 0;
+    }
+    else{
+        $dishCnt = array_sum($dishCnt);
+    }
+    if(empty($stuffCnt)){
+        $stuffCnt = 0;
+    }
+    else{
+        $stuffCnt = array_sum($stuffCnt);
+    }
+    if(empty($prodCnt)){
+        $prodCnt = 0;
+    }
+    else{
+        $prodCnt = array_sum($prodCnt);
+    }
+?>
 <style>
     thead{
         background-color:white;
@@ -9,38 +28,50 @@
             <th></th>
             <th>Наимен. блюда</th>
             <th>Кол-во</th>
-            <th>наценка факт (<?=number_format((array_sum($dishCnt)+array_sum($stuffCnt)+array_sum($prodCnt)),0,',',' ')?> сум)</th>
+            <th>наценка факт (<?=number_format(($dishCnt+$stuffCnt+$prodCnt),0,',',' ')?> сум)</th>
             <th>удельный вес в общей наценке (%)</th>
         </tr>
     </thead>
     <tbody>
-        <?foreach($dishes as $key => $val){?>
-            <tr>
-                <td><?=$cnt?></td>
-                <td><?=$val?></td>
-                <td><?=$dCount[$key]?></td>
-                <td><?=number_format($dishCnt[$key],0,',',' ')?></td>
-                <td><?=number_format($dishCnt[$key]/(array_sum($dishCnt)+array_sum($stuffCnt)+array_sum($prodCnt))*100,2,',','')?></td>
-            </tr>
-        <?$cnt++;}?>
-        <?foreach($halfstuff as $key => $val){?>
-            <tr>
-                <td><?=$cnt?></td>
-                <td><?=$val?></td>
-                <td><?=$sCount[$key]?></td>
-                <td><?=number_format($stuffCnt[$key],0,',',' ')?></td>
-                <td><?=number_format($stuffCnt[$key]/(array_sum($dishCnt)+array_sum($stuffCnt)+array_sum($prodCnt))*100,2,',','')?></td>
-            </tr>
-            <?$cnt++;}?>
-        <?foreach($products as $key => $val){?>
-            <tr>
-                <td><?=$cnt?></td>
-                <td><?=$val?></td>
-                <td><?=$pCount[$key]?></td>
-                <td><?=number_format($prodCnt[$key],0,',',' ')?></td>
-                <td><?=number_format($prodCnt[$key]/(array_sum($dishCnt)+array_sum($stuffCnt)+array_sum($prodCnt))*100,2,',','')?></td>
-            </tr>
-            <?$cnt++;}?>
+        <?if(!empty($dishes)) {
+            foreach ($dishes as $key => $val) {
+                ?>
+                <tr>
+                    <td><?= $cnt ?></td>
+                    <td><?= $val ?></td>
+                    <td><?= $dCount[$key] ?></td>
+                    <td><?= number_format($dishCnt[$key], 0, ',', ' ') ?></td>
+                    <td><?= number_format($dishCnt[$key] / ($dishCnt + $stuffCnt + $prodCnt) * 100, 2, ',', '') ?></td>
+                </tr>
+                <?$cnt++;
+            }
+        }?>
+        <?if(!empty($halfstuff)) {
+            foreach ($halfstuff as $key => $val) {
+                ?>
+                <tr>
+                    <td><?= $cnt ?></td>
+                    <td><?= $val ?></td>
+                    <td><?= $sCount[$key] ?></td>
+                    <td><?= number_format($stuffCnt[$key], 0, ',', ' ') ?></td>
+                    <td><?= number_format($stuffCnt[$key] / ($dishCnt + $stuffCnt + $prodCnt) * 100, 2, ',', '') ?></td>
+                </tr>
+                <?$cnt++;
+            }
+        }?>
+        <?if(!empty($products)) {
+            foreach ($products as $key => $val) {
+                ?>
+                <tr>
+                    <td><?= $cnt ?></td>
+                    <td><?= $val ?></td>
+                    <td><?= $pCount[$key] ?></td>
+                    <td><?= number_format($prodCnt[$key], 0, ',', ' ') ?></td>
+                    <td><?= number_format($prodCnt[$key] / ($dishCnt + $stuffCnt + $prodCnt) * 100, 2, ',', '') ?></td>
+                </tr>
+                <?$cnt++;
+            }
+        }?>
     </tbody>
 </table>
 <div id="bottom_anchor"></div>
