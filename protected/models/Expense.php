@@ -157,8 +157,8 @@ class Expense extends CActiveRecord
         return $scope;
     }
     
-    public function getDishProd($depId,$dates){
-        $dishProd = Expense::model()->with('order.dish')->findAll('date(order_date) = :dates AND dish.department_id = :department_id AND t.kind = :kind AND order.type =:types',array(':kind'=>0,':dates'=>$dates,':department_id'=>$depId,':types'=>1));
+    public function getDishProd($depId,$dates,$fromDate){
+        $dishProd = Expense::model()->with('order.dish')->findAll('date(order_date) <= :dates AND date(order_date) = :from AND dish.department_id = :department_id AND t.kind = :kind AND order.type =:types',array(':kind'=>0,':dates'=>$dates,':from'=>$fromDate,':department_id'=>$depId,':types'=>1));
         $dishes = new Dishes();
         $stuff = new Halfstaff();
         $result = array();
@@ -173,7 +173,7 @@ class Expense extends CActiveRecord
                     $temp = $dishes->getProd($val['just_id']);
                     $temporary = [$stuff->multiplyArray($temp,$val['count']),$val['count']];
                     $result = $stuff->sumArray($result,$temporary);
-                }
+                }*/
 
         $result = array();
         if(!empty($dishProd)){
@@ -209,8 +209,8 @@ class Expense extends CActiveRecord
 
 
 
-    public function getDishStuff($depId,$dates){
-        $dishStuffProd = Expense::model()->with('order.dish.halfstuff.Structs')->findAll('date(order_date) = :dates AND dish.department_id = :department_id AND t.kind = :kind',array(':kind'=>0,':dates'=>$dates,':department_id'=>$depId));
+    public function getDishStuff($depId,$dates,$fromDate){
+        $dishStuffProd = Expense::model()->with('order.dish.halfstuff.Structs')->findAll('date(order_date) <= :dates AND date(order_date) > :from AND dish.department_id = :department_id AND t.kind = :kind',array(':kind'=>0,':dates'=>$dates,':from'=>$fromDate,':department_id'=>$depId));
         $outStuff = array();
         if(!empty($dishStuffProd)){
             foreach($dishStuffProd as $value){
@@ -222,7 +222,7 @@ class Expense extends CActiveRecord
                 }
             }
         }
-        $dishStuff = Expense::model()->with('order.halfstuff.stuffStruct')->findAll('date(order_date) = :dates AND halfstuff.department_id = :department_id AND t.kind = :kind',array(':kind'=>0,':dates'=>$dates,':department_id'=>$depId));
+        $dishStuff = Expense::model()->with('order.halfstuff.stuffStruct')->findAll('date(order_date) <= :dates AND date(order_date) > :from AND halfstuff.department_id = :department_id AND t.kind = :kind',array(':kind'=>0,':dates'=>$dates,':from'=>$fromDate,':department_id'=>$depId));
 
         if(!empty($dishStuff)){
             foreach($dishStuff as $value){

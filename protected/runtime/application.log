@@ -577,3 +577,9 @@ in D:\OpenServer\domains\foods\index.php (13)
 2016/01/05 06:18:06 [warning] [application] Не удалось присвоить небезопасный атрибут "stuffStruct" класса "Halfstaff".
 in D:\OpenServer\domains\foods\protected\controllers\HalfstaffController.php (269)
 in D:\OpenServer\domains\foods\index.php (13)
+2016/01/07 10:07:18 [warning] [application] Не удалось присвоить небезопасный атрибут "type" класса "Inexpense".
+in D:\OpenServer\domains\foods\protected\controllers\InexpenseController.php (255)
+in D:\OpenServer\domains\foods\index.php (13)
+2016/01/07 11:29:32 [warning] [application] Не удалось присвоить небезопасный атрибут "type" класса "Inexpense".
+in D:\OpenServer\domains\foods\protected\controllers\InexpenseController.php (255)
+in D:\OpenServer\domains\foods\index.php (13)

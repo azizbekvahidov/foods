@@ -162,7 +162,7 @@ class StorageController extends Controller
     }
     public function startDay($sess,$dates){
 
-            $this->Holiday($dates);
+            //$this->Holiday($dates);
             $prodModel = Products::model()->findAll();
             //$department = Department::model()->findAll();
             $max_date = Balance::model()->find(array('select'=>'MAX(b_date) as b_date'));
@@ -238,10 +238,40 @@ class StorageController extends Controller
             $transaction->commit();
     }
 
-    public function sumMBalance($dates){
+    public function sumMBalance($dates,$fromDate){
+        $from = $fromDate;
+        $to = $dates;
+        $days = strtotime($to)-strtotime($from);
+        $newModel = Expense::model()->findAll(array('condition' => 'kind = 0', 'group' => 'date(order_date)'));
+        $count = 0;
+        $expense = new Expense();
+
+        $summ = array();
+        $summP = array();
+        $dateList = array();
+        for ($i = 0; $i < $days/(3600*24); $i++) {
+
+            $mBalance = MBalance::model()->find('t.b_date = :dates', array(':dates' => date('Y-m-d',strtotime($from)+(3600*24*$i))));
+
+            $temp = $expense->getSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
+
+            if (!empty($mBalance)) {
+                $mBalance->procProceeds = $temp[1];
+                $mBalance->proceeds = $temp[2];
+                $mBalance->cost = 0;
+                $mBalance->save();
+            } else {
+                $mBalance = new MBalance();
+                $mBalance->b_date = date('Y-m-d',strtotime($from)+(3600*24*$i));
+                $mBalance->procProceeds = $temp[1];
+                $mBalance->proceeds = $temp[2];
+                $mBalance->cost = 0;
+                $mBalance->save();
+            }
+        }
         //расчет выручки
         //$stuff = new Halfstaff();
-        $sumBalance = Expense::model()->findAll('date(t.order_date) = :dates AND t.status != :status AND t.debt != :debt',array(':dates'=>$dates,':status'=>1,'debt'=>1));
+        /*$sumBalance = Expense::model()->findAll('date(t.order_date) = :dates AND t.status != :status AND t.debt != :debt',array(':dates'=>$dates,':status'=>1,'debt'=>1));
         //$debt = Debt::model()->findAll('t.d_date = :dates',array(':dates'=>$dates));
         //$debts = array();
         $dayBalance = 0;
@@ -261,7 +291,7 @@ class StorageController extends Controller
         $mBalance->b_date = $dates;
         $mBalance->proceeds =$dayBalance[2];//+$debts[2];
         $mBalance->cost = 0;
-        $mBalance->save();
+        $mBalance->save();*/
     }
 
     public function endDepBalance($dates){
@@ -274,10 +304,13 @@ class StorageController extends Controller
             ->queryRow();
         $stuff = new Halfstaff();
         //Количественный расчет по отделам
-        $department = Department::model()->findAll();
+        $department = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('department')
+            ->queryAll();
 
         foreach($department as $v){
-            $depId = $v->department_id;
+            $depId = $v['department_id'];
             $depIn = array();
             $depOut = array();
             $inProduct = array();
@@ -287,84 +320,105 @@ class StorageController extends Controller
             $outProduct = array();
             $outStuff = array();
             $outStuffProd = array();
-            $prodModel = Products::model()->findAll();
-            foreach($prodModel as $value){
-                $outProduct[$value->product_id] = 0;
-            }
             //расход продуктов в другой отдел 
-            $departMoveOut = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) <= :till AND date(t.real_date) >= :from AND t.department_id != :depId AND t.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>$depId));
-            foreach($departMoveOut as $key => $val){
-                foreach($val->getRelated('realizedProd') as $value){
-                    $depOut[$value->prod_id] = $depOut[$value->prod_id] + $value->count;
-                }
+            $departMoveOut = Yii::app()->db->createCommand()
+                ->select('')
+                ->from('dep_faktura df')
+                ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+                ->where('date(df.real_date) <= :till AND date(df.real_date) > :from AND df.department_id != :depId AND df.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>$depId))
+                ->queryAll();
+            foreach($departMoveOut as $key => $value){
+                    $depOut[$value['prod_id']] = $depOut[$value['prod_id']] + $value['count'];
+
             }
             //приход продуктов из других отделов
-            $departMoveIn = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) <= :till AND date(t.real_date) >= :from AND t.department_id = :depId AND t.fromDepId != :fromDepId ',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>0));
+            $departMoveIn = Yii::app()->db->createCommand()
+                ->select('')
+                ->from('dep_faktura df')
+                ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+                ->where('date(df.real_date) <= :till AND date(df.real_date) > :from AND df.department_id = :depId AND df.fromDepId != :fromDepId ',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>0))
+                ->queryAll();
 
             foreach($departMoveIn as $value){
-                foreach($value->getRelated('realizedProd') as $val){
-                    $depIn[$val->prod_id] = $depIn[$val->prod_id] + $val->count;
-                }
+                    $depIn[$value['prod_id']] = $depIn[$value['prod_id']] + $value['count'];
             }
-
             $dish = new Expense();
 
 
-            $outProduct = $dish->getDishProd($depId,$dates);
-            $outDishStuff = $dish->getDishStuff($depId,$dates);
-            
+            $outProduct = $dish->getDishProd($depId,$dates,$somedate['b_date']);
+            $outDishStuff = $dish->getDishStuff($depId,$dates,$somedate['b_date']);
                         
-            $model = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) <= :till AND date(t.real_date) >= :from AND t.department_id = :depId AND t.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>0));
+            $model = Yii::app()->db->createCommand()
+                ->select('')
+                ->from('dep_faktura df')
+                ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+                ->where('date(df.real_date) <= :till AND date(df.real_date) > :from AND df.department_id = :depId AND df.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>0))
+                ->queryAll();
             foreach($model as $key => $val){
-                foreach($val->getRelated('realizedProd') as $value){
-                    $inProduct[$value->prod_id] = $inProduct[$value->prod_id] + $value->count;
-                }
+                $inProduct[$val['prod_id']] = $inProduct[$val['prod_id']] + $val['count'];
             }
             //Приход загатовок в отдел и расход их продуктов
-            $models2 = Inexpense::model()->with('inorder.stuffs.stuffStruct')->findAll('date(t.inexp_date) <= :till AND date(t.inexp_date) >= :from AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],'depId'=>$depId,':types'=>1,':fromDepId'=>0));
-            foreach($models2 as $val){
-                foreach($val->getRelated('inorder') as $value){
-                    $instuff[$value->stuff_id] = $instuff[$value->stuff_id] + $value->count;
-                    foreach($value->getRelated('stuffs')->getRelated('stuffStruct') as $values){
-                        $outStuffProd[$values->prod_id] = $outStuffProd[$values->prod_id] + $values->amount/$value->getRelated('stuffs')->count*$value->count;
-                    }
+            $models = Yii::app()->db->createCommand()
+                ->select('ino.stuff_id,ino.count as inCount')
+                ->from('inexpense inexp')
+                ->join('inorder ino','ino.inexpense_id = inexp.inexpense_id')
+                ->where('date(inexp.inexp_date) <= :till AND date(inexp.inexp_date) > :from AND inexp.department_id = :depId AND inexp.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>0))
+                ->queryAll();
+            foreach ($models as $val) {
+                $instuff[$val['stuff_id']] = $instuff[$val['stuff_id']] + $val['inCount'];
+            }
 
-                }
+            $models2 = Yii::app()->db->createCommand()
+                ->select('hs.prod_id,((hs.amount/h.count)*ino.count) as count')
+                ->from('inexpense inexp')
+                ->join('inorder ino','ino.inexpense_id = inexp.inexpense_id')
+                ->join('halfstaff h','h.halfstuff_id = ino.stuff_id')
+                ->join('halfstuff_structure hs','hs.halfstuff_id = h.halfstuff_id')
+                ->where('date(inexp.inexp_date) <= :till AND date(inexp.inexp_date) > :from AND inexp.department_id = :depId AND hs.types = :types AND inexp.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':types'=>1,':fromDepId'=>0))
+                ->queryAll();
+
+            foreach($models2 as $val){
+                $outStuffProd[$val['prod_id']] = $outStuffProd[$val['prod_id']] + $val['count'];
             }
             //Приход и расход загатовок в отдел, расход их продуктов            
-            $model3 = Inexpense::model()->with('inorder.stuffs.stuffStruct.podstuff.podstuffStruct.Struct')->findAll('date(t.inexp_date) <= :till AND date(t.inexp_date) >= :from AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],'depId'=>$depId,':types'=>2,':fromDepId'=>0));
+            $model3 = Yii::app()->db->createCommand()
+                ->select('hs.prod_id,((hs.amount/h.count)*ino.count) as count')
+                ->from('inexpense inexp')
+                ->join('inorder ino','ino.inexpense_id = inexp.inexpense_id')
+                ->join('halfstaff h','h.halfstuff_id = ino.stuff_id')
+                ->join('halfstuff_structure hs','hs.halfstuff_id = h.halfstuff_id')
+                ->where('date(inexp.inexp_date) <= :till AND date(inexp.inexp_date) > :from AND inexp.department_id = :depId AND hs.types = :types AND inexp.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':types'=>2,':fromDepId'=>0))
+                ->queryAll();
             foreach($model3 as $val){
-                foreach($val->getRelated('inorder') as $value){
-                    $instuff[$value->stuff_id] = $instuff[$value->stuff_id] + $value->count;
-                    foreach($value->getRelated('stuffs')->getRelated('stuffStruct') as $values){
-                        $outStuff[$values->prod_id] = $outStuff[$values->prod_id] + $values->amount/$value->getRelated('stuffs')->count*$value->count;
-                        foreach($values->getRelated('podstuff')->getRelated('podstuffStruct') as $vals){
-                            $outStuffProd[$values->prod_id] = $outStuffProd[$values->prod_id] + $vals->amount/$values->getRelated('podstuff')->count*$values->amount/$value->getRelated('stuffs')->count*$value->count;
-                        }
-                    }
-                }
+                        $outStuff[$val['prod_id']] = $outStuff[$val['prod_id']] + $val['count'];
             }
             $outStuff = $stuff->sumArray($outDishStuff,$outStuff);
 
             $inexpense = new Inexpense();
             $depStuffIn = $inexpense->getDepIn($depId,$dates);
             $depStuffOut = $inexpense->getDepOut($depId,$dates);
-
-           /* $curProd = DepBalance::model()->with('products')->findAll('t.b_date = :dates AND t.department_id = :depId AND t.type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>1));
+            $curProd = Yii::app()->db->createCommand()
+                ->select('*')
+                ->from('dep_balance')
+                ->where('b_date = :dates AND department_id = :depId AND type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>1))
+                ->queryAll();
             foreach($curProd as $value){
-                //echo 'id -> '.$value->prod_id.' '.$value->getRelated('products')->name.'|| Начальный =>'.$value->startCount.'|| Приход =>'.$inProduct[$value->prod_id].'|| Расход =>'.$outProduct[$value->prod_id].'|| перемещ in =>'.$depIn[$value->prod_id].'|| перемещ out =>'.$depOut[$value->prod_id]."<br />";
-                $endProduct[$value->prod_id] = + ($value->startCount + $inProduct[$value->prod_id]-$outProduct[$value->prod_id]-$outStuffProd[$value->prod_id]+$depIn[$value->prod_id]-$depOut[$value->prod_id]);
-                $Models = DepBalance::model()->find('prod_id = :prod_id AND department_id = :depId AND b_date = :dates AND t.type = :type',array(':prod_id'=>$value->prod_id,':depId'=>$v->department_id,':dates'=>$dates,':type'=>1));
-                $Models->endCount = $endProduct[$value->prod_id];
-                $Models->update(array('endCount'));
+                $endProduct[$value['prod_id']] = + ($value['startCount'] + $inProduct[$value['prod_id']]-$outProduct[$value['prod_id']]-$outStuffProd[$value['prod_id']]+$depIn[$value['prod_id']]-$depOut[$value['prod_id']]);
+                $prodModel = Yii::app()->db->createCommand() -> update('dep_balance',array(
+                    'endCount'=>$endProduct[$value['prod_id']]
+                ),'prod_id = :prod_id AND department_id = :depId AND b_date = :dates AND type = :type',array(':prod_id'=>$value['prod_id'],':depId'=>$v['department_id'],':dates'=>$dates,':type'=>1));
             }
-            $curStuff = DepBalance::model()->findAll('t.b_date = :dates AND t.department_id = :depId AND t.type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>2));
+            $curStuff = Yii::app()->db->createCommand()
+                ->select('')
+                ->from('dep_balance db')
+                ->where('db.b_date = :dates AND db.department_id = :depId AND db.type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>2))
+                ->queryAll();
             foreach($curStuff as $value){
-                $endStuff[$value->prod_id] = ($value->startCount + $instuff[$value->prod_id]+$depStuffIn[$value->prod_id]-$outStuff[$value->prod_id]-$depStuffOut[$value->prod_id]);
-                $Models = DepBalance::model()->find('prod_id = :prod_id AND department_id = :depId AND b_date = :dates AND t.type = :type',array(':prod_id'=>$value->prod_id,':depId'=>$v->department_id,':dates'=>$dates,':type'=>2));
-                $Models->endCount = $endStuff[$value->prod_id];
-                $Models->update(array('endCount'));
-            }*/
+                $endStuff[$value['prod_id']] = ($value['startCount'] + $instuff[$value['prod_id']]+$depStuffIn[$value['prod_id']]-$outStuff[$value['prod_id']]-$depStuffOut[$value['prod_id']]);
+                $stuffModel = Yii::app()->db->createCommand() -> update('dep_balance',array(
+                    'endCount'=>$endStuff[$value['prod_id']]
+                ),'prod_id = :prod_id AND department_id = :depId AND b_date = :dates AND type = :type',array(':prod_id'=>$value['prod_id'],':depId'=>$v['department_id'],':dates'=>$dates,':type'=>2));
+            }
 
         }
 
@@ -381,41 +435,53 @@ class StorageController extends Controller
             ->queryRow();
 
         $transaction = Yii::app()->db->beginTransaction();
-        $this->sumMBalance($dates);
+        $this->sumMBalance($dates,$somedate['b_date']);
 
               //данные основного склада
                 $endStorageProducts = array();
 
                 //Приход
-                $fakturaProd = Faktura::model()->with('realize.products')->findAll('date(realize_date) <= :till AND date(realize_date) >=:from',array(':till'=>$dates,':from'=>$somedate['b_date']));
-                foreach($fakturaProd as $value){
-                    foreach($value->getRelated('realize') as $key => $val){
-                        $inProducts[$val->getRelated('products')->product_id] = $inProducts[$val->getRelated('products')->product_id] + $val->count;
-                    }
+                $fakturaProd = Yii::app()->db->createCommand()
+                    ->select('')
+                    ->from('faktura f')
+                    ->join('realize re','re.faktura_id = f.faktura_id')
+                    ->where('date(f.realize_date) <= :till AND date(f.realize_date) >:from',array(':till'=>$dates,':from'=>$somedate['b_date']))
+                    ->queryAll();
+                foreach($fakturaProd as $val){
+                        $inProducts[$val['prod_id']] = $inProducts[$val['prod_id']] + $val['count'];
                 }
                 //Расход
-                $Depfaktura = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) <= :till AND date(real_date) >= :from AND fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],'fromDepId'=>0));
+                $Depfaktura = Yii::app()->db->createCommand()
+                    ->select('')
+                    ->from('dep_faktura df')
+                    ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+                    ->where('date(df.real_date) <= :till AND date(df.real_date) > :from AND df.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],'fromDepId'=>0))
+                    ->queryAll();
         
-                foreach($Depfaktura as $value){
-                    foreach($value->getRelated('realizedProd') as $val){
-                        $outProducts[$val->prod_id] = $outProducts[$val->prod_id] + $val->count;
-                    }
+                foreach($Depfaktura as $val){
+                        $outProducts[$val['prod_id']] = $outProducts[$val['prod_id']] + $val['count'];
                 }
         
-                $expense = Expense::model()->with('order.products')->findAll('date(order_date) <= :till AND date(order_date) >= :from AND t.kind = :kind',array(':kind'=>1,':till'=>$dates,':from'=>$somedate['b_date']));
-                foreach ($expense as $value) {
-                    foreach ($value->getRelated('order') as $val) {
-                        $inOutProducts[$val->just_id] = $inOutProducts[$val->just_id] + $val->count;
-                    }
-        
+                $expense = Yii::app()->db->createCommand()
+                    ->select('')
+                    ->from('expense ex')
+                    ->join('orders ord','ord.expense_id = ex.expense_id')
+                    ->where('date(ex.order_date) <= :till AND date(ex.order_date) > :from AND ex.kind = :kind',array(':kind'=>1,':till'=>$dates,':from'=>$somedate['b_date']))
+                    ->queryAll();
+                foreach ($expense as $val) {
+                        $inOutProducts[$val['just_id']] = $inOutProducts[$val['just_id']] + $val['count'];
                 }
         
-                $curProd = Balance::model()->with('products')->findAll('b_date = :dates',array(':dates'=>$dates),array('order'=>'products.name'));
+                $curProd = Yii::app()->db->createCommand()
+                    ->select('')
+                    ->from('balance b')
+                    ->where('b.b_date = :dates',array(':dates'=>$dates))
+                    ->queryAll();
                 foreach($curProd as $value){
-                    $endStorageProducts[$value->prod_id] = $endStorageProducts[$value->prod_id] + $value->startCount+$inProducts[$value->prod_id]-$outProducts[$value->prod_id] - $inOutProducts[$value->prod_id];
-                    $Models = Balance::model()->find('prod_id = :prod_id AND b_date = :dates',array(':prod_id'=>$value->prod_id,':dates'=>$dates));
-                    $Models->endCount = $endStorageProducts[$value->prod_id];
-                    $Models->update(array('endCount'));
+                    $endStorageProducts[$value['prod_id']] = $endStorageProducts[$value['prod_id']] + $value['startCount']+$inProducts[$value['prod_id']]-$outProducts[$value['prod_id']] - $inOutProducts[$value['prod_id']];
+                    Yii::app()->db->createCommand()->update('balance',array(
+                        'endCount'=>$endStorageProducts[$value['prod_id']]
+                    ),'prod_id = :prod_id AND b_date = :dates',array(':prod_id'=>$value->prod_id,':dates'=>$dates));
                 }
 
                 //конец
