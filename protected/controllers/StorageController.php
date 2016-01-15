@@ -139,9 +139,11 @@ class StorageController extends Controller
     public function actionEnd($sess){
         $dates = date('Y-m-d');
         //данные отделов склада
+        $this->startDay($sess,$dates);
 
+        $this->endDepBalance($dates);
         $this->endDay($sess,$dates);
-        $this->redirect(Yii::app()->homeUrl);
+        //$this->redirect(Yii::app()->homeUrl);
     }
 
     public function Holiday($dates){
@@ -159,6 +161,7 @@ class StorageController extends Controller
         }
     }
     public function startDay($sess,$dates){
+
             $this->Holiday($dates);
             $prodModel = Products::model()->findAll();
             //$department = Department::model()->findAll();
@@ -262,7 +265,13 @@ class StorageController extends Controller
     }
 
     public function endDepBalance($dates){
-
+        $somedate = Yii::app()->db->createCommand()
+            ->select('b_date')
+            ->from('dep_balance')
+            ->group('b_date')
+            ->order('b_date DESC')
+            ->limit(1)
+            ->queryRow();
         $stuff = new Halfstaff();
         //Количественный расчет по отделам
         $department = Department::model()->findAll();
@@ -283,15 +292,14 @@ class StorageController extends Controller
                 $outProduct[$value->product_id] = 0;
             }
             //расход продуктов в другой отдел 
-            $departMoveOut = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id != :depId AND t.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>$depId));
+            $departMoveOut = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) <= :till AND date(t.real_date) >= :from AND t.department_id != :depId AND t.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>$depId));
             foreach($departMoveOut as $key => $val){
                 foreach($val->getRelated('realizedProd') as $value){
                     $depOut[$value->prod_id] = $depOut[$value->prod_id] + $value->count;
                 }
-            }            
-
+            }
             //приход продуктов из других отделов
-            $departMoveIn = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id = :depId AND t.fromDepId != :fromDepId ',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0));
+            $departMoveIn = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) <= :till AND date(t.real_date) >= :from AND t.department_id = :depId AND t.fromDepId != :fromDepId ',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>0));
 
             foreach($departMoveIn as $value){
                 foreach($value->getRelated('realizedProd') as $val){
@@ -306,14 +314,14 @@ class StorageController extends Controller
             $outDishStuff = $dish->getDishStuff($depId,$dates);
             
                         
-            $model = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id = :depId AND t.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0));
+            $model = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) <= :till AND date(t.real_date) >= :from AND t.department_id = :depId AND t.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],':depId'=>$depId,':fromDepId'=>0));
             foreach($model as $key => $val){
                 foreach($val->getRelated('realizedProd') as $value){
                     $inProduct[$value->prod_id] = $inProduct[$value->prod_id] + $value->count;
                 }
             }
             //Приход загатовок в отдел и расход их продуктов
-            $models2 = Inexpense::model()->with('inorder.stuffs.stuffStruct')->findAll('date(t.inexp_date) = :dates AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':dates'=>$dates,'depId'=>$depId,':types'=>1,':fromDepId'=>0));
+            $models2 = Inexpense::model()->with('inorder.stuffs.stuffStruct')->findAll('date(t.inexp_date) <= :till AND date(t.inexp_date) >= :from AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],'depId'=>$depId,':types'=>1,':fromDepId'=>0));
             foreach($models2 as $val){
                 foreach($val->getRelated('inorder') as $value){
                     $instuff[$value->stuff_id] = $instuff[$value->stuff_id] + $value->count;
@@ -324,7 +332,7 @@ class StorageController extends Controller
                 }
             }
             //Приход и расход загатовок в отдел, расход их продуктов            
-            $model3 = Inexpense::model()->with('inorder.stuffs.stuffStruct.podstuff.podstuffStruct.Struct')->findAll('date(t.inexp_date) = :dates AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':dates'=>$dates,'depId'=>$depId,':types'=>2,':fromDepId'=>0));
+            $model3 = Inexpense::model()->with('inorder.stuffs.stuffStruct.podstuff.podstuffStruct.Struct')->findAll('date(t.inexp_date) <= :till AND date(t.inexp_date) >= :from AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],'depId'=>$depId,':types'=>2,':fromDepId'=>0));
             foreach($model3 as $val){
                 foreach($val->getRelated('inorder') as $value){
                     $instuff[$value->stuff_id] = $instuff[$value->stuff_id] + $value->count;
@@ -336,14 +344,13 @@ class StorageController extends Controller
                     }
                 }
             }
-                        
             $outStuff = $stuff->sumArray($outDishStuff,$outStuff);
 
             $inexpense = new Inexpense();
             $depStuffIn = $inexpense->getDepIn($depId,$dates);
             $depStuffOut = $inexpense->getDepOut($depId,$dates);
 
-            $curProd = DepBalance::model()->with('products')->findAll('t.b_date = :dates AND t.department_id = :depId AND t.type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>1));
+           /* $curProd = DepBalance::model()->with('products')->findAll('t.b_date = :dates AND t.department_id = :depId AND t.type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>1));
             foreach($curProd as $value){
                 //echo 'id -> '.$value->prod_id.' '.$value->getRelated('products')->name.'|| Начальный =>'.$value->startCount.'|| Приход =>'.$inProduct[$value->prod_id].'|| Расход =>'.$outProduct[$value->prod_id].'|| перемещ in =>'.$depIn[$value->prod_id].'|| перемещ out =>'.$depOut[$value->prod_id]."<br />";
                 $endProduct[$value->prod_id] = + ($value->startCount + $inProduct[$value->prod_id]-$outProduct[$value->prod_id]-$outStuffProd[$value->prod_id]+$depIn[$value->prod_id]-$depOut[$value->prod_id]);
@@ -357,8 +364,7 @@ class StorageController extends Controller
                 $Models = DepBalance::model()->find('prod_id = :prod_id AND department_id = :depId AND b_date = :dates AND t.type = :type',array(':prod_id'=>$value->prod_id,':depId'=>$v->department_id,':dates'=>$dates,':type'=>2));
                 $Models->endCount = $endStuff[$value->prod_id];
                 $Models->update(array('endCount'));
-            }
-
+            }*/
 
         }
 
@@ -366,7 +372,13 @@ class StorageController extends Controller
     }
 
     public function endDay($sess,$dates){
-
+        $somedate = Yii::app()->db->createCommand()
+            ->select('b_date')
+            ->from('balance')
+            ->group('b_date')
+            ->order('b_date DESC')
+            ->limit(1)
+            ->queryRow();
 
         $transaction = Yii::app()->db->beginTransaction();
         $this->sumMBalance($dates);
@@ -375,14 +387,14 @@ class StorageController extends Controller
                 $endStorageProducts = array();
 
                 //Приход
-                $fakturaProd = Faktura::model()->with('realize.products')->findAll('date(realize_date) = :realize_date',array('realize_date'=>$dates));
+                $fakturaProd = Faktura::model()->with('realize.products')->findAll('date(realize_date) <= :till AND date(realize_date) >=:from',array(':till'=>$dates,':from'=>$somedate['b_date']));
                 foreach($fakturaProd as $value){
                     foreach($value->getRelated('realize') as $key => $val){
                         $inProducts[$val->getRelated('products')->product_id] = $inProducts[$val->getRelated('products')->product_id] + $val->count;
                     }
                 }
                 //Расход
-                $Depfaktura = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) = :real_date AND fromDepId = :fromDepId',array(':real_date'=>$dates,'fromDepId'=>0));
+                $Depfaktura = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) <= :till AND date(real_date) >= :from AND fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$somedate['b_date'],'fromDepId'=>0));
         
                 foreach($Depfaktura as $value){
                     foreach($value->getRelated('realizedProd') as $val){
@@ -390,7 +402,7 @@ class StorageController extends Controller
                     }
                 }
         
-                $expense = Expense::model()->with('order.products')->findAll('date(order_date) = :dates AND t.kind = :kind',array(':kind'=>1,':dates'=>$dates));
+                $expense = Expense::model()->with('order.products')->findAll('date(order_date) <= :till AND date(order_date) >= :from AND t.kind = :kind',array(':kind'=>1,':till'=>$dates,':from'=>$somedate['b_date']));
                 foreach ($expense as $value) {
                     foreach ($value->getRelated('order') as $val) {
                         $inOutProducts[$val->just_id] = $inOutProducts[$val->just_id] + $val->count;
