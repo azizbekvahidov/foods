@@ -154,7 +154,10 @@ margin-top: 4px;
 }
 input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {
     display: inline-block;
-    height: 20PX!important;
+    height: 30PX!important;
+}
+.input-append .add-on, .input-prepend .add-on{
+    height: 30px!important;
 }
 h1, .h1, h2, .h2, h3, .h3 {
     margin-top:10px!important;
