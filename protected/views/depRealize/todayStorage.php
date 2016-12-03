@@ -1,5 +1,4 @@
 
-	<link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/bootstrap.css"/>
 <div >
     <table class="items table table-striped table-hover dataTable table-bordered no-footer ">
         <thead>
@@ -14,7 +13,7 @@
                 if($Products[$key] != 0){?>
                 <tr class="<?=$key?>">
                     <td><?=$val?></td>
-                    <td class="count"><?=$Products[$key]?></td>
+                    <td class="count"><?=number_format($Products[$key],2,',','')?></td>
                     <td><input type="text" class="depCount" name="products[<?=$key?>]" /></td>
                 </tr>
             <? }}?>

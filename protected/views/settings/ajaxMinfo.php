@@ -15,13 +15,67 @@
             <div class="control-group">
                 <label class="control-label" for="inputEmail">Выручка за сегодня</label>
                 <div class="controls">
-                    <input type="number" name="Info[proceed]" id="inputEmail" placeholder="">
+                    <input type="number" name="Info[proceed]"  placeholder="">
                 </div>
             </div>
             <div class="control-group">
                 <label class="control-label" for="inputPassword">Приход за сегодня</label>
                 <div class="controls">
-                    <input type="number" name="Info[parish]" id="inputPassword" placeholder="">
+                    <input type="number" name="Info[parish]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Терминал</label>
+                <div class="controls">
+                    <input type="number" name="Info[term]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Азиз терминал</label>
+                <div class="controls">
+                    <input type="number" name="Info[azizTerm]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Торт Шамс</label>
+                <div class="controls">
+                    <input type="number" name="Info[tortShams]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Мясо</label>
+                <div class="controls">
+                    <input type="number" name="Info[meat]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Прочие</label>
+                <div class="controls">
+                    <input type="number" name="Info[other]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Касса</label>
+                <div class="controls">
+                    <input type="number" name="Info[kassa]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Гос. банк</label>
+                <div class="controls">
+                    <input type="number" name="Info[gosBank]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Официант</label>
+                <div class="controls">
+                    <input type="number" name="Info[waitor]"  placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Ген. счет</label>
+                <div class="controls">
+                    <input type="number" name="Info[genDir]"  placeholder="">
                 </div>
             </div>
         </div>

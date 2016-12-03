@@ -7,8 +7,21 @@
 	'enableAjaxValidation'=>false,
 	// 'htmlOptions'=>array('enctype'=>'multipart/form-data'),
 )); $products = new Products()?>
+<div class="input-prepend">
+    <span class="add-on"><i class="icon-calendar"></i></span><?
+    $this->widget(
+        'bootstrap.widgets.TbDatePicker',
+        array(
 
-	<p class="note">Поля с <span class="required">*</span> Обязательны.</p>
+            'name' => 'from',
+            'options' => array(
+                'language' => 'ru',
+                'format' => 'yyyy-mm-dd',
+            )
+        )
+    );
+    ?>
+</div>
 
 	<?php echo $form->errorSummary($model); ?>
 

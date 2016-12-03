@@ -10,7 +10,20 @@
 
 
 	<?php echo $form->errorSummary($model); ?>
+<div class="input-prepend">
+    <span class="add-on"><i class="icon-calendar"></i></span><?
+    $this->widget(
+        'bootstrap.widgets.TbDatePicker',
+        array(
 
+            'name' => 'from',
+            'options' => array(
+                'language' => 'ru',
+                'format' => 'yyyy-mm-dd',
+            )
+        )
+    );
+    ?></div>
     <?=CHtml::dropDownList('department','',CHtml::listData(Department::model()->findAll(),'department_id','name'),array('id'=>'department','empty' => '--Выберите отдел--',))?><br />
 <br />
 <div id="data">
@@ -21,10 +34,11 @@
         var depId;
         $('#department').change(function(){
             depId = $(this).val();
+            var dates = $("#from").val();
             $.ajax({
                type: "POST",
                url: "<?php echo Yii::app()->createUrl('depRealize/todayStorage'); ?>",
-               data: "depId="+depId,
+               data: "depId="+depId+'&dates='+dates,
                success: function(data){
                  $('#data').html(data);
                 }

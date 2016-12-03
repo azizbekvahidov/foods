@@ -10,7 +10,20 @@
 
 
 	<?php echo $form->errorSummary($model); ?>
+<div class="input-prepend">
+    <span class="add-on"><i class="icon-calendar"></i></span><?
+    $this->widget(
+        'bootstrap.widgets.TbDatePicker',
+        array(
 
+            'name' => 'from',
+            'options' => array(
+                'language' => 'ru',
+                'format' => 'yyyy-mm-dd',
+            )
+        )
+    );
+    ?></div>
 <?php echo $form->dropDownList($model,'department_id',CHtml::listData(Department::model()->findAll(),'department_id','name'),array('empty'=>'--Выберите отдел--','class'=>'span3')); ?> &nbsp;  &nbsp; 
 <?php echo CHtml::dropDownList('stuff','',CHtml::listData(Halfstaff::model()->findAll(),'halfstuff_id','name'),array('empty'=>'--Выберите полуфабрикат--','class'=>'span3'))?>
 

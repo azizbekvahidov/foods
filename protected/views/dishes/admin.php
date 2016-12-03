@@ -50,7 +50,6 @@ $('.search-form form').submit(function(){
 
 
 <?php echo CHtml::beginForm(array('export')); ?>
-<link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/bootstrap.css"/>
     <style>
         .modal{
             overflow: scroll;
@@ -90,6 +89,7 @@ $('.search-form form').submit(function(){
                 <?=CHtml::link('<i class="fa fa-files-o fa-fw"></i>',array('copy?id='.$val->dish_id),array('class'=>'copy'))?>
                 <?=CHtml::link('<i class="icon-pencil"></i>',array('update?id='.$val->dish_id),array('class'=>'update'))?>
                 <?=CHtml::link('<i class="icon-trash"></i>',array('delete?id='.$val->dish_id),array('class'=>'delete'))?>
+                <?=CHtml::link('<i class="fa fa-fast-forward fa-fw"></i>',array('move?id='.$val->dish_id),array('class'=>'move'))?>
             </td>
         </tr>
     <? $count++;}?>

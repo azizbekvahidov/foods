@@ -10,11 +10,13 @@
         </thead>
         <tbody>
             <?  foreach($products as $key => $val){?>
-            <tr class="<?=$key?>">
-                <td><?=$val?></td>
-                <td class="count"><?=number_format( $endCount[$key],2)?></td>
-                <td><input type="text" class="depCount" name="products[<?=$key?>]" /></td>
-            </tr>
+                <?if($endCount[$key] != 0){?>
+                <tr class="<?=$key?>">
+                    <td><?=$val?></td>
+                    <td class="count"><?=number_format( $endCount[$key],2)?></td>
+                    <td><input type="text" class="depCount" name="products[<?=$key?>]" /></td>
+                </tr>
+                <?}?>
             <? } ?>
             
         </tbody>

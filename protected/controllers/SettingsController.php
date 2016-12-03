@@ -21,11 +21,11 @@ class SettingsController extends Controller{
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('calculateList','prodPrice','refresh','MbalanceRefresh','percent','exportList','prodRelation','prodRelList','setPrice','setInfo'),
+                'actions'=>array(),
                 'roles'=>array('2'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('changeBalance','ajaxChangeBalance','ajaxPrintCalculate','calculate','calculateList','prodPrice','refresh','MbalanceRefresh','percent','exportList','prodRelation','prodRelList','setPrice','setInfo'),
                 'roles'=>array('3'),
             ),
             array('deny',  // deny all users
@@ -36,8 +36,10 @@ class SettingsController extends Controller{
 
     public function actionRefresh(){
         $department = Department::model()->findAll();
+        $depBalance = new DepBalance();
         foreach ($department as $val) {
-            $dish = Dishes::model()->findAll('t.department_id = :depId',array(':depId'=>$val->department_id));
+            $depBalance->refreshBalance($val->department_id);
+            /*$dish = Dishes::model()->findAll('t.department_id = :depId',array(':depId'=>$val->department_id));
             foreach ($dish as $value) {
                 $this->addDish($value->dish_id,$val->department_id);
             }
@@ -50,12 +52,24 @@ class SettingsController extends Controller{
             $prod = Products::model()->findAll('t.department_id = :depId',array(':depId'=>$val->department_id));
             foreach ($prod as $value) {
                 $this->addProd($value->product_id,$val->department_id);
-            }
+            }*/
 
         }
 
         $this->redirect(array('site/index'));
     }
+
+    public function actionDeleteDublicate(){
+        $department = Department::model()->findAll();
+        $depBalance = new DepBalance();
+        foreach ($department as $val) {
+            $depBalance->deleteDublicate($val->department_id);
+
+        }
+
+        $this->redirect(array('site/index'));
+    }
+
 
     public function checkProd($id,$depId){
         $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
@@ -312,6 +326,15 @@ class SettingsController extends Controller{
                 $model->info_date = $_POST['Info']['dates'];
                 $model->proceed = $_POST['Info']['proceed'];
                 $model->parish = $_POST['Info']['parish'];
+                $model->term = $_POST['Info']['term'];
+                $model->azizTerm = $_POST['Info']['azizTerm'];
+                $model->tortShams = $_POST['Info']['tortShams'];
+                $model->meat = $_POST['Info']['meat'];
+                $model->other = $_POST['Info']['other'];
+                $model->kassa = $_POST['Info']['kassa'];
+                $model->gosBank = $_POST['Info']['gosBank'];
+                $model->waitor = $_POST['Info']['waitor'];
+                $model->genDir = $_POST['Info']['genDir'];
                 if($model->save()){
                     $messageType = 'success';
                     $message = "<strong>Well done!</strong> You successfully create data ";
@@ -338,60 +361,116 @@ class SettingsController extends Controller{
         $this->render('setBalance');
     }
 
-    public function actionBalanceList(){
+    public function actionSave(){
+        $function = new Functions();
         $dates = $_POST['dates'];
-
-        if(isset($_POST['types'])){
-            if($_POST['types'] == 0){
+        $types = $_POST['types'];
+        $depId = $_POST['depId'];
+        $pType = $_POST['pType'];
+        $pId = $_POST['pId'];
+        $pVal = $function->changeToFloat($_POST['pVal']);
+        if(!empty($dates)){
+            if ($types == 0) {
                 $model = Yii::app()->db->createCommand()
-                    ->select('b.prod_id,p.name as Pname,m.name as Mname')
+                    ->select('b.balance_id,b.CurEndCount,p.name as pName,m.name as mName,b.prod_id')
                     ->from('balance b')
                     ->join('products p','p.product_id = b.prod_id')
                     ->join('measurement m','m.measure_id = p.measure_id')
-                    ->where('b.b_date = :dates',array(':dates'=>$dates))
-                    ->order('p.name')
-                    ->queryAll();
-                $check = Yii::app()->db->createCommand()
-                    ->select('')
-                    ->from('balance b')
-                    ->where('b.b_date = :dates',array(':dates'=>$dates))
+                    ->where('b.b_date = :dates AND prod_id = :id', array(':dates' => $dates, ':id' => $pId))
                     ->queryRow();
+                if(!empty($model) && empty($model['CurEndCount'])){
+                   /* $temp = Yii::app()->db->createCommand()->update('balance',array(
+                        'CurEndCount'=>$pVal
+                    ),'balance_id = :id',array(':id'=>$model['balance_id']));*/
+                    $model['CurEndCount'] = $pVal;
+                    $model['type'] = 1;
+                    $return = $model;
+                }
             }
-            elseif($_POST['types'] == 1){
+            else{
+                if($pType == 1) {
+                    $model = Yii::app()->db->createCommand()
+                        ->select('b.dep_balance_id,b.CurEndCount,p.name as pName,m.name as mName,b.prod_id,b.type')
+                        ->from('dep_balance b')
+                        ->join('products p', 'p.product_id = b.prod_id')
+                        ->join('measurement m','m.measure_id = p.measure_id')
+                        ->where('b.b_date = :dates AND b.prod_id = :id AND b.type = :types AND b.department_id =:depId', array(':dates' => $dates, ':id' => $pId, ':types' => $pType, ':depId' => $depId))
+                        ->queryRow();
+                }
+                if($pType == 2){
+                    $model = Yii::app()->db->createCommand()
+                        ->select('b.dep_balance_id,b.CurEndCount,h.name as pName,m.name as mName,b.prod_id,b.type')
+                        ->from('dep_balance b')
+                        ->join('halfstaff h', 'h.halfstuff_id = b.prod_id')
+                        ->join('measurement m','m.measure_id = h.stuff_type')
+                        ->where('b.b_date = :dates AND b.prod_id = :id AND b.type = :types AND b.department_id =:depId', array(':dates' => $dates, ':id' => $pId, ':types' => $pType, ':depId' => $depId))
+                        ->queryRow();
+                }
+                if(!empty($model) && empty($model['CurEndCount'])){
 
-                $model0 = Yii::app()->db->createCommand()
-                    ->select('b.prod_id,h.name as Pname,m.name as Mname')
-                    ->from('dep_balance b')
-                    ->join('halfstaff h','h.halfstuff_id = b.prod_id')
-                    ->join('measurement m','m.measure_id = h.stuff_type')
-                    ->where('b.b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>$dates,':depId'=>$_POST['depId'],':types'=>2))
-                    ->order('h.name')
-                    ->queryAll();
-                $check = Yii::app()->db->createCommand()
-                    ->select('CurEndCount')
-                    ->from('dep_balance b')
-                    ->where('b.b_date = :dates AND b.department_id = :depId',array(':dates'=>$dates,':depId'=>$_POST['depId']))
-                    ->queryRow();
-
-                $model = Yii::app()->db->createCommand()
-                    ->select('b.prod_id,p.name as Pname,m.name as Mname')
-                    ->from('dep_balance b')
-                    ->join('products p','p.product_id = b.prod_id')
-                    ->join('measurement m','m.measure_id = p.measure_id')
-                    ->where('b.b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>$dates,':depId'=>$_POST['depId'],':types'=>1))
-                    ->order('p.name')
-                    ->queryAll();
-
+                    /*$temp = Yii::app()->db->createCommand()->update('dep_balance',array(
+                        'CurEndCount'=>$pVal
+                    ),'dep_balance_id = :id',array(':id'=>$model['dep_balance_id']));*/
+                    $model['CurEndCount'] = $pVal;
+                    $return = $model;
+                }
             }
         }
-        $this->renderPartial('balanceList',array(
+        if(isset($return)){
+            $this->renderPartial('save', array(
+                'result' => $return
+            ));
+        }
+    }
+
+    public function actionBalanceList(){
+        $function = new Functions();
+        $dates = $_POST['dates'];
+        $depId = $_POST['depId'];
+        if(isset($_POST['types'])){
+            if($_POST['types'] == 0){
+                if(!empty($_POST['count'])){
+                    foreach ($_POST['count'] as $key => $val) {
+                        if($key == 1){
+                            foreach ($val as $keys => $value) {
+                                Yii::app()->db->createCommand()->update('balance',array(
+                                    'CurEndCount'=>$function->changeToFloat($value)
+                                ),'b_date = :dates AND prod_id = :id ',array(':dates'=>$dates,':id'=>$keys));
+                            }
+                        }
+                    }
+
+                }
+            }
+            if($_POST['types'] == 1){
+                if(!empty($_POST['count'])){
+                    foreach ($_POST['count'] as $key => $val) {
+                        if($key == 1){
+                            foreach ($val as $keys => $value) {
+                                Yii::app()->db->createCommand()->update('dep_balance',array(
+                                    'CurEndCount'=>$function->changeToFloat($value)
+                                ),'b_date = :dates AND prod_id = :id AND type = :types AND department_id = :depId',array(':dates'=>$dates,':id'=>$keys,':types'=>$key,':depId'=>$depId));
+                            }
+                        }
+                        if($key == 2){
+                            foreach ($val as $keys => $value) {
+                                Yii::app()->db->createCommand()->update('dep_balance',array(
+                                    'CurEndCount'=>$function->changeToFloat($value)
+                                ),'b_date = :dates AND prod_id = :id AND type = :types AND department_id = :depId',array(':dates'=>$dates,':id'=>$keys,':types'=>$key,':depId'=>$depId));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        /*$this->renderPartial('balanceList',array(
             'types'=>$_POST['types'],
             'model'=>$model,
             'model0'=>$model0,
             'check'=>$check,
             'depId'=>$_POST['depId'],
             'dates'=>$dates
-        ));
+        ));*/
     }
     
     public function actionAjaxBalance(){
@@ -453,12 +532,69 @@ class SettingsController extends Controller{
 
     public function actionCalculateList(){
         $id = $_POST['id'];
+        $dish = new Dishes();
+        $stuff = new Halfstaff();
+        $result = array();
         $model = Yii::app()->db->createCommand()
             ->select('')
             ->from('dishes d')
             ->where('d.department_id = :depId',array(':depId'=>$id))
             ->queryAll();
+        foreach($model as $val){
+            $dishStruct = $dish->getStruct($val['dish_id']);
+                $result['dish'][$val['dish_id']] = $dishStruct;
+            $dishStuff = $dish->getStuff($val['dish_id']);
+            if(!empty($dishStuff)){
+                foreach($dishStuff as $key => $value){
+                    $stuffStruct = $stuff->getStruct($key);
+                    $result['stuff'][$key] = $stuffStruct;
+                    $stuffStuff = $stuff->getStuffStuff($key);
+                    if(!empty($stuffStuff)){
+                        foreach($stuffStuff as $keys => $values){
+                            $stuffsStruct = $stuff->getStruct($keys);
+                            $result['stuff'][$keys] = $stuffsStruct;   
+                        }
+                    }
+                    
+                }
+            }
+        }
+        $models = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('halfstaff h')
+            ->where('h.department_id = :depId',array(':depId'=>$id))
+            ->queryAll();
+
+        if(!empty($models)){
+            foreach($models as $val){
+                $dishStruct = $stuff->getStruct($val['halfstuff_id']);
+                    $result['stuff'][$val['halfstuff_id']] = $dishStruct;
+                $dishStuff = $stuff->getStuffStuff($val['halfstuff_id']);
+                if(!empty($dishStuff)){
+                    foreach($dishStuff as $key => $value){
+                        $stuffStruct = $stuff->getStruct($key);
+                        $result['stuff'][$key] = $stuffStruct;
+                        $stuffStuff = $stuff->getStuffStuff($key);
+                        if(!empty($stuffStuff)){
+                            foreach($stuffStuff as $keys => $values){
+                                $stuffsStruct = $stuff->getStruct($keys);
+                                $result['stuff'][$keys] = $stuffsStruct;   
+                                $stuffStuffs = $stuff->getStuffStuff($keys);
+                                if(!empty($stuffsStruct['stuff'])){
+                                    foreach($stuffsStruct['stuff'] as $keyss => $valuess){
+                                        $stuffsStructs = $stuff->getStruct($keyss);
+                                        $result['stuff'][$keyss] = $stuffsStructs;  
+
+                                    }
+                                }   
+                            }
+                        }
+                    }
+                }
+            }
+        }
         $this->renderPartial('calculateList',array(
+            'result'=>$result,
             'model'=>$model,
             'id'=>$id
         ));
@@ -476,8 +612,182 @@ class SettingsController extends Controller{
         ));
     }
 
+    public function actionDebtRefresh(){
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from('debt')
+            ->queryAll();
+            foreach($model as $val){
+                Yii::app()->db->createCommand()->update('expense',array(
+                    'debt'=>0
+                ),'expense_id = :id',array(':id'=>$val['expense_id']));
+                
+            }
+    }
 
+    public function actionOverWriteDep($dates,$dep){
+        $dayBefore = date('Y-m-d',strtotime($dates)-86400);
+        if($dep != 0){
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from('dep_balance')
+                ->where('b_date = :id AND department_id = :depId',array(':id'=>$dayBefore,':depId'=>$dep))
+                ->queryAll();
+             
+                Yii::app()->db->createCommand()->update('dep_balance',array(
+                        'startCount'=>0
+                    ),'b_date = :dates AND department_id = :depId',array(':dates'=>$dates,':depId'=>$dep));
+    
+            foreach($model as $val){
+                Yii::app()->db->createCommand()->update('dep_balance',array(
+                        'startCount'=>$val['CurEndCount']
+                    ),'b_date = :dates AND prod_id = :prodId AND type = :types AND department_id = :depId',array(':dates'=>$dates,':prodId'=>$val['prod_id'],':types'=>$val['type'],':depId'=>$dep));
+            }
+        }
+        else{
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from('dep_balance')
+                ->where('b_date = :id',array(':id'=>$dayBefore))
+                ->queryAll();
+             
+                Yii::app()->db->createCommand()->update('dep_balance',array(
+                        'startCount'=>0
+                    ),'b_date = :dates',array(':dates'=>$dates));
+    
+            foreach($model as $val){
+                Yii::app()->db->createCommand()->update('dep_balance',array(
+                        'startCount'=>$val['CurEndCount']
+                    ),'b_date = :dates AND prod_id = :prodId AND type = :types AND department_id = :depId',array(':dates'=>$dates,':prodId'=>$val['prod_id'],':types'=>$val['type'],':depId'=>$val['department_id']));
+            }
+        }
+    }
 
+    public function actionOverWrite($dates){
+        $dayBefore = date('Y-m-d',strtotime($dates)-86400);
 
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from('balance')
+            ->where('b_date = :id',array(':id'=>$dayBefore))
+            ->queryAll();
+            Yii::app()->db->createCommand()->update('balance',array(
+                    'startCount'=>0
+                ),'b_date = :dates ',array(':dates'=>$dates));
+        foreach($model as $val){
+            Yii::app()->db->createCommand()->update('balance',array(
+                    'startCount'=>$val['CurEndCount']
+                ),'b_date = :dates AND prod_id = :prodId',array(':dates'=>$dates,':prodId'=>$val['prod_id']));
+        }
+    }
+
+    public function actionChangeBalance(){
+        if(!empty($_POST)){
+            $text = '';
+            $function = new Functions();
+            $dates = $_POST['dates'];
+            $depId = $_POST['depId'];
+            $text .= $dates."->";
+            if(isset($_POST['types'])){
+                if($_POST['types'] == 0){
+                    if(!empty($_POST['count'])){
+                        foreach ($_POST['count'] as $key => $val) {
+                            if($key == 1){
+                                foreach ($val as $keys => $value) {
+                                    $text .= 'depId:'.$depId.',key:'.$key.',prod_id:'.$keys.',value:'.$value."|";
+                                    Yii::app()->db->createCommand()->update('balance',array(
+                                        'CurEndCount'=>$function->changeToFloat($value)
+                                    ),'b_date = :dates AND prod_id = :id ',array(':dates'=>$dates,':id'=>$keys));
+                                }
+                            }
+                        }
+
+                    }
+                }
+                if($_POST['types'] == 1){
+                    if(!empty($_POST['count'])){
+                        foreach ($_POST['count'] as $key => $val) {
+                            if($key == 1){
+                                foreach ($val as $keys => $value) {
+                                    $text .= 'depId:'.$depId.',key:'.$key.',prod_id:'.$keys.',value:'.$value."|";
+                                    Yii::app()->db->createCommand()->update('dep_balance',array(
+                                        'CurEndCount'=>$function->changeToFloat($value)
+                                    ),'b_date = :dates AND prod_id = :id AND type = :types AND department_id = :depId',array(':dates'=>$dates,':id'=>$keys,':types'=>$key,':depId'=>$depId));
+                                }
+                            }
+                            if($key == 2){
+                                foreach ($val as $keys => $value) {
+                                    $text .= 'depId:'.$depId.',key:'.$key.',prod_id:'.$keys.',value:'.$value."|";
+                                    Yii::app()->db->createCommand()->update('dep_balance',array(
+                                        'CurEndCount'=>$function->changeToFloat($value)
+                                    ),'b_date = :dates AND prod_id = :id AND type = :types AND department_id = :depId',array(':dates'=>$dates,':id'=>$keys,':types'=>$key,':depId'=>$depId));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            $text .= "\r";
+            $file = fopen('logs/changeBalance.txt',a);
+            fwrite($file,$text);
+            fclose($file);
+        }
+        $this->render('changeBalance');
+    }
+
+    public function actionAjaxChangeBalance(){
+        $function = new Functions();
+        $dates = $_POST['dates'];
+        $types = $_POST['types'];
+        $depId = $_POST['depId'];
+        $pType = $_POST['pType'];
+        $pId = $_POST['pId'];
+        $pVal = $function->changeToFloat($_POST['pVal']);
+        if(!empty($dates)){
+            if ($types == 0) {
+                $model = Yii::app()->db->createCommand()
+                    ->select('b.balance_id,b.CurEndCount,p.name as pName,m.name as mName,b.prod_id')
+                    ->from('balance b')
+                    ->join('products p','p.product_id = b.prod_id')
+                    ->join('measurement m','m.measure_id = p.measure_id')
+                    ->where('b.b_date = :dates AND prod_id = :id', array(':dates' => $dates, ':id' => $pId))
+                    ->queryRow();
+                if(!empty($model)){
+                    $model['CurEndCount'] = $pVal;
+                    $model['type'] = 1;
+                    $return = $model;
+                }
+            }
+            else{
+                if($pType == 1) {
+                    $model = Yii::app()->db->createCommand()
+                        ->select('b.dep_balance_id,b.CurEndCount,p.name as pName,m.name as mName,b.prod_id,b.type')
+                        ->from('dep_balance b')
+                        ->join('products p', 'p.product_id = b.prod_id')
+                        ->join('measurement m','m.measure_id = p.measure_id')
+                        ->where('b.b_date = :dates AND b.prod_id = :id AND b.type = :types AND b.department_id =:depId', array(':dates' => $dates, ':id' => $pId, ':types' => $pType, ':depId' => $depId))
+                        ->queryRow();
+                }
+                if($pType == 2){
+                    $model = Yii::app()->db->createCommand()
+                        ->select('b.dep_balance_id,b.CurEndCount,h.name as pName,m.name as mName,b.prod_id,b.type')
+                        ->from('dep_balance b')
+                        ->join('halfstaff h', 'h.halfstuff_id = b.prod_id')
+                        ->join('measurement m','m.measure_id = h.stuff_type')
+                        ->where('b.b_date = :dates AND b.prod_id = :id AND b.type = :types AND b.department_id =:depId', array(':dates' => $dates, ':id' => $pId, ':types' => $pType, ':depId' => $depId))
+                        ->queryRow();
+                }
+                if(!empty($model)){
+                    $model['CurEndCount'] = $pVal;
+                    $return = $model;
+                }
+            }
+        }
+        if(isset($return)){
+            $this->renderPartial('ajaxChangeBalance', array(
+                'result' => $return
+            ));
+        }
+    }
 
 }

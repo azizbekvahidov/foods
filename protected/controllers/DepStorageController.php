@@ -33,11 +33,11 @@ class DepStorageController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('view','update','admin','delete','export','import','editable','toggle','calendar', 'calendarEvents','today','viewStorage','storageView','depForm','allIn','allStorage','usedProdLists','usedProd','downloadCsv' ),
+				'actions'=>array('view', ),
 				'roles'=>array('2'),
 			),
             array('allow',
-                'actions'=>array(),
+                'actions'=>array('update','admin','delete','export','import','editable','toggle','calendar', 'calendarEvents','today','viewStorage','storageView','depForm','allIn','allStorage','usedProdLists','usedProd','downloadCsv'),
                 'roles'=>array('3'),
             ),
             array('allow',
@@ -114,8 +114,17 @@ class DepStorageController extends Controller
     }
 
     public function actionAllStorage(){
-        $dates = $_POST['dates'];
-        $depId = $_POST['depId'];
+        $function = new Functions();
+        if(!empty($_POST)) {
+            $dates = $_POST['dates'];
+            $fromDate = date("Y-m-d",strtotime($dates)-86400);
+            $depId = $_POST['depId'];
+        }
+        else{
+            $dates = $_GET['till'];
+            $fromDate = date('Y-m-d',strtotime($_GET['dates'])-86400);
+            $depId = $_GET['depId'];
+        }
         $outProduct = array();
         $outStuff = array();
         $depIn = array();
@@ -125,21 +134,11 @@ class DepStorageController extends Controller
             $outProduct[$value->product_id] = $outProduct[$value->product_id] + 0;
         }
         
-        $departMoveOut = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id = :depId AND t.fromDepId <> :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0));
+        $depIn = $function->depMoveIn($depId,$dates,$fromDate);
+         
 
-        foreach($departMoveOut as $key => $val){
-            foreach($val->getRelated('realizedProd') as $value){
-                $depIn[$value->prod_id] = $depIn[$value->prod_id] + $value->count;
-            }
-        } 
-
-        $departMoveIn = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.fromDepId = :depId',array(':dates'=>$dates,':depId'=>$depId));
-        foreach($departMoveIn as $value){ 
-            foreach($value->getRelated('realizedProd') as $val){
-                $depOut[$val->prod_id] = $depOut[$val->prod_id] + $val->count;
-            }
-        }
-        
+        $depOut = $function->depMoveOut($depId,$dates,$fromDate);
+                
         $curProd = DepBalance::model()->with('products')->findAll(
             'date(t.b_date) = :dates AND t.department_id = :department_id AND t.type = :type',
             array(
@@ -167,49 +166,28 @@ class DepStorageController extends Controller
 
         $stuff = new Halfstaff();
 
-        $outProduct = $dish->getDishProd($depId,$dates);
-        
-        $outDishStuff = $dish->getDishStuff($depId,$dates);
+        $outProduct = $dish->getDishProd($depId,$dates,$dates);
+//        $otherOutProd = $function->prodOtherOut($dates,$fromDate,$depId);
+//        $outProduct = $stuff->sumArray($outProduct,$otherOutProd);
 
-        $inProducts = array();
-        $model = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id = :depId AND t.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0));
-        foreach($model as $key => $val){
-            foreach($val->getRelated('realizedProd') as $value){
-                $inProducts[$value->prod_id] = $inProducts[$value->prod_id] + $value->count;
-            }
-        } 
-        $instuff = array();
-        $outStuffProd = array();
+        $outDishStuff = $dish->getDishStuff($depId,$dates,$dates);
+
         
-        $model2 = Inexpense::model()->with('inorder.stuffs.stuffStruct')->findAll('date(t.inexp_date) = :dates AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':dates'=>$dates,'depId'=>$depId,':types'=>1,':fromDepId'=>0));
-        foreach($model2 as $val){
-            foreach($val->getRelated('inorder') as $value){
-                $instuff[$value->stuff_id] = $instuff[$value->stuff_id] + $value->count;
-                foreach($value->getRelated('stuffs')->getRelated('stuffStruct') as $values){
-                    $outStuffProd[$values->prod_id] = $outStuffProd[$values->prod_id] + $values->amount/$value->getRelated('stuffs')->count*$value->count; 
-                }
-                
-            }
-        }
-        $model3 = Inexpense::model()->with('inorder.stuffs.stuffStruct.podstuff.podstuffStruct.Struct')->findAll('date(t.inexp_date) = :dates AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':dates'=>$dates,'depId'=>$depId,':types'=>2,':fromDepId'=>0));
-        foreach($model3 as $val){
-            foreach($val->getRelated('inorder') as $value){
-                $instuff[$value->stuff_id] = $instuff[$value->stuff_id] + $value->count;
-                foreach($value->getRelated('stuffs')->getRelated('stuffStruct') as $values){
-                    $outStuff[$values->prod_id] = $outStuff[$values->prod_id] + $values->amount/$value->getRelated('stuffs')->count*$value->count;
-                    foreach($values->getRelated('podstuff')->getRelated('podstuffStruct') as $vals){
-                        $outStuffProd[$values->prod_id] = $outStuffProd[$values->prod_id] + $vals->amount/$values->getRelated('podstuff')->count*$values->amount/$value->getRelated('stuffs')->count*$value->count;
-                    }
-                }
-                
-            }
-        }
-        $outStuff = $stuff->sumArray($outDishStuff,$outStuff);
+        $inProducts = $function->depInProducts($depId,$dates,$fromDate);
+        //Приход загатовок в отдел и расход их продуктов
+        $instuff = $function->depInStuff($depId,$dates,$fromDate);
+        
+        $outStuffProd = $function->depOutStuffProd($depId,$dates,$fromDate);
+        
+        //Приход и расход загатовок в отдел, расход их продуктов
+        $outStuff = $function->depOutStuff($depId,$dates,$fromDate);
+//        $otherOutStuff = $function->stuffOtherOut($dates,$fromDate,$depId);
+//        $outStuff = $stuff->sumArray($outStuff,$otherOutStuff);
+              //$outStuff = $stuff->sumArray($outDishStuff,$outStuff);
 
         $inexpense = new Inexpense();
-        $depStuffIn = $inexpense->getDepIn($depId,$dates);
-        $depStuffOut = $inexpense->getDepOut($depId,$dates);
-
+        $depStuffIn = $inexpense->getDepIn($depId,$dates,$fromDate);
+        $depStuffOut = $inexpense->getDepOut($depId,$dates,$fromDate);
 
         $this->renderPartial('allStorage',array(
             'depIn'=>$depIn,
@@ -220,6 +198,7 @@ class DepStorageController extends Controller
             'model'=>$curProd,
             'curStuff'=>$curStuff,
             'inProduct'=>$inProducts,
+            'outDishStuff'=>$outDishStuff,
             'instuff'=>$instuff,
             'outProduct'=>$outProduct,
             'outStuffProd'=>$outStuffProd,
@@ -377,12 +356,12 @@ class DepStorageController extends Controller
 
         $inProducts = array();
         $model = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id = :depId AND t.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0));
-        
+
         foreach($model as $key => $val){
             foreach($val->getRelated('realizedProd') as $value){
                 $inProducts[$value->prod_id] = $inProducts[$value->prod_id] + $value->count;
             }
-        } 
+        }
         $instuff = array();
         $outStuffProd = array();
         $model2 = Inexpense::model()->with('inorder.stuffs.stuffStruct')->findAll('date(t.inexp_date) = :dates AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':dates'=>$dates,'depId'=>$depId,':types'=>1,':fromDepId'=>0));
@@ -390,9 +369,9 @@ class DepStorageController extends Controller
             foreach($val->getRelated('inorder') as $value){
                 $instuff[$value->stuff_id] = $instuff[$value->stuff_id] + $value->count;
                 foreach($value->getRelated('stuffs')->getRelated('stuffStruct') as $values){
-                    $outStuffProd[$values->prod_id] = $outStuffProd[$values->prod_id] + $values->amount/$value->getRelated('stuffs')->count*$value->count; 
+                    $outStuffProd[$values->prod_id] = $outStuffProd[$values->prod_id] + $values->amount/$value->getRelated('stuffs')->count*$value->count;
                 }
-                
+
             }
         }
         $model3 = Inexpense::model()->with('inorder.stuffs.stuffStruct.podstuff.podstuffStruct.Struct')->findAll('date(t.inexp_date) = :dates AND t.department_id = :depId AND stuffStruct.types = :types AND t.fromDepId = :fromDepId',array(':dates'=>$dates,'depId'=>$depId,':types'=>2,':fromDepId'=>0));
@@ -405,7 +384,7 @@ class DepStorageController extends Controller
                         $outStuffProd[$values->prod_id] = $outStuffProd[$values->prod_id] + $vals->amount/$values->getRelated('podstuff')->count*$values->amount/$value->getRelated('stuffs')->count*$value->count;
                     }
                 }
-                
+
             }
         }
         $outStuff = $stuff->sumArray($outDishStuff,$outStuff);
@@ -870,6 +849,4 @@ class DepStorageController extends Controller
 	    echo CJSON::encode($items);
 	    Yii::app()->end();
 	}
-
-	
 }

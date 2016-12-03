@@ -1,11 +1,16 @@
 <? $cnt = 1; $prod = new Products(); $stuff = new Halfstaff(); $price = new Prices(); $dish = new Dishes(); $sum = 0;?>
+<link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/bootstrap.css"/>
 <style>
 
     thead{
         background-color:white;
     }
+    .modal{
+        z-index: 1050;
+    }
 </style>
-<table id="dataTable" class="table table-bordered table-hover">
+
+<table id="Detail" class="table table-bordered table-hover">
     <thead>
         <tr>
             <th></th>
@@ -25,6 +30,9 @@
                     <?if($key == 'price'){?>
                         <td><?=number_format($price->getPrice($val['prod_id'],$val['mType'],$val['type'],$dates)*$val['count'],0,',',' ')?></td>
                         <? $sum = $sum + $price->getPrice($val['prod_id'],$val['mType'],$val['type'],$dates)*$val['count']?>
+                    <?}elseif($key == 'begin'){?>
+                        <td><?=number_format($prod->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($dates)-86400))*$val['count'],0,',',' ')?></td>
+                        <? $sum = $sum + $prod->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($dates)-86400))*$val['count']?>
                     <?}else{?>
                         <td><?=number_format($prod->getCostPrice($val['prod_id'],$dates)*$val['count'],0,',',' ')?></td>
                         <? $sum = $sum + $prod->getCostPrice($val['prod_id'],$dates)*$val['count']?>
@@ -42,6 +50,9 @@
                         <?if($key == 'price'){?>
                             <td><?=number_format($price->getPrice($val['prod_id'],$val['mType'],$val['type'],$dates)*$val['count'],0,',',' ')?></td>
                             <? $sum = $sum + $price->getPrice($val['prod_id'],$val['mType'],$val['type'],$dates)*$val['count']?>
+                        <?}elseif($key == 'begin'){?>
+                            <td><?=number_format($stuff->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($dates)-86400))*$val['count'],0,',',' ')?></td>
+                            <? $sum = $sum + $stuff->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($dates)-86400))*$val['count']?>
                         <?}else{?>
                             <td><?=number_format($stuff->getCostPrice($val['prod_id'],$dates)*$val['count'],0,',',' ')?></td>
                             <? $sum = $sum + $stuff->getCostPrice($val['prod_id'],$dates)*$val['count']?>
@@ -75,29 +86,11 @@
         </tr>
     </tfoot>
 </table>
-<div id="bottom_anchor"></div>
+<div id="bottom_an"></div>
 <script>
-    function moveScroll(){
-        var scroll = $(window).scrollTop();
-        var anchor_top = $("#dataTable").offset().top;
-        var anchor_bottom = $("#bottom_anchor").offset().top;
-        if (scroll>anchor_top && scroll<anchor_bottom) {
-            clone_table = $("#clone");
-            if(clone_table.length == 0){
-                clone_table = $("#dataTable").clone();
-                clone_table.attr('id', 'clone');
-                clone_table.css({position:'fixed',
-                    'pointer-events': 'none',
-                    top:0});
-                clone_table.width($("#dataTable").width());
-                $("#content").append(clone_table);
-                $("#clone").css({visibility:'hidden'});
-                $("#clone thead").css({'visibility':'visible','pointer-events':'auto'});
-            }
-        } else {
-            $("#clone").remove();
-        }
-    }
-    $(window).scroll(moveScroll);
-
+    $('#Detail').DataTable({
+        fixedHeader: true,
+        responsive: true,
+        "lengthMenu": [[10, 25, 50, 100,-1], [ 10, 25, 50, 100,"Все"]]
+    });
 </script>

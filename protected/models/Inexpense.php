@@ -152,26 +152,31 @@ class Inexpense extends CActiveRecord
         return $scope;
     }
 
-    public function getDepIn($depId,$dates){
-        $model = $this->model()->with('inorder')->findAll('date(t.inexp_date) = :dates AND t.department_id = :depId AND t.fromDepId != :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0));
-        $result = array();
-        foreach ($model as $value) {
-            foreach ($value->getRelated('inorder') as $val) {
-                $result[$val->stuff_id] = $result[$val->stuff_id] + $val->count;
-            }
+    public function getDepIn($depId,$dates,$fromDate){
+        $model = Yii::app()->db->createCommand()
+            ->select('inor.stuff_id,inor.count')
+            ->from('inexpense inex')
+            ->join('inorder inor','inor.inexpense_id = inex.inexpense_id')
+            ->where('date(inex.inexp_date) <= :dates AND date(inex.inexp_date) > :from AND inex.department_id = :depId AND inex.fromDepId != :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0,':from'=>$fromDate))
+            ->queryAll();
 
+        $result = array();
+        foreach ($model as $val) {
+            $result[$val['stuff_id']] = $result[$val['stuff_id']] + $val['count'];
         }
         return $result;
     }
 
-    public function getDepOut($depId,$dates){
-        $model = $this->model()->with('inorder')->findAll('date(t.inexp_date) = :dates AND t.department_id != :depId AND t.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>0,':fromDepId'=>$depId));
+    public function getDepOut($depId,$dates,$fromDate){
+        $model = Yii::app()->db->createCommand()
+            ->select('inor.stuff_id,inor.count')
+            ->from('inexpense inex')
+            ->join('inorder inor','inor.inexpense_id = inex.inexpense_id')
+            ->where('date(inex.inexp_date) <= :dates AND date(inex.inexp_date) > :from AND inex.department_id != :depId AND inex.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>0,':fromDepId'=>$depId,':from'=>$fromDate))
+            ->queryAll();
         $result = array();
-        foreach ($model as $value) {
-            foreach ($value->getRelated('inorder') as $val) {
-                $result[$val->stuff_id] = $result[$val->stuff_id] + $val->count;
-            }
-
+        foreach ($model as $val) {
+            $result[$val['stuff_id']] = $result[$val['stuff_id']] + $val['count'];
         }
         return $result;
     }

@@ -28,13 +28,13 @@ class ArchiveOrder extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('archive_id, expense_id', 'numerical', 'integerOnly'=>true),
+			array('archive_id, expense_id, empId', 'numerical', 'integerOnly'=>true),
 			array('archive_action', 'length', 'max'=>100),
 			array('archive_message', 'length', 'max'=>255),
 			array('archive_date', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('archive_id, archive_date, archive_action, expense_id, archive_message', 'safe', 'on'=>'search'),
+			array('archive_id, archive_date, archive_action, expense_id, archive_message, empId', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -110,6 +110,7 @@ class ArchiveOrder extends CActiveRecord
         $model->archive_action  = $action;
         $model->expense_id = $id;
         $model->archive_message = $message;
+        $model->empId =  Yii::app()->user->getId();
         $model->save();
     }
 }

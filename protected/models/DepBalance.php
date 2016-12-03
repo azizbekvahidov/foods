@@ -169,33 +169,187 @@ class DepBalance extends CActiveRecord
     }
 
     public function refreshBalance($depId){
-        $dish = Dishes::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
-        foreach ($dish as $value) {
-            $this->addDish($value->dish_id,$depId);
+$max_date = Yii::app()->db->createCommand()
+            ->select('b_date')
+            ->from('dep_balance')
+            ->order('b_date DESC')
+            ->group('b_date')
+            ->queryRow();
+        $prod = array();
+        $stuffs = array();
+        $dishes = new Dishes();
+        $pBalance = array();
+        $sBalance = array();
+        $prodTemp = array();
+        $stuffTemp = array();
+        $dish = $dishes->getDishProd($depId);
+        $prod['prod'] .= $dish['prod'];
+        $prod['stuff'] .= $dish['stuff'];
+        $halfStuff = new Halfstaff();
+        $stuff = $halfStuff->getStuffProd($depId);
+        $prod['prod'] .= $stuff['prod'];
+        $prod['stuff'] .= $stuff['stuff'];
+        $product = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('products p')
+            ->where('p.department_id = :depId',array(':depId'=>$depId))
+            ->queryAll();
+        foreach ($product as $val) {
+            $prod['prod'] .= $val['product_id'].":";
+        }
+        $prodTemp = array_unique(explode(':',$prod['prod']));
+
+        $stuffTemp = array_unique(explode(':',$prod['stuff']));
+        $ProdBalance = Yii::app()->db->createCommand()
+            ->select('db.dep_balance_id,db.prod_id')
+            ->from('dep_balance db')
+            ->where('db.b_date = :dates AND db.department_id = :id AND db.type = :types ',array(':dates'=>$max_date['b_date'],':id'=>$depId,':types'=>1))
+            ->group('db.prod_id')
+            ->queryAll();
+        if(!empty($ProdBalance)) {
+            foreach ($ProdBalance as $key => $val) {
+                $pBalance[$val['dep_balance_id']] = $val['prod_id'];
+                if (!in_array($val['prod_id'], $prodTemp)) {
+                    Yii::app()->db->createCommand()->delete('dep_balance', 'b_date = :dates AND department_id = :depId AND prod_id = :id AND type = :types', array(':dates' => $max_date['b_date'], ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 1));
+                }
+                if ($val['prod_id'] == 0) {
+                    Yii::app()->db->createCommand()->delete('dep_balance', 'b_date = :dates AND department_id = :depId AND prod_id = :id AND type = :types', array(':dates' => $max_date['b_date'], ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 1));
+                }
+            }
         }
 
-        $stuff = Halfstaff::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
-        foreach ($stuff as $value) {
-            $this->addStuff($value->halfstuff_id,$depId);
+        $StuffBalance = Yii::app()->db->createCommand()
+            ->select('db.dep_balance_id,db.prod_id')
+            ->from('dep_balance db')
+            ->where('db.b_date = :dates AND db.department_id = :id AND db.type = :types',array(':dates'=>$max_date['b_date'],':id'=>$depId,':types'=>2))
+            ->group('db.prod_id')
+            ->queryAll();
+        if(!empty($StuffBalance)) {
+            foreach ($StuffBalance as $key => $val) {
+                $sBalance[$val['dep_balance_id']] = $val['prod_id'];
+                if (!in_array($val['prod_id'], $stuffTemp)) {
+                    Yii::app()->db->createCommand()->delete('dep_balance', 'b_date = :dates AND department_id = :depId AND prod_id = :id AND type = :types', array(':dates' => $max_date['b_date'], ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 2));
+                }
+                if ($val['prod_id'] == 0) {
+                    Yii::app()->db->createCommand()->delete('dep_balance', 'b_date = :dates AND department_id = :depId AND prod_id = :id AND type = :types', array(':dates' => $max_date['b_date'], ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 2));
+                }
+            }
+        }
+        if(!empty($prodTemp)) {
+            foreach ($prodTemp as $val) {
+                if ($val != 0) {
+                    if (!in_array($val, $pBalance)) {
+                        Yii::app()->db->createCommand()->insert('dep_balance', array(
+                                'b_date' => $max_date['b_date'],
+                                'department_id' => $depId,
+                                'prod_id' => $val,
+                                'type' => 1)
+                        );
+                    }
+                }
+            }
+        }
+        if(!empty($stuffTemp)) {
+            foreach ($stuffTemp as $val) {
+                if ($val != 0) {
+                    if (!in_array($val, $sBalance)) {
+
+                        Yii::app()->db->createCommand()->insert('dep_balance', array(
+                                'b_date' => $max_date['b_date'],
+                                'department_id' => $depId,
+                                'prod_id' => $val,
+                                'type' => 2)
+                        );
+                    }
+                }
+            }
         }
 
-        $prod = Products::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
-        foreach ($prod as $value) {
-            $this->addProd($value->product_id,$depId);
+        /*
+
+                $dish = Yii::app()->db->createCommand()
+                    ->select('dish_id')
+                    ->from('dishes d')
+                    ->where('d.department_id = :depId',array(':depId'=>$depId))
+                    ->queryAll();
+               foreach ($dish as $value) {
+                    $temp = $dishes->DishProd($max_date,$value['dish_id']);
+                    $prod = $prod + $temp['prod'];
+                    if(!empty($temp['stuff'])){
+                        $stuffs = $stuffs + $temp['stuff'];
+
+                    }
+                    //$this->addDish($value['dish_id'],$depId,$max_date['b_date']);
+                }
+
+                $stuff = Yii::app()->db->createCommand()
+                    ->select('h.halfstuff_id')
+                    ->from('halfstaff h')
+                    ->where('h.department_id = :depId',array(':depId'=>$depId))
+                    ->queryAll();
+                foreach ($stuff as $value) {
+                    $this->addStuff($value['halfstuff_id'],$depId,$max_date['b_date']);
+                }
+
+                $prod = Yii::app()->db->createCommand()
+                    ->select('p.product_id')
+                    ->from('products p')
+                    ->where('p.department_id = :depId',array(':depId'=>$depId))
+                    ->queryAll();
+                foreach ($prod as $value) {
+                    $this->addProd($value['product_id'],$depId,$max_date['b_date']);
+                }*/
+
+    }
+
+    public function deleteDublicate($depId){
+        $max_date = Yii::app()->db->createCommand()
+            ->select('b_date')
+            ->from('dep_balance')
+            ->order('b_date DESC')
+            ->group('b_date')
+            ->queryRow();
+        $ProdBalance = Yii::app()->db->createCommand()
+            ->select('db.dep_balance_id,db.prod_id')
+            ->from('dep_balance db')
+            ->where('db.b_date = :dates AND db.department_id = :id AND db.type = :types ',array(':dates'=>$max_date['b_date'],':id'=>$depId,':types'=>1))
+            ->group('db.prod_id')
+            ->queryAll();
+        if(!empty($ProdBalance)) {
+            foreach ($ProdBalance as $key => $val) {
+                $pBalance[$val['dep_balance_id']] = $val['prod_id'];
+
+            }
+        }
+
+        $StuffBalance = Yii::app()->db->createCommand()
+            ->select('db.dep_balance_id,db.prod_id')
+            ->from('dep_balance db')
+            ->where('db.b_date = :dates AND db.department_id = :id AND db.type = :types',array(':dates'=>$max_date['b_date'],':id'=>$depId,':types'=>2))
+            ->group('db.prod_id')
+            ->queryAll();
+        if(!empty($StuffBalance)) {
+            foreach ($StuffBalance as $key => $val) {
+                $sBalance[$val['dep_balance_id']] = $val['prod_id'];
+
+            }
+        }
+        foreach ($pBalance as $key => $val) {
+            Yii::app()->db->createCommand()->delete('dep_balance','dep_balance_id != :id AND prod_id = :prod_id AND type = :types',array(':id'=>$key,':prod_id'=>$val,':types'=>1));
+        }
+        foreach ($sBalance as $key => $val) {
+            Yii::app()->db->createCommand()->delete('dep_balance','dep_balance_id != :id AND prod_id = :prod_id AND type = :types',array(':id'=>$key,':prod_id'=>$val,':types'=>2));
         }
 
     }
 
-    public function checkProd($id,$depId){
-        $max_date = Yii::app()->db->createCommand()
-            ->select('MAX(b_date) as b_date')
-            ->from('dep_balance')
-            ->queryRow();
+
+    public function checkProd($id,$depId,$max_date){
 
         $curDepProd = Yii::app()->db->createCommand()
             ->select('')
             ->from('dep_balance t')
-            ->where('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date['b_date'],':types'=>1,':depId'=>$depId))
+            ->where('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date,':types'=>1,':depId'=>$depId))
             ->queryAll();
         foreach($curDepProd as $value){
             if($value['prod_id'] == $id){
@@ -209,16 +363,11 @@ class DepBalance extends CActiveRecord
         return $result;
     }
 
-    public function checkStuff($id,$depId){
-        $max_date = Yii::app()->db->createCommand()
-            ->select('MAX(b_date) as b_date')
-            ->from('dep_balance')
-            ->queryRow();
-
+    public function checkStuff($id,$depId,$max_date){
         $curDepProd = Yii::app()->db->createCommand()
             ->select('')
             ->from('dep_balance t')
-            ->where('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date['b_date'],':types'=>2,':depId'=>$depId))
+            ->where('date(t.b_date) = :dates AND t.type = :types AND t.department_id = :depId',array(':dates'=>$max_date,':types'=>2,':depId'=>$depId))
             ->queryAll();
 
         foreach($curDepProd as $value){
@@ -234,62 +383,72 @@ class DepBalance extends CActiveRecord
         return $result;
     }
 
-    public function addProd($id,$depId){
-        if($this->checkProd($id,$depId) != true){
-            $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
-            $model = new DepBalance;
-            $model->b_date = $max_date->b_date;
-            $model->prod_id = $id;
-            $model->startCount = 0;
-            $model->endCount = 0;
-            $model->department_id = $depId;
-            $model->type = 1;
-            $model->save();
+    public function addProd($id,$depId,$max_date){
+        if($this->checkProd($id,$depId,$max_date) != true){
+            Yii::app()->db->createCommand()
+                ->insert('dep_balance',array(
+                    'b_date'=>$max_date,
+                    'prod_id'=>$id,
+                    'startCount'=>0,
+                    'endCount'=>0,
+                    'department_id'=>$depId,
+                    'type'=>1
+                ));
         }
     }
 
-    public function addStuff($id,$depId){
-        if($this->checkStuff($id,$depId) != true) {
-            $max_date = DepBalance::model()->find(array('select' => 'MAX(b_date) as b_date'));
-            $model = new DepBalance;
-            $model->b_date = $max_date->b_date;
-            $model->prod_id = $id;
-            $model->startCount = 0;
-            $model->endCount = 0;
-            $model->department_id = $depId;
-            $model->type = 2;
-            $model->save();
+    public function addStuff($id,$depId,$max_date){
+        if($this->checkStuff($id,$depId,$max_date) != true) {
+            Yii::app()->db->createCommand()
+                ->insert('dep_balance',array(
+                    'b_date'=>$max_date,
+                    'prod_id'=>$id,
+                    'startCount'=>0,
+                    'endCount'=>0,
+                    'department_id'=>$depId,
+                    'type'=>2
+                ));
         }
         //Список полуфабрикатов и их продуктов
         //$dishStruct = Halfstaff::model()->with('stuffStruct.Struct')->findByPk($id,'stuffStruct.types = :types',array(':types'=>1));
 
-        $model = Halfstaff::model()->with('stuffStruct')->findByPk($id);
-        $prod = '';
-        foreach ($model->getRelated('stuffStruct') as $val) {
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('halfstuff_structure hs')
+            ->where('hs.halfstuff_id = :id',array(':id'=>$id))
+            ->queryAll();
+        foreach ($model as $val) {
             if($val->types == 2) {
-                $this->addStuff($val->prod_id,$depId);
+                $this->addStuff($val['prod_id'],$depId,$max_date);
             }
             else{
-                $this->addProd($val->prod_id,$depId);
+                $this->addProd($val['prod_id'],$depId,$max_date);
             }
         }
-        return $prod;
 
 
     }
-    public function addDish($id,$depId){
+    public function addDish($id,$depId,$max_date){
         //Корневые продукты блюда выбранного отдела
-        $dishProducts = Dishes::model()->with('products')->findByPk($id,'t.department_id = :depId',array(':depId'=>$depId));
+        $dishProducts = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dish_structure ds')
+            ->where('ds.dish_id = :Id',array(':Id'=>$id))
+            ->queryAll();
         if(!empty($dishProducts))
-            foreach($dishProducts->getRelated('products') as $val){
-                $this->addProd($val->product_id,$depId);
+            foreach($dishProducts as $val){
+                $this->addProd($val['prod_id'],$depId,$max_date);
             }
 
         //Корневые полуфабрикаты блюда выбранного отдела
-        $DishStuff = Dishes::model()->with('stuff')->findByPk($id,'t.department_id = :depId',array(':depId'=>$depId));
+        $DishStuff = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dish_structure2 ds')
+            ->where('ds.dish_id = :Id',array(':Id'=>$id))
+            ->queryAll();
         if(!empty($DishStuff))
-            foreach($DishStuff->getRelated('stuff') as $val){
-                $this->addStuff($val->halfstuff_id,$depId);
+            foreach($DishStuff as $val){
+                $this->addStuff($val['halfstuff_id'],$depId,$max_date);
             }
     }
 }

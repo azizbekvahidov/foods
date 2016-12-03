@@ -32,11 +32,11 @@ class ProviderController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('create','update','index','view','admin','delete','export','import','editable','toggle',),
+				'actions'=>array('index','view',),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('create','update','admin','delete','export','import','editable','toggle',),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users

@@ -10,6 +10,8 @@
             <tr>
                 <th style="text-align:center;">Название продукта</th>
                 <th style="text-align:center;">Цена</th>
+                <th style="text-align:center;">Отдел</th>
+                <th style="text-align:center;">Раздача</th>
                 <th></th>
             </tr>
         </thead>
@@ -36,6 +38,7 @@
                             <? }?>
                             </select>
                         </td>
+                        <td><input type="checkbox" <?=($value->getRelated('dish')->distrib == true) ? "checked" : ""?> name="dish[distrib][<?=$value->getRelated('dish')->dish_id?>]" /></td>
                         <td style='text-align:center;'><a href='javascript:;' class = 'deleteRow'><i class='icon-trash '></i></a></td>
                         
                     </tr>
@@ -61,6 +64,7 @@
                                 <? }?>
                                 </select>
                             </td>
+                            <td><input type="checkbox" <?=($value->getRelated('products')->distrib == true) ? "checked" : ""?> name="product[distrib][<?=$value->getRelated('products')->product_id?>]" /></td>
                             <td style='text-align:center;'><a href='javascript:;' class = 'deleteRow'><i class='icon-trash '></i></a></td>
                         </tr>
                 <?}?>
@@ -84,6 +88,7 @@
                                 <? }?>
                                 </select>
                             </td>
+                            <td><input type="checkbox" <?=($value->getRelated('halfstuff')->distrib == true) ? "checked" : ""?> name="stuff[distrib][<?=$value->getRelated('halfstuff')->halfstuff_id?>]" /></td>
                             <td style='text-align:center;'><a href='javascript:;' class = 'deleteRow'><i class='icon-trash '></i></a></td>
                         </tr>
                 <?}?>

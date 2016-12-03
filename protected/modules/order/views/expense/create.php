@@ -1,12 +1,13 @@
 <?php $form=$this->beginWidget('bootstrap.widgets.TbActiveForm',array(
 	'id'=>'expense-form',
+    'type'=>'inline',
 	// Please note: When you enable ajax validation, make sure the corresponding
 	// controller action is handling ajax validation correctly.
 	// There is a call to performAjaxValidation() commented in generated controller code.
 	// See class documentation of CActiveForm for details on this.
 	'enableAjaxValidation'=>false,
 	// 'htmlOptions'=>array('enctype'=>'multipart/form-data'),
-)); ?>
+)); $menu = new Menu(); ?>
 
 	<?php echo $form->errorSummary($model); ?>
     <style>
@@ -32,20 +33,27 @@
             background-clip: padding-box!important;
             outline: none!important;
         }
+        @media (max-width: 768px)
+            .thumbnail {
+                font-size: 13px;
+            }
         .plus{
               cursor: pointer;
-        }
+        }.thumbnail {
+                font-size: 13px;
+         }
         .sidebar{
-            width: 200px;
+            width: 20%;
+            position: fixed;
         }
         .right-sidebar{
               z-index: 1;
               position: absolute;
-              width: 300px;
+              width: 25%;
               margin-top: 51px;
         }
         #page-wrapper{
-            margin: 0 300px 0 200px;
+            margin: 0 25% 0 20%;
         }
         .thumbnail{
             position: relative;
@@ -53,7 +61,7 @@
         .texts{
               position: absolute;
               top: 3px;
-              left: 15px;
+
         }
         #expense-form{
             margin-top: 0px;
@@ -72,7 +80,19 @@
             padding: 0;
         }
         #menuList a{
-            padding: 0 4px;
+            padding: 4px 4px;
+        }
+        .topHead{
+            z-index: 1000;
+            margin-top: -45px;
+        }
+        #summ{
+            color: red;
+            font-weight: bold;
+        }
+        #Psumm{
+            color: blue;
+            font-weight: bold;
         }
 
     </style>
@@ -101,26 +121,21 @@
         <!-- /.sidebar-collapse -->
     </div>
     <div id="page-wrapper">
-        <div class="col-xs-12">
-            <div class="col-xs-3">
-                <label>Стол</label>
-                <?php echo $form->dropDownList($model,'table',array(1,2,3,4,5,6,7,8,9),array('class'=>'form-control'))?> &nbsp; &nbsp;
-
-            </div>
+        <div class="col-xs-12 topHead">
             <div class="col-xs-3">
 
-                <label>официант</label>
-                <?php echo $form->dropDownList($model,'employee_id',CHtml::listData(Employee::model()->findAll(),'employee_id','name'),array('class'=>'form-control'))?>
-            </div>
-            <div class="col-xs-3">
+                <?php echo Chtml::button('Мои заказы',array('type'=>'button','class'=>'btn btn-info pull-right','id'=>'orders'))?>
+            </div><!--
+            <div class="col-xs-2">
+                <?php /*echo $form->dropDownList($model,'table',array(1,2,3,4,5,6,7,8,9),array('class'=>'form-control'))*/?> &nbsp; &nbsp;
 
-                <?php echo Chtml::button('Текущие заказы',array('type'=>'button','class'=>'btn btn-info pull-right','id'=>'orders'))?>
+            </div>-->
+            <div class="col-xs-3">
+                <?php echo $form->dropDownList($model,'employee_id',CHtml::listData(Employee::model()->findAll('status = 0 and role = 2'),'employee_id','name'),array('class'=>'form-control'))?>
             </div>
             <div class="col-xs-3">
-                <label>Долг</label>
-                <?php echo $form->checkBox($model,'debt',array('class'=>'form-control'))?>
+                <?=CHtml::dropDownList('menulist','',$menu->getMenuList())?>
             </div>
-            <?echo $form->textField($model,'comment',array('style'=>'display:none'))?>
         </div>
         <div class="tab-panels" id="data">
                     
@@ -134,17 +149,38 @@
                     <tr>
                         <th><a class="btn all">Все</a></th>
                         <th>Название</th>
+                        <th>Цена</th>
                         <th>кол.</th>
                     </tr>
                 </thead>
                 <tbody id="order">
                     
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2">Итого</td>
+                        <td colspan="2" id="summ">0</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"></td>
+                        <td colspan="2" id="Psumm">0</td>
+                    </tr>
+                </tfoot>
                       
             </table>
         </div>
-        <div class="form-actions text-center col-xs-12 ">
+        <div class="text-center col-xs-12">
+            <label class="checkbox inline"><input type="checkbox" name="Expense[debt]" value="1" id="Expense_debt"  />Долг</label>
+            <?php //echo $form->checkBoxRow($model,'debt',array('class'=>'form-control'))?>
+        </div>
+        <?echo $form->textField($model,'comment',array('style'=>'display:none'))?>
+        <input type="text" class='hide' name='Expense[empId]' id='Expense_empId'>
+        <div class="form-actions text-center col-xs-6 ">
             <button class="btn btn-success" id="submitBtn" type="button"><?=$model->isNewRecord ? 'Добавить' : 'Сохранить'?></button>
+
+        </div>
+        <div class="form-actions text-center col-xs-6 ">
+            <button class="btn btn-info" id="closeBtn" type="button"><?=$model->isNewRecord ? 'Закрыть' : 'Сохранить'?></button>
 
         </div>
     </div>
@@ -167,7 +203,52 @@ var counts = [],
     	}
     return r;
     };
-    
+    $(document).ready(function(){
+        $("#menulist").chosen({
+            no_results_text: "Ничего не найдено"
+        }).change(function(){
+            $("#submitBtn").removeAttr('disabled');
+            var texts = $(this).find('option:selected').text();
+            var thisId = $(this).val();
+            var temps = str_split(texts,1);
+            //count = parseInt($(this).data('click')) || 0;
+            //count=count+1;
+            console.log(temps);
+            if($('#order tr.'+thisId).exists()){
+                var types = str_split(thisId,1);
+                var count = $('#order tr.'+thisId).children("td.cnt").children('input').val();
+                count = parseFloat(count)+1;
+                $('#order tr.'+thisId).children("td:first-child").children('input').val(types[1]);
+                $('#order tr.'+thisId).children("td.cnt").children('input').val(count);
+                $('#order tr.'+thisId).children("td.cnt").children('span').text(count);
+                //$('#order tr.'+thisId).html("<td><button type='button' class='removed'><i class='fa fa-times'></i></button></td><td>"+identifies + "</td> <td>" + count+"</td>");
+            }
+            else{
+                var types = str_split(thisId,1);-
+                    $('#order').append("<tr class="+thisId+">\
+                                <td >\
+                                    <a type='button' class='removed btn'>\
+                                        <i class='fa fa-times'></i>\
+                                    </a>\
+                                    <input style='display:none' name='id[]' value='"+thisId+"' />\
+                                </td>\
+                                <td>"+temps[0]+"</td>\
+                                <td>"+temps[1]+"</td>\
+                                <td class='cnt'>\
+                                    <input name='count[]' style='display:none' value='1' />\
+                                    <a type='button' class='pluss btn'>\
+                                        <i class='fa fa-plus'></i>\
+                                    </a>\
+                                    <span>" +1+"</span>\
+                                    <a type='button' class='minus btn'>\
+                                        <i class='fa fa-minus'></i>\
+                                    </a>\
+                                </td>\
+                            </tr>");
+            }
+            getSum();
+        });
+    });
     $('#submitBtn').attr('disabled','disabled');
 
     $('#orders').click(function(){
@@ -191,24 +272,28 @@ var counts = [],
                 url: "<?php echo Yii::app()->createUrl('order/expense/create'); ?>",
                 data: data
             });
+    });
+    $('#closeBtn').click(function(){
+
             $('#order').children('tr').remove();
         $('#Expense_debt').removeAttr('checked');
         $("#Expense_comment").val('');
-            $(this).attr('disabled','disabled');
+        $("#Expense_empId").val('');
+        getSum();
     });
 
     $(document).on("click", "#comment", function() {
         var thisValue = $("#ModalBody").children('input').val();
         $("#Expense_comment").val(thisValue);
+        $("#Expense_empId").val($("#ModalBody").children('select').val())
     });
     $(document).on('click','#Expense_debt',function(){
 
         if($('#Expense_debt').attr('checked') == 'checked') {
             $("#ModalHeader").html("Комментприй для долга");
-            $('#ModalBody').html("<input class='span2 form-control' type='text' name='' value='' />");
             $("#Modal").modal();
-            $($this).attr('checked','checked');
-            return false;
+            $(this).attr('checked','checked');
+            return true;
         }
     })
 $(document).on("click", '.types' ,function(){
@@ -240,7 +325,7 @@ $(document).on("click", '.types' ,function(){
     
     $(document).on("click", ".minus", function() {
         var count = $(this).parent().parent().children("td.cnt").children('input').val();
-        count = parseInt(count)-1;
+        count = parseFloat(count)-1;
         if(count > 0){
             $(this).parent().parent().children("td.cnt").children('input').val(count);
             $(this).parent().parent().children("td.cnt").children('span').text(count);
@@ -251,6 +336,22 @@ $(document).on("click", '.types' ,function(){
         if($("#order tr").exists() == 0){
             $('#submitBtn').attr('disabled','disabled');
         }
+        getSum();
+    });
+    $(document).on("click", ".pluss", function() {
+        var count = $(this).parent().parent().children("td.cnt").children('input').val();
+        count = parseFloat(count)+1;
+        if(count > 0){
+            $(this).parent().parent().children("td.cnt").children('input').val(count);
+            $(this).parent().parent().children("td.cnt").children('span').text(count);
+        }
+        else{
+            $(this).parent().parent().remove();
+        }
+        if($("#order tr").exists() == 0){
+            $('#submitBtn').attr('disabled','disabled');
+        }
+        getSum();
     });
     
     $(document).on("click", ".removed", function() {
@@ -258,6 +359,7 @@ $(document).on("click", '.types' ,function(){
         if($("#order tr").exists() == 0){
             $('#submitBtn').attr('disabled','disabled');
         }
+        getSum();
     });    
     
     $(document).on("click", "#ok", function() {
@@ -277,6 +379,7 @@ $(document).on("click", '.types' ,function(){
         if($("#order tr").exists() == 0){
             $('#submitBtn').attr('disabled','disabled');
         }
+        getSum();
     });    
     
     document.onkeyup = function (e) {
@@ -294,8 +397,18 @@ $(document).on("click", '.types' ,function(){
         if($("#order tr").exists() == 0){
             $('#submitBtn').attr('disabled','disabled');
         }
+        getSum();
     });
 
+    function getSum(){
+        var summ = 0;
+        $('#dataTable tbody tr').each(function(indx){
+            summ += parseFloat($(this).children('td:nth-child(4)').text())*parseInt($(this).children('td:nth-child(3)').text());
+            //sum += $(this).children('td:nth-child(3)').text();
+        });
+        $('#summ').text(Math.round(summ / 100) * 100);
+        $('#Psumm').text(Math.round((summ+(summ/10)) / 100) * 100);
+    }
 
 </script>
 
@@ -348,6 +461,8 @@ $(document).on("click", '.types' ,function(){
 
 <div class="modal-body" id="ModalBody">
 
+            <input class='span2 form-control' type='text' name='' value='' />
+<?=CHtml::dropDownList('employee','',CHtml::listData(Employee::model()->findAll('status != 1'),'employee_id','name'),array('empty'=>'выберите сотрудника'))?>
 </div>
 
 <div class="modal-footer">

@@ -10,12 +10,13 @@
     )); ?>
     <div>
     	<?php echo $form->errorSummary($model); ?>
-<div class="form-group">
+    <div class="form-group">
         <?php echo $form->textFieldRow($model,'name',array('class'=>'span5','maxlength'=>100)); ?><br />
         <div class="span4">
             <?php echo $form->textFieldRow($model,'count',array('class'=>'span3','maxlength'=>100)); ?>
         </div>
     </div>
+    
     <div class="span12" >
         <div id="add">
             <div class="span3" >
@@ -51,7 +52,7 @@
                             <td style='text-align:center;'><input class='span1' type='text' name='prod[]' value="<?=$struct[0]['amount']?>" /></td>
                             <td style='text-align:center;'><a href='javascript:;' class = 'deleteRow'><i class='icon-trash '></i></a>
                         </tr>
-                    <?}?> 
+                    <?}?>
                 <?}?>
 
                 <? if($chosenStuff != ''){?>
@@ -62,15 +63,15 @@
                             <td style='text-align:center;'><input class='span1' type='text' name='stuff[]' value="<?=$struct[0]['amount']?>" /></td>
                             <td style='text-align:center;'><a href='javascript:;' class = 'deleteRow'><i class='icon-trash '></i></a>
                         </tr>
-                    <?}?> 
+                    <?}?>
                 <?}?>
             </tbody>
         </table>
     </div>
-       
+
        <script>
        $(document).on("click", ".deleteRow", function() {
-            var temp_id = $(this).parent().parent().children('td:first-child').children('input').val(); 
+            var temp_id = $(this).parent().parent().children('td:first-child').children('input').val();
             $(this).parent().parent().remove();
         });
         $("#all_product").chosen({
@@ -87,7 +88,7 @@
                     </tr>\
                 ");
             }
-        }); 
+        });
         $("#all_halfstuff").chosen({
             no_results_text: "Oops, nothing found!",
         }).change(function(){
@@ -115,7 +116,7 @@
     			'label'=>$model->isNewRecord ? 'Добавить' : 'Сохранить',
     		)); ?>
     </div>
-    
+
     <?php $this->endWidget(); ?>
 </div>
   <script>
@@ -132,14 +133,14 @@
 <?php
 Yii::app()->clientScript->registerScript("multiselect", "
 
-     
+
     $('form').submit(function() {
-        
+
         //$('.all_product option').prop('selected',false);
         //$('').prop('selected','selected');
         //$('.all_halfstuff option').prop('selected',false);
         //$('.all_halfstuff option').prop('selected','selected');
-        
+
 //        alert($(this).serialize());
     });
 ");

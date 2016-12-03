@@ -34,11 +34,11 @@ class RealizeController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('create','update','detail','GetAjaxProduct','index','view','admin','delete','export','import','editable','toggle','prodList','today','realizedProd','realized','getProdList'),
+				'actions'=>array(),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('prodPlanView','prodPlan','create','update','detail','GetAjaxProduct','index','view','admin','delete','export','import','editable','toggle','prodList','today','realizedProd','realized','getProdList'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -146,8 +146,7 @@ class RealizeController extends Controller
 			
 		}
 	}
-    public function beforeSave($id){
-        $currentDate = date('Y-m-d H:i:s');
+    public function beforeSave($currentDate,$id){
         $providerId = Faktura::model()->find('realize_date = :realize_date AND provider_id = :provider_id', array(':realize_date'=>$currentDate,':provider_id'=>$id));
         if($providerId == true){
             
@@ -198,8 +197,8 @@ class RealizeController extends Controller
 		if(isset($_POST['provider']))
 		{
         
-                $fakturaId = $this->beforeSave($_POST['provider']);
-                $currentDate = date('Y-m-d');
+                $currentDate = $_POST['from']." ".date("H:i:s");
+                $fakturaId = $this->beforeSave($currentDate,$_POST['provider']);
                 //echo $fakturaId;		
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
@@ -207,14 +206,13 @@ class RealizeController extends Controller
 				$message = "There are some errors ".count($_POST['product_id']);
 
                 if($_POST['product_id']){
-                    for($i = 0; $i < count($_POST['product_id']); $i++){
-                        $models=new Realize;
+                    foreach($_POST['product_id'] as $key => $val){
+                        $models = new Realize;
                         $models->faktura_id = $fakturaId;
-                        $models->prod_id = $_POST['product_id'][$i];
-                        $models->price = $_POST['price'][$i];
-                        $models->count = $this->changeToFloat($_POST['count'][$i]);
+                        $models->prod_id = $val;
+                        $models->price = $_POST['price'][$key];
+                        $models->count = $this->changeToFloat($_POST['count'][$key]);
                         if($models->save()) {
-                            
                             $messageType = 'success';
                             $message = "<strong>Well done!</strong> You successfully create data ";
                         }
@@ -222,12 +220,12 @@ class RealizeController extends Controller
                 }
                 Yii::app()->user->setFlash($messageType, $message);
                 $transaction->commit();
-                $this->redirect(array('dishes/checkMargin'));
+					$this->redirect(array('create'));
 			}
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				//$this->refresh();
+				$this->refresh();
 			}
 			
 		}
@@ -522,6 +520,189 @@ class RealizeController extends Controller
         		)
     	);
 	}
+
+    public function actionProdPlan(){
+        $dates = date('Y-m-d');
+        if(isset($_POST['dish']) or isset($_POST['stuff']) or isset($_POST['prod'])){
+            foreach ($_POST['dish'] as $key => $val) {
+                if($val != null) {
+                    Yii::app()->db->createCommand()->insert('sold_plan', array(
+                        'plan_date'=>$dates,
+                        'just_id'=>$key,
+                        'count'=>$val,
+                        'type'=>1
+                    ));
+                }
+            }
+            foreach ($_POST['stuff'] as $key => $val) {
+                if($val != null) {
+                    Yii::app()->db->createCommand()->insert('sold_plan', array(
+                        'plan_date'=>$dates,
+                        'just_id'=>$key,
+                        'count'=>$val,
+                        'type'=>2
+                    ));
+                }
+            }
+            foreach ($_POST['prod'] as $key => $val) {
+                if($val != null) {
+                    Yii::app()->db->createCommand()->insert('sold_plan', array(
+                        'plan_date'=>$dates,
+                        'just_id'=>$key,
+                        'count'=>$val,
+                        'type'=>3
+                    ));
+                }
+            }
+            $this->redirect(array('prodPlanView','dates'=>$dates));
+
+        }
+        $dishes = Yii::app()->db->createCommand()
+            ->select('ord.just_id,sum(ord.count) as count')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->where('date(ex.order_date) = :dates AND ord.type = :types',array(':dates'=>$dates,':types'=>1))
+            ->group('ord.just_id')
+            ->queryAll();
+        foreach ($dishes as $val) {
+            $dCount[$val['just_id']] = $val['count'];
+        }
+        $dish = Yii::app()->db->createCommand()
+            ->select('d.name,m.just_id')
+            ->from('menu m')
+            ->join('dishes d','d.dish_id = m.just_id')
+            ->where('m.type = :types',array(':types'=>1))
+            ->queryAll();
+        $halfstuff = Yii::app()->db->createCommand()
+            ->select('ord.just_id,sum(ord.count) as count')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->where('date(ex.order_date) = :dates AND ord.type = :types',array(':dates'=>$dates,':types'=>2))
+            ->group('ord.just_id')
+            ->queryAll();
+
+        foreach ($halfstuff as $val) {
+            $sCount[$val['just_id']] = $val['count'];
+        }
+        $stuff = Yii::app()->db->createCommand()
+            ->select('h.name,m.just_id')
+            ->from('menu m')
+            ->join('halfstaff h','h.halfstuff_id = m.just_id')
+            ->where('m.type = :types',array(':types'=>2))
+            ->queryAll();
+        $product = Yii::app()->db->createCommand()
+            ->select('ord.just_id,sum(ord.count) as count')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->where('date(ex.order_date) = :dates AND ord.type = :types',array(':dates'=>$dates,':types'=>3))
+            ->group('ord.just_id')
+            ->queryAll();
+
+        foreach ($product as $val) {
+            $pCount[$val['just_id']] = $val['count'];
+        }
+        $prod = Yii::app()->db->createCommand()
+            ->select('p.name,m.just_id')
+            ->from('menu m')
+            ->join('products p','p.product_id = m.just_id')
+            ->where('m.type = :types',array(':types'=>3))
+            ->queryAll();
+        $this->render('prodPlan',array(
+            'dates'=>$dates,
+            'dCount'=>$dCount,
+            'dish'=>$dish,
+            'sCount'=>$sCount,
+            'stuff'=>$stuff,
+            'pCount'=>$pCount,
+            'prod'=>$prod
+        ));
+    }
+
+    public function actionProdPlanView($dates){
+        $stuff = new Halfstaff();
+        $dishes = new Dishes();
+        $department = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('department')
+            ->queryAll();
+        $products = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('products')
+            ->queryAll();
+        foreach ($products as $val) {
+            $prodName[$val['product_id']] = $val['name'];
+        }
+        $balance = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('balance b')
+            ->where('b.b_date = :dates',array(':dates'=>$dates))
+            ->queryAll();
+        foreach ($balance as $val) {
+            $balanceProd[$val['prod_id']] = $val['CurEndCount'];
+        }
+
+        foreach ($department as $val) {
+            //$val['department_id'] = 9;
+            $depProdBalance = Yii::app()->db->createCommand()
+                ->select('db.prod_id,db.CurEndCount,p.name')
+                ->from('dep_balance db')
+                ->join('products p','p.product_id = db.prod_id')
+                ->where('db.b_date = :dates AND  db.department_id = :depId AND db.type = :types',array(':dates'=>$dates,':depId'=>$val['department_id'],':types'=>1))
+                ->queryAll();
+            foreach ($depProdBalance as $value) {
+                $curEndProd[$val['department_id']][$value['prod_id']] = $value['CurEndCount'];
+            }
+            $depStuffBalance = Yii::app()->db->createCommand()
+                ->select('db.prod_id,db.CurEndCount,h.name')
+                ->from('dep_balance db')
+                ->join('halfstaff h','h.halfstuff_id = db.prod_id')
+                ->where('db.b_date = :dates AND  db.department_id = :depId AND db.type = :types',array(':dates'=>$dates,':depId'=>$val['department_id'],':types'=>2))
+                ->queryAll();
+
+            if(!empty($depStuffBalance))
+            foreach ($depStuffBalance as $value) {
+                $temp = $stuff->stuffProd($dates,$value['prod_id']);
+                $sTemporary = $stuff->multiplyArray($temp,$value['CurEndCount']);
+                $curEndProd[$val['department_id']] = $stuff->sumArray($sTemporary,$curEndProd[$val['department_id']]);
+                //$stuffName[$val['department_id']][$value['prod_id']] = $value['name'];
+            }
+
+            $outProd[$val['department_id']] = array();
+            $outStuff[$val['department_id']] = array();
+        }
+
+        $model = Yii::app()->db->createCommand()
+            ->select('sum(sp.count) as count,sp.just_id,d.department_id')
+            ->from('sold_plan sp')
+            ->join('dishes d','d.dish_id = sp.just_id')
+            ->where('sp.plan_date = :dates AND sp.type = :types',array(':dates'=>$dates,':types'=>1))
+            ->group('sp.just_id,d.department_id')
+            ->queryAll();
+        foreach($model as $val){
+            $prod = $dishes->getProd($val['just_id']);
+            $pTemporary = $stuff->multiplyArray($prod,$val['count']);
+            $outProd[$val['department_id']] = $stuff->sumArray($pTemporary,$outProd[$val['department_id']]);
+
+            $sTemp = $dishes->getStuff($val['just_id']);
+            foreach ($sTemp as $key => $value) {
+                $sProd = $stuff->stuffProd($dates,$key);
+                $pTemporary = $stuff->multiplyArray($sProd,$val['count']);
+                $outProd[$val['department_id']] = $stuff->sumArray($outProd[$val['department_id']],$pTemporary);
+            }
+            /*$sTemporary = $stuff->multiplyArray($sTemp,$val['count']);
+            $outStuff[$val['department_id']] = $stuff->sumArray($outStuff[$val['department_id']],$sTemporary);*/
+        }
+
+        $this->render('prodPlanView',array(
+            'outProd'=>$outProd,
+            'outStuff'=>$outStuff,
+            'department'=>$department,
+            'curEndProd'=>$curEndProd,
+            'prodName'=>$prodName,
+            'balanceProd'=>$balanceProd,
+            'dates'=>$dates
+        ));
+    }
 
 
 	

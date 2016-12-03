@@ -1,5 +1,6 @@
-<?php  $form=$this->beginWidget('booster.widgets.TbActiveForm',array(
+<?php  $form=$this->beginWidget('bootstrap.widgets.TbActiveForm',array(
     'id'=>'upexpense-form',
+    'type'=>'inline',
     // Please note: When you enable ajax validation, make sure the corresponding
     // controller action is handling ajax validation correctly.
     // There is a call to performAjaxValidation() commented in generated controller code.
@@ -9,20 +10,44 @@
 )); ?>
 
 <style>
+    .modal {
+        position: fixed;
+        top: 10% ;
+        bottom: auto!important;
+        left: 50% !important;
+        z-index: 1050;
+        width: 560px!important;
+        margin-left: -280px!important;
+        background-color: #ffffff!important;
+        border: 1px solid #999!important;
+        border: 1px solid rgba(0, 0, 0, 0.3) !important;
+        -webkit-border-radius: 6px!important;
+        -moz-border-radius: 6px!important;
+        border-radius: 6px!important;
+        -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3)!important;
+        -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3)!important;
+        box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3)!important;
+        -webkit-background-clip: padding-box!important;
+        -moz-background-clip: padding-box!important;
+        background-clip: padding-box!important;
+        outline: none!important;
+    }
     .upplus{
         cursor: pointer;
     }
     .sidebar{
-        width: 200px;
+        width: 20%;
     }
     .right-sidebar{
         z-index: 1;
         position: absolute;
-        width: 300px;
+        width: 25%;
         margin-top: 51px;
-    }
+    }.thumbnail {
+         font-size: 13px;
+     }
     #page-wrapper{
-        margin: 0 300px 0 200px;
+        margin: 0 25% 0 20%;
     }
     .thumbnail{
         position: relative;
@@ -49,11 +74,16 @@
         padding: 0;
     }
     #menuList a{
-        padding: 0 4px;
+        padding: 4px 4px;
+    }
+    .topHead{
+        z-index: 1000;
+        margin-top: -45px;
     }
 
 </style>
 
+<link href="/css/bootstrap3.css" rel="stylesheet">
 <!-- /.navbar-top-links -->
 <div class="navbar-default sidebar" style="margin-top: 0;" role="navigation">
     <div class="sidebar-nav tab-box">
@@ -78,16 +108,15 @@
     <!-- /.sidebar-collapse -->
 </div>
 <div id="page-wrapper">
-    <div class="col-xs-12">
-        <div class="col-xs-3">
-            <label>Стол</label>
-            <?php echo CHtml::dropDownList('table',$table,array(1,2,3,4,5,6,7,8,9),array('class'=>'form-control'))?> &nbsp; &nbsp;
+    <div class="col-xs-12 topHead">
+        <!--<div class="col-xs-3">
+            Стол
+            <?php /*echo CHtml::dropDownList('table',$table,array(1,2,3,4,5,6,7,8,9),array('class'=>'form-control'))*/?> &nbsp; &nbsp;
 
-        </div>
+        </div>-->
         <div class="col-xs-3">
 
-            <label>официант</label>
-            <?php echo CHtml::dropDownList('employee_id',$empId,CHtml::listData(Employee::model()->findAll(),'employee_id','name'),array('class'=>'form-control'))?>
+            <?php echo CHtml::dropDownList('employee_id',$empId,CHtml::listData(Employee::model()->findAll('status = 0 and role = 2'),'employee_id','name'),array('class'=>'form-control'))?>
         </div>
         <div class="col-xs-3">
             <label>Долг</label>
@@ -119,11 +148,11 @@
                             <a type='button' class='removed btn'>
                                 <i class='fa fa-times'></i>
                             </a>
-                            <input style='display:none' name='dish[id][]' value='<?=$val->just_id?>' />
+                            <input style='display:none' name='id[]' value='dish_<?=$val->just_id?>' />
                         </td>
                         <td><?=$val->getRelated('dish')->name?></td>
                         <td class='cnt'>
-                            <input name='dish[count][]' style='display:none' value='<?=$val->count?>' />
+                            <input name='count[]' style='display:none' value='<?=$val->count?>' />
                             <span><?=$val->count?></span>
                             <a type='button' class='minus btn'>
                                 <i class='fa fa-minus'></i>
@@ -138,11 +167,11 @@
                             <a type='button' class='removed btn'>
                                 <i class='fa fa-times'></i>
                             </a>
-                            <input style='display:none' name='stuff[id][]' value='<?=$val->just_id?>' />
+                            <input style='display:none' name='id[]' value='stuff_<?=$val->just_id?>' />
                         </td>
                         <td><?=$val->getRelated('halfstuff')->name?></td>
                         <td class='cnt'>
-                            <input name='stuff[count][]' style='display:none' value='<?=$val->count?>' />
+                            <input name='count[]' style='display:none' value='<?=$val->count?>' />
                             <span><?=$val->count?></span>
                             <a type='button' class='minus btn'>
                                 <i class='fa fa-minus'></i>
@@ -157,11 +186,11 @@
                             <a type='button' class='removed btn'>
                                 <i class='fa fa-times'></i>
                             </a>
-                            <input style='display:none' name='product[id][]' value='<?=$val->just_id?>' />
+                            <input style='display:none' name='id[]' value='product_<?=$val->just_id?>' />
                         </td>
                         <td><?=$val->getRelated('products')->name?></td>
                         <td class='cnt'>
-                            <input name='product[count][]' style='display:none' value='<?=$val->count?>' />
+                            <input name='count[]' style='display:none' value='<?=$val->count?>' />
                             <span><?=$val->count?></span>
                             <a type='button' class='minus btn'>
                                 <i class='fa fa-minus'></i>
@@ -174,11 +203,8 @@
         </table>
     </div>
     <div class="form-actions text-center col-xs-12 ">
-        <?php $this->widget('booster.widgets.TbButton', array(
-            'buttonType'=>'ajaxSubmit',
-            'label'=>'Сохранить',
-            'id'=>'upsubmitBtn',
-        )); ?>
+        <button class="btn btn-success" id="upsubmitBtn" type="button"><?=$model->isNewRecord ? 'Добавить' : 'Сохранить'?></button>
+
     </div>
 </div>
 
@@ -208,7 +234,7 @@
         $("#upmyModalHeader").html("Текущие заказы");
         $.ajax({
             type: "POST",
-            url: "<?php echo Yii::app()->createUrl('expense/todayOrder'); ?>",
+            url: "<?php echo Yii::app()->createUrl('order/expense/todayOrder'); ?>",
             success: function(data){
                 $('#upmyModalBody').html(data);
             }
@@ -219,8 +245,12 @@
 
     $('#upsubmitBtn').click(function(){
         var data = $("#upexpense-form").serialize();
-
-                window.close()
+            $.ajax({
+                type: "POST",
+                url: "<?php echo Yii::app()->createUrl('order/expense/update?id='.$expense_id); ?>",
+                data: data
+            });
+            window.close()
 
 
     });
@@ -243,7 +273,7 @@
         var thisId = $(this).parent().attr('id');
         $.ajax({
             type: "POST",
-            url: "<?php echo Yii::app()->createUrl('expense/upLists'); ?>",
+            url: "<?php echo Yii::app()->createUrl('order/expense/upLists'); ?>",
             data: "id="+thisId,
             success: function(data){
                 $('#updata').html(data);
@@ -269,17 +299,30 @@
     $(document).on("click", ".minus", function() {
         var count = $(this).parent().parent().children("td.cnt").children('input').val();
         count = parseInt(count)-1;
+        var id = $(this).parent().parent().attr('class');
         if(count > 0){
             $(this).parent().parent().children("td.cnt").children('input').val(count);
             $(this).parent().parent().children("td.cnt").children('span').text(count);
         }
         else{
             $(this).parent().parent().remove();
+            removeFromOrder(id,0);
         }
         if($("#uporder tr").exists() == 0){
             $('#submitBtn').attr('disabled','disabled');
         }
     });
+    function removeFromOrder(id,count){
+        var expId = $("#expenseId");
+        $.ajax({
+            type: "POST",
+            url: "<?php echo Yii::app()->createUrl('order/expense/removeFromOrder'); ?>",
+            data: "id="+id+'&count='+count+'&expenseId=<?=$expense_id?>',
+            success: function(data){
+                expId.val(parseInt(data));
+            }
+        });
+    }
 
     $(document).on("click", ".removed", function() {
         $(this).parent().parent().remove();
@@ -291,18 +334,22 @@
     $(document).on("click", "#upok", function() {
         var curCount = $("#upmyModalBody").children('input').val();
         var curClass = $("#upmyModalBody").children('input').attr('name');
-        console.log(curClass)
-        if(curCount != 0){
-            $("."+curClass).children("td.cnt").children('input').val(curCount);
-            $("."+curClass).children("td.cnt").children('span').text(curCount);
+        if(curCount != '') {
+            curCount = parseFloat(curCount.replace(/,/,'.'));
         }
         else{
-            $("."+curClass).remove();
+            curCount = 0;
         }
+        var inputVal = parseFloat($("." + curClass).children("td.cnt").children('input').val());
+        var spanVal = parseFloat($("." + curClass).children("td.cnt").children('span').text());
+        console.log(curCount);
+        $("." + curClass).children("td.cnt").children('input').attr('value',curCount+inputVal);
+        $("." + curClass).children("td.cnt").children('span').text(spanVal+curCount);
         if($("#uporder tr").exists() == 0){
             $('#upsubmitBtn').attr('disabled','disabled');
         }
     });
+
 
     document.onkeyup = function (e) {
         e = e || window.event;
@@ -326,8 +373,8 @@
 <?php $this->endWidget(); ?>
 
 <?php $this->beginWidget(
-    'booster.widgets.TbModal',
-    array('id' => 'myModal')
+    'bootstrap.widgets.TbModal',
+    array('id' => 'upmyModal')
 ); ?>
 
 <div class="modal-header">
@@ -341,15 +388,15 @@
 
 <div class="modal-footer">
     <?php  $this->widget(
-        'booster.widgets.TbButton',
+        'bootstrap.widgets.TbButton',
         array(
             'label' => 'Ok',
             'url' => '#',
-            'htmlOptions' => array('id'=>'upok','data-dismiss' => 'modal'),
+            'htmlOptions' => array('id'=>'upok','data-dismiss' => 'modal','class'=>'btn btn-success'),
         )
     ); ?>
     <?php  $this->widget(
-        'booster.widgets.TbButton',
+        'bootstrap.widgets.TbButton',
         array(
             'label' => 'Отмена',
             'url' => '#',
@@ -361,7 +408,7 @@
 <?php  $this->endWidget(); ?>
 
 <?php $this->beginWidget(
-    'booster.widgets.TbModal',
+    'bootstrap.widgets.TbModal',
     array('id' => 'Modal')
 ); ?>
 
@@ -376,15 +423,15 @@
 
 <div class="modal-footer">
     <?php  $this->widget(
-        'booster.widgets.TbButton',
+        'bootstrap.widgets.TbButton',
         array(
             'label' => 'Ok',
             'url' => '#',
-            'htmlOptions' => array('id'=>'com','data-dismiss' => 'modal'),
+            'htmlOptions' => array('id'=>'com','data-dismiss' => 'modal','class'=>'btn btn-success'),
         )
     ); ?>
     <?php  $this->widget(
-        'booster.widgets.TbButton',
+        'bootstrap.widgets.TbButton',
         array(
             'label' => 'Отмена',
             'url' => '#',

@@ -32,7 +32,11 @@ class ReportController extends Controller
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('ajaxDetail','ajaxSettedMargin','settedMargin','ajaxSettedMargin','prodExp','ajaxProdExp','allProd','ajaxAllProd','depDish','depDishList','dishIncome','ajaxDishIncome','depIncome','ajaxDepIncome'),
+                'actions'=>array(
+                    'ajaxDetail','ajaxSettedMargin','settedMargin','ajaxSettedMargin','prodExp','ajaxProdExp',
+                    'allProd','ajaxAllProd','depDish','depDishList','dishIncome','ajaxDishIncome','depIncome','ajaxDepIncome',
+                    'intervalFaktura','ajaxIntervalFaktura','empExpense','ajaxEmpExpense','ReadyTime','ajaxReadyTime','ajaxReadyTimeDetail'
+                ),
                 'roles'=>array('3'),
             ),
             array('deny',  // deny all users
@@ -260,7 +264,7 @@ class ReportController extends Controller
                 $dishes[$val->just_id] = $val->getRelated('products')->name;
                 $cost[$val->just_id] = $cost[$val->just_id] + $prod->getCostPrice($val->just_id,$value->order_date)*$val->count;
             }
-        }
+        }arsort($summ);
         $this->renderPartial('dishDepList',array(
             'summ' => $summ,
             'dishes' => $dishes,
@@ -361,22 +365,27 @@ class ReportController extends Controller
     }
 
     public function actionDepIncome(){
-        $this->render('depIncome');
+        $dates = date('Y-m-d',strtotime(date('Y-m-d'))-86400);
+        $this->render('depIncome',array(
+            'dates'=>$dates
+        ));
     }
 
     public function actionAjaxDepIncome(){
-        $dates = $_POST['dates'];
+        $till = $_POST['till'];
+        $from = $_POST['from'];
         $model = Yii::app()->db->createCommand()
             ->select('')
             ->from('department')
             ->queryAll();
         $this->renderPartial('ajaxDepIncome',array(
-            'dates'=>$dates,
+            'from'=>$from,
+            'till'=>$till,
             'model'=>$model
         ));
     }
 
-    public function actionAjaxDetail($depId,$key,$dates){
+    public function actionAjaxDetail($depId,$key,$dates,$till){
         $model = array();
         $model2 = array();
         $model3 = array();
@@ -451,7 +460,7 @@ class ReportController extends Controller
                 ->from('expense ex')
                 ->join('orders ord','ord.expense_id = ex.expense_id')
                 ->join('products p','p.product_id = ord.just_id')
-                ->where('date(ex.order_date) = :dates AND p.department_id = :DepId AND ord.type = :type',
+                ->where('date(ex.order_date) = :dates AND p.department_id = :DepId AND ord.type = :type AND ord.deleted != 1',
                         array(':dates'=>$dates,':DepId'=>$depId,':type'=>3))
                 ->group('ord.just_id')
                 ->queryAll();
@@ -460,7 +469,7 @@ class ReportController extends Controller
                 ->from('expense ex')
                 ->join('orders ord','ord.expense_id = ex.expense_id')
                 ->join('halfstaff h','h.halfstuff_id = ord.just_id')
-                ->where('date(ex.order_date) = :dates AND h.department_id = :DepId AND ord.type = :type',
+                ->where('date(ex.order_date) = :dates AND h.department_id = :DepId AND ord.type = :type AND ord.deleted != 1',
                     array(':dates'=>$dates,':DepId'=>$depId,':type'=>2))
                 ->group('ord.just_id')
                 ->queryAll();
@@ -469,7 +478,7 @@ class ReportController extends Controller
                 ->from('expense ex')
                 ->join('orders ord','ord.expense_id = ex.expense_id')
                 ->join('dishes d','d.dish_id = ord.just_id')
-                ->where('date(ex.order_date) = :dates AND d.department_id = :DepId AND ord.type = :type',
+                ->where('date(ex.order_date) = :dates AND d.department_id = :DepId AND ord.type = :type AND ord.deleted != 1',
                     array(':dates'=>$dates,':DepId'=>$depId,':type'=>1))
                 ->group('ord.just_id')
                 ->queryAll();
@@ -486,7 +495,8 @@ class ReportController extends Controller
                 ->queryAll();
         }
         if($key == 'costPrice'){
-            $temp = $expense->getDishProd($depId,$dates);
+            $function = new Functions();
+            $temp = $expense->getDishProd($depId,$dates,$dates);
             $count = 0;
             foreach ($temp as $key => $val) {
                 $model[$count]['count'] = $val;
@@ -495,7 +505,8 @@ class ReportController extends Controller
                 $model[$count]['Mname'] = $measure->getMeasure($key,'prod');
                 $count++;
             }
-            $temp2 = $expense->getDishStuff($depId,$dates);
+
+            $temp2 = $expense->getDishStuff($depId,$dates,$dates);
             $count = 0;
             foreach ($temp2 as $key => $val) {
                 $model2[$count]['count'] = $val;
@@ -504,6 +515,11 @@ class ReportController extends Controller
                 $model2[$count]['Mname'] = $measure->getMeasure($key,'stuff');
                 $count++;
             }
+
+
+//    				echo "<pre>";
+//    				print_r($temp2);
+//    				echo "</pre>";
             /*$model = Yii::app()->db->createCommand()
                 ->select('sum(ord.count) as count,ord.just_id as prod_id,p.name as name,ex.mType,ord.type')
                 ->from('expense ex')
@@ -572,13 +588,144 @@ class ReportController extends Controller
                 ->queryAll();
         }
         $this->renderPartial('ajaxDetail',array(
+            'till'=>$till,
             'dates'=>$dates,
             'model'=>$model,
             'model2'=>$model2,
             'model3'=>$model3,
             'key'=>$key
+        ),false,true);
+    }
+
+    public function actionIntervalFaktura(){
+        $this->render('intervalFaktura');
+    }
+
+    public function actionAjaxIntervalFaktura(){
+        $from = $_POST['from'];
+        $to = $_POST['to'];
+        $products = Yii::app()->db->createCommand()
+            ->select()
+            ->from('products')
+            ->queryAll();
+        $this->renderPartial('ajaxIntervalFaktura',array(
+            'from'=>$from,
+            'to'=>$to,
+            'prod'=>$products
         ));
     }
 
+    public function actionEmpExpense(){
+
+        $this->render('empExpense');
+    }
+
+    public function actionAjaxEmpExpense(){
+        $model = Yii::app()->db->createCommand()
+            ->select('sum(o.count) as count, o.just_id, o.type')
+            ->from('expense ex')
+            ->join('orders o','o.expense_id = ex.expense_id')
+            ->where('date(ex.order_date) = :dates AND ex.kind != 1 AND ex.employee_id = :empId AND o.deleted != 1 AND o.type = 1 ',array(':dates'=>$_POST['from'],':empId'=>$_POST['empId']))
+            ->group('o.just_id')
+            ->queryAll();
+        $model1 = Yii::app()->db->createCommand()
+            ->select('sum(o.count) as count, o.just_id, o.type')
+            ->from('expense ex')
+            ->join('orders o','o.expense_id = ex.expense_id')
+            ->where('date(ex.order_date) = :dates AND ex.kind != 1 AND ex.employee_id = :empId AND o.deleted != 1 AND o.type = 2',array(':dates'=>$_POST['from'],':empId'=>$_POST['empId']))
+            ->group('o.just_id')
+            ->queryAll();
+        $model2 = Yii::app()->db->createCommand()
+            ->select('sum(o.count) as count, o.just_id, o.type')
+            ->from('expense ex')
+            ->join('orders o','o.expense_id = ex.expense_id')
+            ->where('date(ex.order_date) = :dates AND ex.kind != 1 AND ex.employee_id = :empId AND o.deleted != 1 AND o.type = 3',array(':dates'=>$_POST['from'],':empId'=>$_POST['empId']))
+            ->group('o.just_id')
+            ->queryAll();
+        $this->renderPartial('ajaxEmpExpense',array(
+            'model'=>$model,
+            'model1'=>$model1,
+            'model2'=>$model2
+        ));
+    }
+
+    public function actionReadyTime(){
+
+        $this->render('readyTime');
+    }
+
+    public function actionAjaxReadyTime(){
+        $from = $_POST['from'];
+        $to = $_POST['to'];
+        $depId = $_POST['depId'];
+        $tempDate = $this->createDateRangeArray( $from, $to );
+
+        $this->renderPartial('ajaxReadyTime',array(
+            'dates'=>$tempDate,
+            'depId'=>$depId
+        ));
+    }
+    public function actionAjaxReadyTimeDetail(){
+        $temp = $_POST['id'];
+        $depId = $_POST['depId'];
+        $model = Yii::app()->db->createCommand()
+            ->select('d.name, sum(o.count) as sumCount, o.just_id')
+            ->from('expense e')
+            ->join('orders o','o.expense_id = e.expense_id')
+            ->join('dishes d','d.dish_id = o.just_id')
+            ->where('date(e.order_date) = :dates AND o.type = 1 AND d.department_id = :depId',array(':dates'=>$temp,':depId'=>$depId))
+            ->group('o.just_id')
+            ->order('sumCount DESC')
+            ->queryAll();
+        $model2 = Yii::app()->db->createCommand()
+            ->select('d.name, sum(o.count) as sumCount, o.just_id')
+            ->from('expense e')
+            ->join('orders o','o.expense_id = e.expense_id')
+            ->join('halfstaff d','d.halfstuff_id = o.just_id')
+            ->where('date(e.order_date) = :dates AND o.type = 2 AND d.department_id = :depId',array(':dates'=>$temp,':depId'=>$depId))
+            ->group('o.just_id')
+            ->order('sumCount DESC')
+            ->queryAll();
+
+        $model3 = Yii::app()->db->createCommand()
+            ->select('d.name, sum(o.count) as sumCount, o.just_id')
+            ->from('expense e')
+            ->join('orders o','o.expense_id = e.expense_id')
+            ->join('products d','d.product_id = o.just_id')
+            ->where('date(e.order_date) = :dates AND o.type = 3 AND d.department_id = :depId',array(':dates'=>$temp,':depId'=>$depId))
+            ->group('o.just_id')
+            ->order('sumCount DESC')
+            ->queryAll();
+        $this->renderPartial('ajaxReadyTimeDetail',array(
+            'model'=>$model,
+            'model2'=>$model2,
+            'model3'=>$model3,
+            'dates'=>$temp
+        ));
+    }
+    function createDateRangeArray($strDateFrom,$strDateTo)
+    {
+        // takes two dates formatted as YYYY-MM-DD and creates an
+        // inclusive array of the dates between the from and to dates.
+
+        // could test validity of dates here but I'm already doing
+        // that in the main script
+
+        $aryRange=array();
+
+        $iDateFrom=mktime(1,0,0,substr($strDateFrom,5,2),     substr($strDateFrom,8,2),substr($strDateFrom,0,4));
+        $iDateTo=mktime(1,0,0,substr($strDateTo,5,2),     substr($strDateTo,8,2),substr($strDateTo,0,4));
+
+        if ($iDateTo>=$iDateFrom)
+        {
+            array_push($aryRange,date('Y-m-d',$iDateFrom)); // first entry
+            while ($iDateFrom<$iDateTo)
+            {
+                $iDateFrom+=86400; // add 24 hours
+                array_push($aryRange,date('Y-m-d',$iDateFrom));
+            }
+        }
+        return $aryRange;
+    }
 
 }

@@ -25,18 +25,18 @@ class Department extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('', 'numerical', 'integerOnly'=>true),
-			array('name', 'length', 'max'=>100),
+			array('point_id, status', 'numerical', 'integerOnly'=>true),
+			array('name, color', 'length', 'max'=>100),
 			/*
 			//Example username
 			array('username', 'match', 'pattern' => '/^[A-Za-z0-9_]+$/u',
-                 'message'=>'Username can contain only alphanumeric 
+                 'message'=>'Username can contain only alphanumeric
                              characters and hyphens(-).'),
           	array('username','unique'),
           	*/
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('department_id, name', 'safe', 'on'=>'search'),
+			array('department_id, point_id, status, name, color', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -59,6 +59,7 @@ class Department extends CActiveRecord
 		return array(
 			'department_id' => 'Department',
 			'name' => 'Название',
+			'color' => 'Цвет'
 		);
 	}
 
@@ -82,6 +83,7 @@ class Department extends CActiveRecord
 
 		$criteria->compare('department_id',$this->department_id);
 		$criteria->compare('name',$this->name);
+		$criteria->compare('color',$this->color);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
@@ -98,36 +100,36 @@ class Department extends CActiveRecord
 	{
 		return parent::model($className);
 	}
-	
-	public function beforeSave() 
+
+	public function beforeSave()
     {
         $userId=0;
 		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-		
+
 		if($this->isNewRecord)
-        {           
-                        						
+        {
+
         }else{
-                        						
+
         }
 
-        
+
         return parent::beforeSave();
     }
 
     public function beforeDelete () {
 		$userId=0;
 		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-                                
+
         return false;
     }
 
     public function afterFind()    {
-         
+
         parent::afterFind();
     }
-	
-		
+
+
 	public function defaultScope()
     {
     	/*
@@ -140,7 +142,7 @@ class Department extends CActiveRecord
         */
         $scope=array();
 
-        
+
         return $scope;
     }
 }

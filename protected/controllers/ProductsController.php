@@ -32,11 +32,11 @@ class ProductsController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('index','view','create','update','admin','delete','export','import','editable','toggle','ajaxCheckProd'),
+				'actions'=>array('index','view',),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('create','update','admin','delete','export','import','editable','toggle','ajaxCheckProd'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -215,7 +215,8 @@ class ProductsController extends Controller
 		{
 			// we only allow deletion via POST request
 			$this->loadModel($id)->updateByPk($id,array(
-                'status'=>1
+                'status'=>1,
+                'department_id'=>0
             ));
 
             $this->logs('delete','products',$id,'delete');

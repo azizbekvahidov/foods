@@ -158,16 +158,14 @@ class Prices extends CActiveRecord
     }
 
     public function getPrice($id,$mType,$types,$dates){
+        //echo $id." => ".$mType." => ".$types." => ".$dates;
         $dates = date('Y-m-d',strtotime($dates));
-        $model = Prices::model()->find(
-            array(
-                'condition'=>'date(price_date) <= :dates AND just_id = :id AND menu_type = :mType AND types = :types',
-                'order'=>'price_date DESC',
-                'limit'=>1,
-                "together" => true,
-                'params'=>array(':id'=>$id,':mType'=>$mType,':types'=>$types,':dates'=>$dates),
-            )
-        );
+        $model = Yii::app()->db->createCommand()
+            ->select('p.price')
+            ->from('prices p')
+            ->where('date(p.price_date) <= :dates AND p.just_id = :id AND p.menu_type = :mType AND p.types = :types',array(':id'=>$id,':mType'=>$mType,':types'=>$types,':dates'=>$dates))
+            ->order('p.price_date DESC')
+            ->queryRow();
         if(empty($model)){
             $model2 = Prices::model()->find(
                 array(
@@ -181,7 +179,7 @@ class Prices extends CActiveRecord
             return $model2->price;
         }
         else{
-            return $model->price;
+            return $model['price'];
         }
     }
     

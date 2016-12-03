@@ -164,69 +164,70 @@ class DepFaktura extends CActiveRecord
         return $summ;
     }
 
-    public function getDepRealizesSumm($dates,$depId){
+    public function getDepRealizesSumm($from,$till,$depId){
         $prod = new Products();
         $summ = 0;
         $model = Yii::app()->db->createCommand()
-            ->select()
+            ->select('df.real_date,dr.count,dr.prod_id')
             ->from('dep_faktura df')
             ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
-            ->where('date(df.real_date) = :dates AND df.department_id = :depId AND df.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0))
+            ->where('date(df.real_date) <= :till AND date(df.real_date) >= :from AND df.department_id = :depId AND df.fromDepId = :fromDepId',array(':from'=>$from,':till'=>$till,':depId'=>$depId,':fromDepId'=>0))
             ->queryAll();
         foreach ($model as $val) {
-            $summ = $summ + $val['count']*$prod->getCostPrice($val['prod_id'],$dates);
+            $summ = $summ + $val['count']*$prod->getCostPrice($val['prod_id'],$val['real_date']);
         }
+
         return $summ;
     }
 
-    public function getDepInRealizesSumm($dates,$depId){
+    public function getDepInRealizesSumm($from,$till,$depId){
         $prod = new Products();
         $stuff = new Halfstaff();
         $summ = 0;
         $model = Yii::app()->db->createCommand()
-            ->select()
+            ->select('df.real_date,dr.count,dr.prod_id')
             ->from('dep_faktura df')
             ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
-            ->where('date(df.real_date) = :dates AND df.department_id = :depId AND df.fromDepId != :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0))
+            ->where('date(df.real_date) <= :till AND date(df.real_date) >= :from AND df.department_id = :depId AND df.fromDepId != :fromDepId',array(':from'=>$from,':till'=>$till,':depId'=>$depId,':fromDepId'=>0))
             ->queryAll();
         foreach ($model as $val) {
-            $summ = $summ + $val['count']*$prod->getCostPrice($val['prod_id'],$dates);
+            $summ = $summ + $val['count']*$prod->getCostPrice($val['prod_id'],$val['real_date']);
         }
 
         $model2 = Yii::app()->db->createCommand()
-            ->select()
+            ->select('inexp.inexp_date,inord.count,inord.stuff_id')
             ->from('inexpense inexp')
             ->join('inorder inord','inord.inexpense_id = inexp.inexpense_id')
-            ->where('date(inexp.inexp_date) = :dates AND inexp.department_id = :depId AND inexp.fromDepId != :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>0))
+            ->where('date(inexp.inexp_date) <= :till AND date(inexp.inexp_date) >= :from AND inexp.department_id = :depId AND inexp.fromDepId != :fromDepId',array(':from'=>$from,':till'=>$till,':depId'=>$depId,':fromDepId'=>0))
             ->queryAll();
         foreach ($model2 as $val) {
-            $summ = $summ + $val['count']*$stuff->getCostPrice($val['stuff_id'],$dates);
+            $summ = $summ + $val['count']*$stuff->getCostPrice($val['stuff_id'],$val['inexp_date']);
         }
         return $summ;
     }
 
-    public function getDepInExp($dates,$depId){
+    public function getDepInExp($from,$till,$depId){
         $prod = new Products();
         $stuff = new Halfstaff();
         $summ = 0;
         $model = Yii::app()->db->createCommand()
-            ->select()
+            ->select('df.real_date,dr.count,dr.prod_id')
             ->from('dep_faktura df')
             ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
-            ->where('date(df.real_date) = :dates AND df.department_id != :depId AND df.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>$depId))
+            ->where('date(df.real_date) <= :till AND date(df.real_date) >= :from AND df.department_id != :depId AND df.fromDepId = :fromDepId',array(':from'=>$from,':till'=>$till,':depId'=>$depId,':fromDepId'=>$depId))
             ->queryAll();
         foreach ($model as $val) {
-            $summ = $summ + $val['count']*$prod->getCostPrice($val['prod_id'],$dates);
+            $summ = $summ + $val['count']*$prod->getCostPrice($val['prod_id'],$val['real_date']);
         }
 
         $model2 = Yii::app()->db->createCommand()
-            ->select()
+            ->select('inexp.inexp_date,inord.count,inord.stuff_id')
             ->from('inexpense inexp')
             ->join('inorder inord','inord.inexpense_id = inexp.inexpense_id')
-            ->where('date(inexp.inexp_date) = :dates AND inexp.department_id != :depId AND inexp.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depId,':fromDepId'=>$depId))
+            ->where('date(inexp.inexp_date) <= :till AND date(inexp.inexp_date) >= :from AND inexp.department_id != :depId AND inexp.fromDepId = :fromDepId',array(':from'=>$from,':till'=>$till,':depId'=>$depId,':fromDepId'=>$depId))
             ->queryAll();
         foreach ($model2 as $val) {
-            $summ = $summ + $val['count']*$stuff->getCostPrice($val['stuff_id'],$dates);
+            $summ = $summ + $val['count']*$stuff->getCostPrice($val['stuff_id'],$val['inexp_date']);
         }
         return $summ;
     }

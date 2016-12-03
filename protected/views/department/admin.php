@@ -7,7 +7,7 @@
 $menu=array();
 require(dirname(__FILE__).DIRECTORY_SEPARATOR.'_menu.php');
 $this->menu=array(
-	array('label'=>'Отделы кухни','url'=>array('index'),'icon'=>'fa fa-list-alt', 'items' => $menu)	
+	array('label'=>'Отделы кухни','url'=>array('index'),'icon'=>'fa fa-list-alt', 'items' => $menu)
 );
 
 Yii::app()->clientScript->registerScript('search', "
@@ -36,7 +36,7 @@ $('.search-form form').submit(function(){
                 // '', 'primary', 'info', 'success', 'warning', 'danger' or 'inverse'
                 'buttons' => $this->menu
             ),
-        ) 
+        )
     )
 );?>		<?php $this->widget('bootstrap.widgets.TbAlert', array(
 		    'block'=>false, // display a larger alert block?
@@ -67,17 +67,17 @@ $('.search-form form').submit(function(){
             <td><?=$count?></td>
             <td><?=$val->name?></td>
             <td>
-                <?=CHtml::link('<i class="icon-pencil"></i>',array('update&id='.$val->department_id),array('class'=>'update'))?>    
-                <?=CHtml::link('<i class="icon-trash"></i>',array('delete&id='.$val->department_id),array('class'=>'delete'))?>   
+                <?=CHtml::link('<i class="icon-pencil"></i>',array('update?id='.$val->department_id),array('class'=>'update'))?>
+                <?=CHtml::link('<i class="icon-trash"></i>',array('delete?id='.$val->department_id),array('class'=>'delete'))?>   
             </td>
         </tr>
     <? $count++;}?>
-    
+
     </tbody>
 </table>
 <script>
-        
-        
+
+
         jQuery(document).on('click','#dataTable a.delete',function() {
         	if(!confirm('Вы уверены, что хотите удалить данный элемент?')) return false;
         	var th = this,
@@ -96,7 +96,7 @@ $('.search-form form').submit(function(){
         	});
         	return false;
         });
-        
+
     </script>
 
 
@@ -108,16 +108,16 @@ $('.search-form form').submit(function(){
     'bootstrap.widgets.TbModal',
     array('id' => 'myModal')
 ); ?>
- 
+
     <div class="modal-header">
         <a class="close" data-dismiss="modal">&times;</a>
         <h4 id="myModalHeader">Modal header</h4>
     </div>
- 
+
     <div class="modal-body" id="myModalBody">
         <p>One fine body...</p>
     </div>
- 
+
     <div class="modal-footer">
         <?php  $this->widget(
             'bootstrap.widgets.TbButton',
@@ -128,5 +128,5 @@ $('.search-form form').submit(function(){
             )
         ); ?>
     </div>
- 
+
 <?php  $this->endWidget(); ?>

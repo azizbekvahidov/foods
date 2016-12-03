@@ -15,10 +15,10 @@
         </tr>
     </thead>
     <tbody>
-        <? foreach ($dishes as $key => $val) {?>
+        <? foreach ($summ as $key => $val) {?>
         <tr>
             <td><?=$count?></td>
-            <td><?=$val?></td>
+            <td><?=$dishes[$key]?></td>
             <td><?=$counting[$key]?></td>
             <td><?=number_format($cost[$key],0,',',' ')?></td>
             <td><?=number_format($summ[$key],0,',',' ')?></td>

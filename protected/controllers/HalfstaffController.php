@@ -2,33 +2,33 @@
 
 class HalfstaffController extends Controller
 {
-	public  $allProduct;
+		public  $allProduct;
     public  $chosenProduct;
     public  $stuff_product;
     public  $stuff_struct;
     public  $prod_measure;
     public  $prod_count;
-	
-	
+
+
 	/**
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
 	 * using two-column layout. See 'protected/views/layouts/column2.php'.
 	 */
-		
-	public $layout='//layouts/column1';		
+
+	public $layout='//layouts/column1';
 		/**
 	 * @return array action filters
 	 */
 	public function filters()
 	{
 		return array(
-						
+
 			'accessControl', // perform access control for CRUD operations
 			'postOnly + delete', // we only allow deletion via POST request
-						
+
 		);
 	}
-	
+
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -38,11 +38,11 @@ class HalfstaffController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('create','update','index','view','admin','delete','export','import','editable','toggle','structSave','copy'),
+				'actions'=>array('index','view'),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('create','update','admin','delete','export','import','editable','toggle','structSave','copy'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -50,7 +50,7 @@ class HalfstaffController extends Controller
 			),
 		);
 	}
-		
+
 	/**
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
@@ -65,7 +65,7 @@ class HalfstaffController extends Controller
             if ($arr[$k] == ',')
                 $arr[$k] = '.';
             $k++;
-        } 
+        }
         $ss = implode($arr);
         return $ss;
      }
@@ -84,7 +84,7 @@ class HalfstaffController extends Controller
 		$Products = Halfstaff::model()->with('stuffStruct.Struct.measure','stuffStruct.Struct.realize.faktures','stuffStruct.Struct.storageProd')->findByPk($id,'stuffStruct.types = :types',array(':types'=>1));//,array('order'=>'fakture.realize_date desc'));
         $Stuff = Halfstaff::model()->with('stuffStruct.stuff.halfstuffType','stuffStruct.stuff.podstuffStruct.Struct.realize.faktures','stuffStruct.stuff.podstuffStruct.Struct.storageProd')->findByPk($id,'stuffStruct.types = :types',array(':types'=>2));//,array('order'=>'fakture.realize_date desc'));
 
-        //$chosenStuff[$key] = Halfstaff::model()->with('halfstuffType','stuffStruct.Struct')->findByPk($value); 
+        //$chosenStuff[$key] = Halfstaff::model()->with('halfstuffType','stuffStruct.Struct')->findByPk($value);
 		if(isset($_GET['asModal'])){
 			$this->renderPartial('view',array(
 				'model'=>$this->loadModel($id),
@@ -93,13 +93,13 @@ class HalfstaffController extends Controller
 			));
 		}
 		else{
-						
+
 			$this->render('view',array(
 				'model'=>$this->loadModel($id),
                 'Products'=>$Products,
                 'Stuff'=>$Stuff,
 			));
-			
+
 		}
 	}
 
@@ -147,7 +147,7 @@ class HalfstaffController extends Controller
 	{
         $chosenProduct = array();
         $products = new Products();
-				
+
 		$model=new Halfstaff;
         $prodList = $products->getUseProdList();
         $stuffList = $model->getUseStuffList();
@@ -157,7 +157,7 @@ class HalfstaffController extends Controller
 
 		if(isset($_POST['Halfstaff']))
 		{
-		  
+
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
 			$_POST['Halfstaff']['count'] = $this->changeToFloat($_POST['Halfstaff']['count']);
@@ -173,7 +173,7 @@ class HalfstaffController extends Controller
 				        $count = 0;
                         $prodMes = "prod>";
 				        for($i = 0; $i < count($_POST['product_id']); $i++){
-				            
+
                             $ss = $this->changeToFloat($_POST['prod'][$i]);
                             $struct = new HalfstuffStructure;
 				            $struct->halfstuff_id = $model->halfstuff_id;
@@ -182,7 +182,7 @@ class HalfstaffController extends Controller
                             $struct->types = 1;
                             if($struct->save()){
                                 $prodMes .= $struct->prod_id.":".$struct->amount.",";
-                            } 
+                            }
                             $count++;
 				        }
 				    }
@@ -190,7 +190,7 @@ class HalfstaffController extends Controller
 				        $count = 0;
                         $stuffMes = "stuff>";
 				        for($i = 0; $i < count($_POST['stuff_id']); $i++){
-				            
+
                             $ss = $this->changeToFloat($_POST['stuff'][$i]);
                             $struct = new HalfstuffStructure;
 				            $struct->halfstuff_id = $model->halfstuff_id;
@@ -199,25 +199,25 @@ class HalfstaffController extends Controller
                             $struct->types = 2;
                             if($struct->save()){
                                 $stuffMes .= $struct->prod_id.":".$struct->amount.",";
-                            } 
+                            }
                             $count++;
 				        }
 				    }
 					$messageType = 'success';
 					$message = "<strong>Well done!</strong> You successfully create data ";
-					
+
                     $this->logs('create','halfstaff',$model->halfstuff_id,$model->name."->".$prodMes."=>".$stuffMes);
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('view','id'=>$model->halfstuff_id));
-				}				
+				}
 			}
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 				//$this->refresh();
 			}
-			
+
 		}
 
 		$this->render('create',array(
@@ -225,8 +225,8 @@ class HalfstaffController extends Controller
             'prodList'=>$prodList,
             'stuffList'=>$stuffList
 					));
-		
-				
+
+
 	}
 
 	/**
@@ -235,17 +235,17 @@ class HalfstaffController extends Controller
 	 * @param integer $id the ID of the model to be updated
 	 */
 	public function actionUpdate($id)
-	{ 
-        $chosenStuff = array();	   
+	{
+        $chosenStuff = array();
         $prod_id = CHtml::listData(HalfstuffStructure::model()->findAll(array("condition"=>"halfstuff_id = $id AND types = 1")),'halfstruct_id','prod_id');
-        
+
         $stuff_id = CHtml::listData(HalfstuffStructure::model()->findAll(array("condition"=>"halfstuff_id = $id AND types = 2")),'halfstruct_id','prod_id');
-        
-        $chosenProduct = Products::model()->with('stuffStruct')->findAllByPk($prod_id,'stuffStruct.halfstuff_id = :halfstuff_id AND stuffStruct.types = :types',array(':halfstuff_id'=>$id,':types'=>1));        
-        
+
+        $chosenProduct = Products::model()->with('stuffStruct')->findAllByPk($prod_id,'stuffStruct.halfstuff_id = :halfstuff_id AND stuffStruct.types = :types',array(':halfstuff_id'=>$id,':types'=>1));
+
         foreach($stuff_id as $key => $value){
-            
-            $chosenStuff[$key] = HalfstuffStructure::model()->with('stuff')->findAllByPk($key,'t.halfstuff_id = :halfstuff_id AND types = :types',array(':halfstuff_id'=>$id,':types'=>2));            
+
+            $chosenStuff[$key] = HalfstuffStructure::model()->with('stuff')->findAllByPk($key,'t.halfstuff_id = :halfstuff_id AND types = :types',array(':halfstuff_id'=>$id,':types'=>2));
          }
 		$model=$this->loadModel($id);
         $products = new Products();
@@ -277,8 +277,8 @@ class HalfstaffController extends Controller
 				        $count = 0;
                         $prodMes = "prod>";
 				        for($i = 0; $i < count($_POST['product_id']); $i++){
-				            
-                            $ss = $this->changeToFloat($_POST['prod'][$i]);				            
+
+                            $ss = $this->changeToFloat($_POST['prod'][$i]);
                             $struct = new HalfstuffStructure;
 				            $struct->halfstuff_id = $id;
 				            $struct->prod_id = $_POST['product_id'][$i];
@@ -287,16 +287,16 @@ class HalfstaffController extends Controller
                             if($struct->save()){
                                 $messageType = 'success';
                                 $prodMes .= $struct->prod_id.":".$struct->amount.",";
-					            $message = "<strong>Well done!</strong> Your successfully create data ";} 
+					            $message = "<strong>Well done!</strong> Your successfully create data ";}
                             $count++;
 				                             }
 				    }
-                    
+
                     if($_POST['stuff_id'] !=null){
 				        $count = 0;
                         $stuffMes = "stuff>";
 				        for($i = 0; $i < count($_POST['stuff_id']); $i++){
-				            
+
                             $ss = $this->changeToFloat($_POST['stuff'][$i]);
                             $struct = new HalfstuffStructure;
 				            $struct->halfstuff_id = $model->halfstuff_id;
@@ -305,10 +305,10 @@ class HalfstaffController extends Controller
                             $struct->types = 2;
                             if($struct->save()){
                                 $stuffMes .= $struct->prod_id.":".$struct->amount.",";
-                            } 
+                            }
                             $count++;
 				        }
-				    }                  
+				    }
 					$this->logs('update','halfstaff',$model->halfstuff_id,$model->name."->".$prodMes."=>".$stuffMes);
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
@@ -318,7 +318,7 @@ class HalfstaffController extends Controller
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				// $this->refresh(); 
+				// $this->refresh();
 			}
 
 			$model->attributes=$_POST['Halfstaff'];
@@ -332,9 +332,9 @@ class HalfstaffController extends Controller
             'chosenStuff'=>$chosenStuff,
             'prodList'=>$prodList,
             'stuffList'=>$stuffList
-            
+
 					));
-		
+
 			}
 
 
@@ -342,32 +342,32 @@ class HalfstaffController extends Controller
     public function actionStructSave($id){
         $struct = new HalfstuffStructure;
         $prod_id = CHtml::listData(HalfstuffStructure::model()->findAll(array("condition"=>"halfstuff_id = $id")),'halfstruct_id','prod_id');
-        
+
         $this->chosenProduct = CHtml::listData(Products::model()->findAllByPk($prod_id),'product_id','name');
-        
+
         if($_POST){
 			$transaction = Yii::app()->db->beginTransaction();
             try{
                 if($_POST['prod']){
                     foreach($_POST['prod'] as $key => $val){
                         $tempStruct = HalfstuffStructure::model()->updateAll(array('amount'=>$val),'halfstuff_id = :halfstuff_id AND prod_id = :prod_id',array(':halfstuff_id'=>$id,':prod_id'=>$key));
-                        
+
                     }
                 }
                     $transaction->commit();
                     Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('index'));
-                
+
             }
             catch(exception $ex){
-                
+
             }
-            
+
         }
-                        
+
         $this->render('structSave',array(
               ));
-        
+
     }
 	/**
 	 * Deletes a particular model.
@@ -380,7 +380,8 @@ class HalfstaffController extends Controller
 		{
 			// we only allow deletion via POST request
             $this->loadModel($id)->updateByPk($id,array(
-                'status'=>1
+                'status'=>1,
+                'department_id'=>0
             ));
             //HalfstuffStructure::model()->deleteAll('halfstuff_id=:halfstuff_id', array(':halfstuff_id'=>$id));
 			$this->logs('delete','halfstuff',$id,'delete');
@@ -390,7 +391,7 @@ class HalfstaffController extends Controller
 		}
 		else
 			throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');
-        
+
 	}
 
 	/**
@@ -414,7 +415,7 @@ class HalfstaffController extends Controller
             'newModel'=>$newModel,
 			'model'=>$model,
 					));
-		
+
 	}
 
 	/**
@@ -422,7 +423,7 @@ class HalfstaffController extends Controller
 	 */
 	public function actionAdmin()
 	{
-		
+
 		$newModel = Halfstaff::model()->findAll('status = :status',array(':status'=>0));
 		$model=new Halfstaff('search');
 		$model->unsetAttributes();  // clear any default values
@@ -433,7 +434,7 @@ class HalfstaffController extends Controller
             'newModel'=>$newModel,
 			'model'=>$model,
 					));
-		
+
 			}
 
 	/**
@@ -463,7 +464,7 @@ class HalfstaffController extends Controller
 			Yii::app()->end();
 		}
 	}
-	
+
 	public function actionExport()
     {
         $model=new Halfstaff;
@@ -479,7 +480,7 @@ class HalfstaffController extends Controller
             'grid_mode'=>'export',
             'exportType'=>$exportType,
             'columns' => array(
-	                
+
 					'halfstuff_id',
 					'name',
 					'stuff_type',
@@ -493,7 +494,7 @@ class HalfstaffController extends Controller
 	*/
 	public function actionImport()
 	{
-		
+
 		$model=new Halfstaff;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -516,7 +517,7 @@ class HalfstaffController extends Controller
 					$inserted=0;
 					$read_status = false;
 					while(!empty($sheetData[$baseRow]['A'])){
-						$read_status = true;						
+						$read_status = true;
 						//$halfstuff_id=  $sheetData[$baseRow]['A'];
 						$name=  $sheetData[$baseRow]['B'];
 						$stuff_type=  $sheetData[$baseRow]['C'];
@@ -534,11 +535,11 @@ class HalfstaffController extends Controller
 						catch (Exception $e){
 							Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 							//$this->refresh();
-						} 
+						}
 						$baseRow++;
-					}	
-					Yii::app()->user->setFlash('success', ($inserted).' row inserted');	
-				}	
+					}
+					Yii::app()->user->setFlash('success', ($inserted).' row inserted');
+				}
 				else
 				{
 					Yii::app()->user->setFlash('warning', 'Wrong file type (xlsx, xls, and ods only)');
@@ -558,8 +559,8 @@ class HalfstaffController extends Controller
 	}
 
 	public function actionEditable(){
-		Yii::import('bootstrap.widgets.TbEditableSaver'); 
-	    $es = new TbEditableSaver('Halfstaff'); 
+		Yii::import('bootstrap.widgets.TbEditableSaver');
+	    $es = new TbEditableSaver('Halfstaff');
 			    $es->update();
 	}
 
@@ -573,5 +574,5 @@ class HalfstaffController extends Controller
     	);
 	}
 
-	
+
 }

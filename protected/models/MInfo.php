@@ -1,22 +1,30 @@
 <?php
 
 /**
- * This is the model class for table "mInfo".
+ * This is the model class for table "minfo".
  *
- * The followings are the available columns in table 'mInfo':
+ * The followings are the available columns in table 'minfo':
  * @property integer $info_id
  * @property string $info_date
  * @property integer $proceed
  * @property integer $parish
+ * @property integer $term
+ * @property integer $azizTerm
+ * @property integer $tortShams
+ * @property integer $meat
+ * @property integer $other
+ * @property integer $kassa
+ * @property integer $gosBank
+ * @property integer $waitor
  */
-class MInfo extends CActiveRecord
+class Minfo extends CActiveRecord
 {
 	/**
 	 * @return string the associated database table name
 	 */
 	public function tableName()
 	{
-		return 'mInfo';
+		return 'minfo';
 	}
 
 	/**
@@ -27,18 +35,11 @@ class MInfo extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('proceed, parish', 'numerical', 'integerOnly'=>true),
+			array('proceed, parish, term, azizTerm, tortShams, meat, other, kassa, gosBank, waitor', 'numerical', 'integerOnly'=>true),
 			array('info_date', 'safe'),
-			/*
-			//Example username
-			array('username', 'match', 'pattern' => '/^[A-Za-z0-9_]+$/u',
-                 'message'=>'Username can contain only alphanumeric 
-                             characters and hyphens(-).'),
-          	array('username','unique'),
-          	*/
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('info_id, info_date, proceed, parish', 'safe', 'on'=>'search'),
+			array('info_id, info_date, proceed, parish, term, azizTerm, tortShams, meat, other, kassa, gosBank, waitor', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -63,6 +64,14 @@ class MInfo extends CActiveRecord
 			'info_date' => 'Info Date',
 			'proceed' => 'Proceed',
 			'parish' => 'Parish',
+			'term' => 'Term',
+			'azizTerm' => 'Aziz Term',
+			'tortShams' => 'Tort Shams',
+			'meat' => 'Meat',
+			'other' => 'Other',
+			'kassa' => 'Kassa',
+			'gosBank' => 'Gos Bank',
+			'waitor' => 'Waitor',
 		);
 	}
 
@@ -88,6 +97,14 @@ class MInfo extends CActiveRecord
 		$criteria->compare('info_date',$this->info_date,true);
 		$criteria->compare('proceed',$this->proceed);
 		$criteria->compare('parish',$this->parish);
+		$criteria->compare('term',$this->term);
+		$criteria->compare('azizTerm',$this->azizTerm);
+		$criteria->compare('tortShams',$this->tortShams);
+		$criteria->compare('meat',$this->meat);
+		$criteria->compare('other',$this->other);
+		$criteria->compare('kassa',$this->kassa);
+		$criteria->compare('gosBank',$this->gosBank);
+		$criteria->compare('waitor',$this->waitor);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
@@ -98,63 +115,10 @@ class MInfo extends CActiveRecord
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
-	 * @return MInfo the static model class
+	 * @return Minfo the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
 		return parent::model($className);
 	}
-	
-	public function beforeSave() 
-    {
-        $userId=0;
-		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-		
-		if($this->isNewRecord)
-        {           
-                        						
-        }else{
-                        						
-        }
-
-        
-        	// NOT SURE RUN PLEASE HELP ME -> 
-        	//$from=DateTime::createFromFormat('d/m/Y',$this->info_date);
-        	//$this->info_date=$from->format('Y-m-d');
-        	
-        return parent::beforeSave();
-    }
-
-    public function beforeDelete () {
-		$userId=0;
-		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-                                
-        return false;
-    }
-
-    public function afterFind()    {
-         
-        	// NOT SURE RUN PLEASE HELP ME -> 
-        	//$from=DateTime::createFromFormat('Y-m-d',$this->info_date);
-        	//$this->info_date=$from->format('d/m/Y');
-        	
-        parent::afterFind();
-    }
-	
-		
-	public function defaultScope()
-    {
-    	/*
-    	//Example Scope
-    	return array(
-	        'condition'=>"deleted IS NULL ",
-            'order'=>'create_time DESC',
-            'limit'=>5,
-        );
-        */
-        $scope=array();
-
-        
-        return $scope;
-    }
 }

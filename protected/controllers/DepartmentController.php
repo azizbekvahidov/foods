@@ -2,27 +2,27 @@
 
 class DepartmentController extends Controller
 {
-	
-	
+
+
 	/**
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
 	 * using two-column layout. See 'protected/views/layouts/column2.php'.
 	 */
-		
-	public $layout='//layouts/column1';		
+
+	public $layout='//layouts/column1';
 		/**
 	 * @return array action filters
 	 */
 	public function filters()
 	{
 		return array(
-						
+
 			'accessControl', // perform access control for CRUD operations
 			'postOnly + delete', // we only allow deletion via POST request
-						
+
 		);
 	}
-	
+
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -32,11 +32,11 @@ class DepartmentController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('index','view','create','update','admin','delete','export','import','editable','toggle',),
+				'actions'=>array('index','view',),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('create','update','admin','delete','export','import','editable','toggle',),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -44,25 +44,25 @@ class DepartmentController extends Controller
 			),
 		);
 	}
-		
+
 	/**
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
 	 */
 	public function actionView($id)
 	{
-		
+
 		if(isset($_GET['asModal'])){
 			$this->renderPartial('view',array(
 				'model'=>$this->loadModel($id),
 			));
 		}
 		else{
-						
+
 			$this->render('view',array(
 				'model'=>$this->loadModel($id),
 			));
-			
+
 		}
 	}
 
@@ -72,9 +72,9 @@ class DepartmentController extends Controller
 	 */
 	public function actionCreate()
 	{
-				
-		$model=new Department;
 
+		$model=new Department;
+        $point = CHtml::listData(OrderPoint::model()->findAll(),'point_id','name');
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
@@ -90,7 +90,7 @@ class DepartmentController extends Controller
 					$messageType = 'success';
 					$message = "<strong>Well done!</strong> You successfully create data ";
 					/*
-					$model2 = Department::model()->findByPk($model->department_id);						
+					$model2 = Department::model()->findByPk($model->department_id);
 					if(!empty($uploadFile)) {
 						$extUploadFile = substr($uploadFile, strrpos($uploadFile, '.')+1);
 						if(!empty($uploadFile)) {
@@ -103,27 +103,28 @@ class DepartmentController extends Controller
 								$messageType = 'warning';
 								$message .= 'but file not uploded';
 							}
-						}						
+						}
 					}
 					*/
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
-					$this->redirect(array('create'));
-				}				
+					//$this->redirect(array('admin'));
+				}
 			}
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 				//$this->refresh();
 			}
-			
+
 		}
 
 		$this->render('create',array(
 			'model'=>$model,
+            'point'=>$point
 					));
-		
-				
+
+
 	}
 
 	/**
@@ -133,7 +134,7 @@ class DepartmentController extends Controller
 	 */
 	public function actionUpdate($id)
 	{
-		
+        $point = CHtml::listData(OrderPoint::model()->findAll(),'point_id','name');
 		$model=$this->loadModel($id);
 
 		// Uncomment the following line if AJAX validation is needed
@@ -162,31 +163,32 @@ class DepartmentController extends Controller
 							$messageType = 'warning';
 							$message .= 'but file not uploded';
 						}
-					}						
+					}
 				}
 				*/
 
 				if($model->save()){
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
-					$this->redirect(array('index'));
+					$this->redirect(array('admin'));
 				}
 			}
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				// $this->refresh(); 
+				// $this->refresh();
 			}
 
 			$model->attributes=$_POST['Department'];
 			if($model->save())
-				$this->redirect(array('view','id'=>$model->department_id));
+				$this->redirect(array('admin'));
 		}
 
 		$this->render('update',array(
 			'model'=>$model,
+            'point'=>$point
 					));
-		
+
 			}
 
 	/**
@@ -199,7 +201,7 @@ class DepartmentController extends Controller
 		if(Yii::app()->request->isPostRequest)
 		{
 			// we only allow deletion via POST request
-			$this->loadModel($id)->deleteByPk($id);
+			$this->loadModel($id)->updateByPk($id,array('status'=>1));
 
 			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
 			if(!isset($_GET['ajax']))
@@ -230,7 +232,7 @@ class DepartmentController extends Controller
 			'model'=>$model,
             'newModel'=>$newModel,
 					));
-		
+
 			}
 
 	/**
@@ -238,8 +240,8 @@ class DepartmentController extends Controller
 	 */
 	public function actionAdmin()
 	{
-		
-		$newModel = Department::model()->findAll();
+
+		$newModel = Department::model()->findAll('status = :status',array(':status'=>0));
 		$model=new Department('search');
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['Department']))
@@ -249,7 +251,7 @@ class DepartmentController extends Controller
 			'model'=>$model,
             'newModel'=>$newModel,
 					));
-		
+
 			}
 
 	/**
@@ -279,7 +281,7 @@ class DepartmentController extends Controller
 			Yii::app()->end();
 		}
 	}
-	
+
 	public function actionExport()
     {
         $model=new Department;
@@ -295,7 +297,7 @@ class DepartmentController extends Controller
             'grid_mode'=>'export',
             'exportType'=>$exportType,
             'columns' => array(
-	                
+
 					'department_id',
 					'name',
 	            ),
@@ -308,7 +310,7 @@ class DepartmentController extends Controller
 	*/
 	public function actionImport()
 	{
-		
+
 		$model=new Department;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -331,7 +333,7 @@ class DepartmentController extends Controller
 					$inserted=0;
 					$read_status = false;
 					while(!empty($sheetData[$baseRow]['A'])){
-						$read_status = true;						
+						$read_status = true;
 						//$department_id=  $sheetData[$baseRow]['A'];
 						$name=  $sheetData[$baseRow]['B'];
 
@@ -347,11 +349,11 @@ class DepartmentController extends Controller
 						catch (Exception $e){
 							Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 							//$this->refresh();
-						} 
+						}
 						$baseRow++;
-					}	
-					Yii::app()->user->setFlash('success', ($inserted).' row inserted');	
-				}	
+					}
+					Yii::app()->user->setFlash('success', ($inserted).' row inserted');
+				}
 				else
 				{
 					Yii::app()->user->setFlash('warning', 'Wrong file type (xlsx, xls, and ods only)');
@@ -371,8 +373,8 @@ class DepartmentController extends Controller
 	}
 
 	public function actionEditable(){
-		Yii::import('bootstrap.widgets.TbEditableSaver'); 
-	    $es = new TbEditableSaver('Department'); 
+		Yii::import('bootstrap.widgets.TbEditableSaver');
+	    $es = new TbEditableSaver('Department');
 			    $es->update();
 	}
 
@@ -386,5 +388,5 @@ class DepartmentController extends Controller
     	);
 	}
 
-	
+
 }

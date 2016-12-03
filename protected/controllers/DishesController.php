@@ -46,11 +46,11 @@ class DishesController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('refreshAdd','index','view','create','update','admin','delete','export','import','editable','toggle','structSave','copy','checkMargin'),
+				'actions'=>array('index','view'),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('refreshAdd','create','update','admin','delete','export','import','editable','toggle','structSave','copy','checkMargin'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -88,7 +88,10 @@ class DishesController extends Controller
         $modelss->save();
     }
 	public function actionView($id)
-	{   
+	{
+        $dish = new Dishes();
+        $dishProd = $dish->getStruct($id);
+/*
 	    $Products = Dishes::model()->with('dishStruct','products.measure','products.realize.faktures','products.storageProd')->findByPk($id);
         
         $Halfstuff = Dishes::model()->with('stuffs.halfstuffType','halfstuff','stuffs.stuffStruct.Struct.storageProd','stuffs.stuffStruct.Struct.realize.faktures')->findByPk($id);
@@ -105,15 +108,11 @@ class DishesController extends Controller
          
         $this->chosenProduct = CHtml::listData(Products::model()->findAllByPk($prod_id),'product_id','name');
         $this->chosenHalfstuff = CHtml::listData(Halfstaff::model()->findAllByPk($stuff_id),'halfstuff_id','name');
-
+*/
 		if(isset($_GET['asModal'])){
 			$this->renderPartial('view',array(
                 'id'=>$id,
-                'product'=>$this->chosenProduct,
-                'halfstuff'=>$this->chosenHalfstuff,
-                'HalfstuffProd'=>$HalfstuffProd,
-                'HalfstuffStuff'=>$HalfstuffStuff,
-				'model'=>$this->loadModel($id),
+                'dishProd'=>$dishProd,
 			));
 		}
 		else{
@@ -121,18 +120,15 @@ class DishesController extends Controller
 			$this->render('view',array(
                 'id'=>$id,
 				'model'=>$this->loadModel($id),
-                'product'=>$this->chosenProduct,
-                'halfstuff'=>$this->chosenHalfstuff,
-                'HalfstuffProd'=>$HalfstuffProd,
-                'HalfstuffStuff'=>$HalfstuffStuff,
+                'dishProd'=>$dishProd,
 			));
 			
 		}
 	}
 
-    public function actionCopy(){
+    public function actionCopy($id){
 
-        $model = Dishes::model()->findByPk($_GET['id']);
+        $model = Dishes::model()->findByPk($id);
         $model2 = DishStructure::model()->findAll('t.dish_id = :dish_id',array(':dish_id'=>$model->dish_id));
         $model3 = DishStructure2::model()->findAll('t.dish_id = :dish_id',array(':dish_id'=>$model->dish_id));
 
@@ -172,6 +168,71 @@ class DishesController extends Controller
         }
 
     }
+
+    public function actionMove($id){
+
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dishes d')
+            ->where('d.dish_id = :id',array(':id'=>$id))
+            ->queryRow();
+        $model2 = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dish_structure ds')
+            ->where('ds.dish_id = :id',array(':id'=>$id))
+            ->queryAll();
+        $model3 = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dish_structure2 ds')
+            ->where('ds.dish_id = :id',array(':id'=>$id))
+            ->queryAll();
+        $transaction = Yii::app()->db->beginTransaction();
+        try{
+            $stuff = new Halfstaff();
+            $stuff->name = $model['name'];
+            $stuff->stuff_type = 1;
+            $stuff->price = $model['price'];
+            $stuff->count = $model['count'];
+            $stuff->department_id = $model['department_id'];
+            $stuff->status = $model['status'];
+            if($stuff->save()) {
+                if (!empty($model2))
+                    $prodMes = "prod>";
+                    foreach ($model2 as $value) {
+                        $stuffProd = new HalfstuffStructure();
+                        $stuffProd->halfstuff_id = $stuff->halfstuff_id;
+                        $stuffProd->prod_id = $value['prod_id'];
+                        $stuffProd->amount = $value['amount'];
+                        $stuffProd->types = 1;
+                        $stuffProd->save();
+                        $prodMes .= $stuffProd['prod_id'].":".$stuffProd['amount'].",";
+                    }
+                if (!empty($model3))
+                    $stuffMes = "stuff>";
+                    foreach ($model3 as $value) {
+                        $stuffProd = new HalfstuffStructure();
+                        $stuffProd->halfstuff_id = $stuff->halfstuff_id;
+                        $stuffProd->prod_id = $value['halfstuff_id'];
+                        $stuffProd->amount = $value['amount'];
+                        $stuffProd->types = 2;
+                        $stuffProd->save();
+                        $stuffMes .= $value['halfstuff_id'].":".$value['amount'].",";
+                    }
+                $this->logs('create','halfstaff',$stuff->halfstuff_id,$stuff->name."->".$prodMes."=>".$stuffMes);
+            }
+
+            $transaction->commit();
+
+            $this->redirect(array('halfstaff/update','id'=>$stuff->halfstuff_id));
+
+        }
+        catch (Exception $e){
+            $transaction->rollBack();
+            Yii::app()->user->setFlash('error', "{$e->getMessage()}");
+            //$this->refresh();
+        }
+    }
+
 
 	/**
 	 * Creates a new model.
@@ -423,7 +484,8 @@ class DishesController extends Controller
 		{
 			// we only allow deletion via POST request
 			$this->loadModel($id)->updateByPk($id,array(
-                'status'=>1
+                'status'=>1,
+                'department_id'=>0
             ));
             /*DishStructure::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));
             DishStructure2::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));*/

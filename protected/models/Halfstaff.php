@@ -26,7 +26,7 @@ class Halfstaff extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('stuff_type,price', 'numerical', 'integerOnly'=>true),
+			array('stuff_type,price,distrib', 'numerical', 'integerOnly'=>true),
             array('count','numerical'),
 			array('name', 'length', 'max'=>100),
 			/*
@@ -38,7 +38,7 @@ class Halfstaff extends CActiveRecord
           	*/
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('halfstuff_id, name, stuff_type,price,count', 'safe', 'on'=>'search'),
+			array('halfstuff_id, name, stuff_type,price,count,distrib', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -167,19 +167,25 @@ class Halfstaff extends CActiveRecord
                 $stuff .= $this->getStuffId($val->prod_id);
             }
         }
+
         return $stuff;
     }
 
     public function getStuffProd($depId){
         $model = Halfstaff::model()->with('stuffStruct')->findAll('t.department_id = :depId',array(':depId'=>$depId));
-        $prod = '';
+        $prod['prod'] = '';
+        $prod['stuff'] = '';
         foreach ($model as $value) {
+            $prod['stuff'] .= $value->halfstuff_id.":";
             foreach ($value->getRelated('stuffStruct') as $val) {
                 if($val->types == 2) {
-                    $prod .= $this->getStuffProd($val->prod_id);
+                    $prod['stuff'] .= $val->prod_id.":";
+                    $temp = $this->getProdId($val->prod_id);
+                    $prod['stuff'] .= $temp['stuff'];
+                    $prod['prod'] .= $temp['prod'];
                 }
                 else{
-                    $prod .= $val->prod_id.":";
+                    $prod['prod'] .= $val->prod_id.":";
                 }
             }
         }
@@ -188,13 +194,16 @@ class Halfstaff extends CActiveRecord
 
     public function getProdId($id){
         $model = $this::model()->with('stuffStruct')->findByPk($id);
-        $prod = '';
+        $prod['prod'] = '';
         foreach ($model->getRelated('stuffStruct') as $val) {
             if($val->types == 2) {
-                $prod .= $this->getProdId($val->prod_id);
+                $prod['stuff'] .= $val->prod_id.":";
+                $temp = $this->getProdId($val->prod_id);
+                $prod['stuff'] .= $temp['stuff'];
+                $prod['prod'] .= $temp['prod'];
             }
             else{
-                $prod .= $val->prod_id.":";
+                $prod['prod'] .= $val->prod_id.":";
             }
         }
         return $prod;
@@ -215,7 +224,6 @@ class Halfstaff extends CActiveRecord
         foreach ($model as $value) {
             $stuff .= $this->getStuffId($value->halfstuff_id);
         }
-
         $temp = explode(':',$stuff);
         $result = array();
         foreach ($temp as $val) {
@@ -272,13 +280,45 @@ class Halfstaff extends CActiveRecord
         return $result = $this->splitArray($result,$model->count);
 
     }
+    
+    public function getStuffStuff($id){
+        $result = array();
+        $result2 = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('halfstaff h')
+            ->join('halfstuff_structure hs','hs.halfstuff_id = h.halfstuff_id')
+            ->where('h.halfstuff_id = :id AND hs.types = :types',array(':id'=>$id,':types'=>2))
+            ->queryAll();
+
+        foreach ($model as $val) {
+            $result[$val['halfstuff_id']] = $result[$val['halfstuff_id']] + $val['amount'];
+
+            //$result = $stuff->sumArray($result,$result2);
+        }
+
+        return $result;
+
+    }
 
     public function sumArray($array1,$array2){
-        $result = array();
-        foreach ($array1 as $key => $val) {
-            $result[$key] = $val + $array2[$key];
+        if(!empty($array1)){
+            $result = $array1;
+            if(!empty($array2))
+                foreach($array2 as $k=>$v) {
+                    if(array_key_exists($k,$result))
+                        $result[$k] += $v;
+                    else {
+                        $result[$k] = $v;
+                    }
+                }
         }
-        $result = $result + $array2;
+        else{
+            if(!empty($array2))
+                $result = $array2;
+            else
+                $result = array();
+        }
         return $result;
     }
 
@@ -332,7 +372,7 @@ class Halfstaff extends CActiveRecord
         if(!empty($costPrice['prod'])){
             $prodSum = array_sum($costPrice['prod']);
         }
-        elseif(!empty($costPrice['stuff'])){
+        if(!empty($costPrice['stuff'])){
             $stuffSum = array_sum($costPrice['stuff']);
         }
         return $prodSum + $stuffSum;
@@ -390,7 +430,48 @@ class Halfstaff extends CActiveRecord
             ->from('halfstaff')
             ->where('halfstuff_id = :id',array(':id'=>$id))
             ->queryRow();
-        $result['count'] = $stuff['count'];
+        if(!empty($result)){
+            $result['count'] = $stuff['count'];
+        }
         return $result;
     }
+
+    public function stuffProd($dates,$id){
+        $log = new Logs();
+        $result = array();
+        $model = $log->getStructure($dates,$id,$this->tableName());
+        if(!empty($model['prod']) or !empty($model['stuff'])) {
+            if (!empty($model['prod']))
+                foreach ($model['prod'] as $key => $val) {
+                    $result[$key] = $val;
+                }
+            if (!empty($model['stuff']))
+                foreach ($model['stuff'] as $key => $val) {
+                    $result = $this->sumArray($result, $this->multiplyArray($this->stuffProd($dates, $key), $val));
+                }
+        }
+        else{
+            $model = $this->getStruct($id);
+            if (!empty($model['prod']))
+                foreach ($model['prod'] as $key => $val) {
+                    $result[$key] = $val;
+                }
+            if (!empty($model['stuff']))
+                foreach ($model['stuff'] as $key => $val) {
+                    $result = $this->sumArray($result, $this->multiplyArray($this->stuffProd($dates, $key), $val));
+                }
+        }
+        return $this->splitArray($result,$model['count']);
+    }
+
+    public function getMeasure($id){
+        $model = Yii::app()->db->createCommand()
+            ->select('m.name')
+            ->from('halfstaff h')
+            ->join('measurement m','m.measure_id = h.stuff_type')
+            ->where('halfstuff_id = :id',array(':id'=>$id))
+            ->queryRow();
+        return $model['name'];
+    }
+
 }

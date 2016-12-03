@@ -29,7 +29,7 @@ class Orders extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('expense_id, just_id, type', 'numerical', 'integerOnly'=>true),
-			array('count', 'numerical'),
+			array('count, deleted', 'numerical'),
 			/*
 			//Example username
 			array('username', 'match', 'pattern' => '/^[A-Za-z0-9_]+$/u',
@@ -39,7 +39,7 @@ class Orders extends CActiveRecord
           	*/
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('order_id, expense_id, just_id, type, count', 'safe', 'on'=>'search'),
+			array('order_id, expense_id, just_id, type, count, deleted', 'safe', 'on'=>'search'),
 		);
 	}
 

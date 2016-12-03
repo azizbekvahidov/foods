@@ -10,7 +10,21 @@
 
 
 <?php echo $form->errorSummary($model); ?>
+    <div class="input-prepend">
+        <span class="add-on"><i class="icon-calendar"></i></span><?
+        $this->widget(
+            'bootstrap.widgets.TbDatePicker',
+            array(
 
+                'name' => 'from',
+                'options' => array(
+                    'language' => 'ru',
+                    'format' => 'yyyy-mm-dd',
+                )
+            )
+        );
+        ?>
+    </div>
 <div class="form-group">
 
     <?= CHtml::dropDownList('products','',CHtml::listData(Products::model()->findAll(),'product_id','name'),array('empty' => '--Выберите продукт--','id'=>'product'))?>&nbsp; &nbsp;
@@ -20,7 +34,7 @@
 <div class="form-group">
     <table id="prodList" class="table table-striped table-hover ">
         <thead>
-        <tr>
+        <tr>    
             <th style="text-align:center;">Название продукта</th>
             <th style="text-align:center;">Количество</th>
             <th style="text-align:center;">Удалить</th>

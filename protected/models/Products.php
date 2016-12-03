@@ -161,22 +161,28 @@ class Products extends CActiveRecord
     }
     //получить ед.измерения по id
     public function getMeasure($id){
-        $model = Products::model()->with('measure')->findByPk($id);
-        return $model->getRelated('measure')->name;
+        $model = Yii::app()->db->createCommand()
+            ->select('m.name')
+            ->from('products p')
+            ->join('measurement m','m.measure_id = p.measure_id')
+            ->where('p.product_id = :id',array(':id'=>$id))
+            ->queryRow();
+        return $model['name'];
     }
     //получить id и name продуктов по их отношению тому или иному отделу
     public function getProdName($depId){
         $dish = new Dishes();
         $result = array();
         $stuff = new Halfstaff();
-
-        $temp2 = explode(":",$stuff->getStuffProd($depId));
+        $temps  = $stuff->getStuffProd($depId);
+        $temp2 = explode(":",$temps['prod']);
         foreach ($temp2 as $val) {
             $model = Products::model()->findByPk($val);
             if(!empty($model))
                 $result[$model->product_id] = $model->name;
         }
-        $temp = explode(":",$dish->getDishProd($depId));
+        $temps = $dish->getDishProd($depId);
+        $temp = explode(":",$temps['prod']);
         foreach ($temp as $val) {
             $model = Products::model()->findByPk($val);
             if(!empty($model))

@@ -32,11 +32,11 @@ class EmployeeController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('create','update','index','view','admin','delete','export','import','editable','toggle',),
+				'actions'=>array('index','view',),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('create','update','admin','delete','export','import','editable','toggle',),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -245,7 +245,7 @@ class EmployeeController extends Controller
 		if(isset($_GET['Employee']))
 			$model->attributes=$_GET['Employee'];
 
-        $models=Employee::model()->findAll('role < :role AND status = :status',array(':role'=>3,':status'=>0));
+        $models=Employee::model()->findAll('status = :status',array(':status'=>0));
 		$this->render('admin',array(
 			'model'=>$model,
             'models'=>$models

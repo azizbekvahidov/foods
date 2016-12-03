@@ -193,6 +193,23 @@ class Logs extends CActiveRecord
                 }
             }
         }
+        if ($model['count'] == 0) {
+            if($table == 'halfstaff') {
+                $count = Yii::app()->db->createCommand()
+                    ->select('count')
+                    ->from('halfstaff')
+                    ->where('halfstuff_id = :id', array(':id' => $id))
+                    ->queryRow();
+            }
+            if($table == 'dishes'){
+                $count = Yii::app()->db->createCommand()
+                    ->select('count')
+                    ->from('dishes')
+                    ->where('dish_id = :id', array(':id' => $id))
+                    ->queryRow();
+            }
+            $model['count'] = $count['count'];
+        }
         $result['count'] = $model['count'];
         return $result;
 

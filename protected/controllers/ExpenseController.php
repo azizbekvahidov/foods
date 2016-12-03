@@ -21,11 +21,11 @@ class ExpenseController extends Controller
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('taken','test','view','empOrder','empList','print','orderList','empOrderByDate','getOut','out','index','curOrder','update','todayOrder','kindCreate','lists','debtList','debtClose','paidDebt','empExpense','ajaxEmpExpense'),
+                'actions'=>array('taken','test','view','index','empExpense','empOrder','debtList','debtClose','paidDebt','lists','ajaxEmpExpense','orderList','empList','print'),
                 'roles'=>array('2'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('empOrderByDate','getOut','out','curOrder','update','todayOrder','kindCreate'),
                 'roles'=>array('3'),
             ),
             array('deny',  // deny all users
@@ -59,7 +59,7 @@ class ExpenseController extends Controller
             $empsum = 0;
             $empPersum = 0;
             $percent = 0;
-            $newModel = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt != :debt',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+            $newModel = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt != :debt AND t.kind != 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
             //echo $val->employee_id."<br>";
             foreach($newModel as $vale){
                 if($val->check_percent == 1){
@@ -85,9 +85,9 @@ class ExpenseController extends Controller
     
     public function actionView($id,$order_date)
     {
-        $dishModel = Expense::model()->with('order.dish','employee')->findAll('t.employee_id = :id AND t.order_date = :date AND t.kind = :kind',array(':kind'=>0,':id'=>$id,'date'=>$order_date));
-        $stuffModel = Expense::model()->with('order.halfstuff','employee')->findAll('t.employee_id = :id AND t.order_date = :date AND t.kind = :kind',array(':kind'=>0,':id'=>$id,'date'=>$order_date));
-        $prodModel = Expense::model()->with('order.products','employee')->findAll('t.employee_id = :id AND t.order_date = :date AND t.kind = :kind',array(':kind'=>0,':id'=>$id,'date'=>$order_date));
+        $dishModel = Expense::model()->with('order.dish','employee')->findAll('t.employee_id = :id AND t.order_date = :date AND t.kind = :kind  AND order.deleted != 1',array(':kind'=>0,':id'=>$id,'date'=>$order_date));
+        $stuffModel = Expense::model()->with('order.halfstuff','employee')->findAll('t.employee_id = :id AND t.order_date = :date AND t.kind = :kind AND order.deleted != 1',array(':kind'=>0,':id'=>$id,'date'=>$order_date));
+        $prodModel = Expense::model()->with('order.products','employee')->findAll('t.employee_id = :id AND t.order_date = :date AND t.kind = :kind  AND order.deleted != 1',array(':kind'=>0,':id'=>$id,'date'=>$order_date));
 		$percent = new Percent();
         if(isset($_GET['asModal'])){
             $this->renderPartial('view',array(
@@ -331,9 +331,9 @@ class ExpenseController extends Controller
     }
     public function actionKindCreate(){
         $model = new Expense();
-        $dates = date('Y-m-d H:i:s');
         if(isset($_POST['product']))
         {
+            $dates = $_POST['from']." ".date('H:i:s');
             $transaction = Yii::app()->db->beginTransaction();
             try{
                 $messageType='warning';
@@ -359,7 +359,7 @@ class ExpenseController extends Controller
 
                     $transaction->commit();
                     Yii::app()->user->setFlash($messageType, $message);
-                    //$this->redirect(array('create'));
+                    $this->redirect(array('site/index'));
                 }
             }
             catch (Exception $e){
@@ -388,7 +388,7 @@ class ExpenseController extends Controller
     }
 
     public function actionDebtList(){
-        $model = Expense::model()->with()->findAll('t.status = :status AND t.debt = :debt',array(':status'=>1,':debt'=>1));
+        $model = Expense::model()->with()->findAll('t.comment != :comment AND t.debt = :debt',array(':comment'=>'',':debt'=>1));
         $this->render('debtList',array(
             'model'=>$model,
         ));
@@ -397,10 +397,19 @@ class ExpenseController extends Controller
 
     public function actionDebtClose($id)
     {
-        if(Yii::app()->request->isPostRequest)
+        $exp = new Expense();
+        
+        Expense::model()->updateByPk($id,array('debt'=>0));
+        
+            $dates = date('Y-m-d');
+            $debt = new Debt();
+            $debt->d_date = $dates;
+            $debt->expense_id = $id;
+            $debt->save();
+        /*if(Yii::app()->request->isPostRequest)
         {
             // we only allow deletion via POST request
-            $this->loadModel($id)->updateByPk($id,array('status'=>0));
+            $this->loadModel($id)->updateByPk($id,array('debt'=>0));
             $dates = date('Y-m-d');
             $debt = new Debt();
             $debt->d_date = $dates;
@@ -413,6 +422,7 @@ class ExpenseController extends Controller
         }
         else
             throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');
+    */
     }
 
     public function actionPaidDebt(){

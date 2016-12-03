@@ -32,11 +32,11 @@ class DepRealizeController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('create','update','index','view','admin','delete','export','import','editable','toggle','todayStorage','move','prodlist','getDepOut','DepOut'),
+				'actions'=>array('update','index',),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('create','view','admin','delete','export','import','editable','toggle','todayStorage','move','prodlist','getDepOut','DepOut'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -103,7 +103,11 @@ class DepRealizeController extends Controller
 	 * If creation is successful, the browser will be redirected to the 'view' page.
 	 */
     public function actionTodayStorage(){
-        $dates = date('Y:m:d');
+        if($_POST['dates'] == ''){
+            $dates = date('Y:m:d');
+        }else{
+            $dates = $_POST['dates'];
+        }
         $depId = $_POST['depId'];
         $Products = array();
         /*$model = DepBalance::model()->with('products')->findAll('t.department_id = :depId AND t.type = :type',array(':depId'=>$depId,'type'=>1));
@@ -112,62 +116,25 @@ class DepRealizeController extends Controller
         }*/
 
         //$model = new Products();
-
-        //$products = $model->getProdName($depId);
-        $storageModel = Storage::model()->findAll();
-        $balanceModel = Balance::model()->with('products')->findAll('b_date = :b_date',array(':b_date'=>$dates));
-
-        if(!empty($balanceModel)){
-            foreach($balanceModel as $val){
-                $products[$val->prod_id] = $val->getRelated('products')->name;
-                $Products[$val->prod_id] = $Products[$val->prod_id] + $val->startCount;
-            }
-        }
-        else{
-            foreach($storageModel as $val){
-                $Products[$val->prod_id] = $Products[$val->prod_id] + $val->curCount;
-            }
-
-        }
-
-        $realizedProd = Faktura::model()->with('realize.products')->findAll('date(realize_date) = :realize_date',array('realize_date'=>$dates));
-        foreach($realizedProd as $value){
-            foreach($value->getRelated('realize') as $val){
-                $Products[$val->prod_id] = $Products[$val->prod_id] + $val->count;
-            }
-        }
-
-        $realizeStorageProd = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) = :real_date AND fromDepId = :fromDepId',array(':real_date'=>$dates,':fromDepId'=>0));
-        
-        foreach($realizeStorageProd as $value){
-            foreach($value->getRelated('realizedProd') as $val){
-                $Products[$val->prod_id] = $Products[$val->prod_id] - $val->count;
-            }
-        }
-
-        $expBalance = Yii::app()->db->createCommand()
-            ->select('ord.just_id,ord.count')
-            ->from('expense ex')
-            ->join('orders ord','ord.expense_id = ex.expense_id')
-            ->where('date(ex.order_date) = :dates AND ex.kind = :kind ',array(':dates'=>$dates,':kind'=>1))
-            ->queryAll();
-        foreach ($expBalance as $val) {
-            $Products[$val['just_id']] = $Products[$val['just_id']] - $val['count'];
-        }
+        $func = new Functions();
+        $prod = $func->getStorageCount($dates);
 
         $this->renderPartial(
             'todayStorage',
             array(
-                'Products'=>$Products,
-                'products'=>$products,
+                'Products'=>$prod['id'],
+                'products'=>$prod['name'],
                 'depId'=>$depId,
             )
         );
     }
 	public function actionCreate()
 	{
-        $dates = date('Y:m:d H:i:s');
-        //$Products = $this->todayStorage($dates);
+        if($_POST['from'] == ''){
+            $dates = date('Y:m:d H:i:s');
+        }else{
+            $dates = $_POST['from']." ".date("H:i:s");
+        }
 		$model=new DepRealize;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -178,7 +145,7 @@ class DepRealizeController extends Controller
 			try{
 				$messageType='warning';
 				$message = "There are some errors ";
-                $newModel = new DepFaktura;
+                $newModel = new DepFaktura();
                 $depBalance = new DepBalance();
                 $newModel->real_date = $dates;
                 $newModel->department_id = $_POST['department'];
@@ -187,13 +154,13 @@ class DepRealizeController extends Controller
 				if($newModel->save()){
 				    foreach($_POST['products'] as $key => $val){
 				        if($val != null){
-    			            $realizeModel = new DepRealize;
+    			            $realizeModel = new DepRealize();
                             $realizeModel->dep_faktura_id = $newModel->dep_faktura_id;
                             $realizeModel->prod_id = $key;
                             $realizeModel->price = 0;
                             $realizeModel->count = $this->changeToFloat($val);
                             $realizeModel->save();
-                            $depBalance->addProd($key,$_POST['department']);
+                            $depBalance->addProd($key,$_POST['department'],$max_date['b_date']);
                         }
 				    }
 					$messageType = 'success';
@@ -202,7 +169,7 @@ class DepRealizeController extends Controller
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
                     
-					//$this->redirect(array('view','id'=>$model->dep_realize_id));
+					$this->redirect(array('create'));
 				}				
 			}
 			catch (Exception $e){
@@ -221,7 +188,11 @@ class DepRealizeController extends Controller
 				
 	}
     public function actionProdlist(){
-        $dates = date('Y:m:d');
+        if($_POST['dates'] == ''){
+            $dates = date('Y:m:d');
+        }else{
+            $dates = $_POST['dates'];
+        }
         $halfstuff = array();
         $products = array();
         $inProducts = array();
@@ -298,7 +269,12 @@ class DepRealizeController extends Controller
         
     }
     public function actionMove(){
-        $dates = date('Y:m:d H:i:s');
+
+        if($_POST['from'] == ''){
+            $dates = date('Y:m:d H:i:s');
+        }else{
+            $dates = $_POST['from'];
+        }
 		$model=new DepRealize;
 
 		// Uncomment the following line if AJAX validation is needed
@@ -332,7 +308,7 @@ class DepRealizeController extends Controller
 				    }
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
-					//$this->redirect(array('view','id'=>$model->dep_realize_id));
+					$this->redirect(array('move'));
 				}				
 			}
 			catch (Exception $e){

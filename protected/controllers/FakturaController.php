@@ -31,11 +31,11 @@ class FakturaController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('viewFaktura','ajaxView','index','view','admin','editable','toggle','providerProd','ajaxProviderProd','provProdList','request','ajaxRequest','ajaxSetReqList'),
+				'actions'=>array('index','view',),
 				'roles'=>array('3'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('viewFaktura','ajaxView','admin','editable','toggle','providerProd','ajaxProviderProd','provProdList','request','ajaxRequest','ajaxSetReqList','setRequest','ajaxSetRequest'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -344,12 +344,37 @@ class FakturaController extends Controller
         foreach ($model as $val) {
             $List[$val['request_id']] = $val['req_date']." - ".$val['name'];
         }
-
         if(isset($_POST['request'])) {
-            $command = Yii::app()->db->createCommand();
+
             $expense = new Expense();
             $dates = date('Y-m-d H:i:s');
             $prodCount = array();
+            foreach ($_POST['debt']['summ'] as $key => $val) {
+                if(!empty($val)){
+                    Yii::app()->db->createCommand()->insert('credit',array(
+                        'credit_date'=>$dates,
+                        'summ'=>$val,
+                        'contractor_id'=>$_POST['debt']['contractor'][$key],
+                        'status'=>0,
+                        'comment'=>$_POST['debt']['comment'][$key],
+                        'user_id'=>Yii::app()->user->getId()
+                    ));
+                }
+            }
+            foreach ($_POST['cost']['summ'] as $key => $val) {
+                if(!empty($val)){
+                    Yii::app()->db->createCommand()->insert('costs',array(
+                        'cost_date'=>$dates,
+                        'summ'=>$val,
+                        'contractor_id'=>$_POST['cost']['contractor'][$key],
+                        'status'=>0,
+                        'comment'=>$_POST['cost']['comment'][$key],
+                        'user_id'=>Yii::app()->user->getId(),
+                        'employee_id'=>$_POST['cost']['empId'][$key]
+                    ));
+                }
+            }
+
             $provId = Yii::app()->db->createCommand()
                 ->select('provider_id')
                 ->from('request')
@@ -358,16 +383,16 @@ class FakturaController extends Controller
 
             foreach ($_POST['request'] as $keys => $value) {
                 if($keys != 0) {
-                    $command->insert('dep_faktura', array(
+                    Yii::app()->db->createCommand()->insert('dep_faktura', array(
                         'real_date' => $dates,
                         'department_id' => $keys,
                         'fromDepId' => 0
                     ));
                     $lastDepId = Yii::app()->db->lastInsertID;
                     foreach ($value as $key => $val) {
-                        $prodCount[$key] = $prodCount[$key] + $val['count'];
+                        $prodCount[$key] = floatval($prodCount[$key]) + floatval($expense->changeToFloat($val['count']));
                         if ($val['count'] != 0) {
-                            $command->insert('dep_realize', array(
+                            Yii::app()->db->createCommand()->insert('dep_realize', array(
                                 'dep_faktura_id' => $lastDepId,
                                 'prod_id' => $key,
                                 'price' => $_POST['price'][$key],
@@ -376,8 +401,9 @@ class FakturaController extends Controller
                         }
                     }
                 }
+
                 else{
-                    $command->insert('expense', array(
+                    Yii::app()->db->createCommand()->insert('expense', array(
                         'order_date' => $dates,
                         'employee_id'=>Yii::app()->user->getId(),
                         'table'=>0,
@@ -389,9 +415,9 @@ class FakturaController extends Controller
                     ));
                     $lastExpId = Yii::app()->db->lastInsertID;
                     foreach ($value as $key => $val) {
-                        $prodCount[$key] = $prodCount[$key] + $val['count'];
+                        $prodCount[$key] = floatval($prodCount[$key]) + floatval($expense->changeToFloat($val['count']));
                         if ($val['count'] != 0) {
-                            $command->insert('orders', array(
+                            Yii::app()->db->createCommand()->insert('orders', array(
                                 'expense_id' => $lastExpId,
                                 'just_id' => $key,
                                 'type'=>3,
@@ -402,14 +428,14 @@ class FakturaController extends Controller
                 }
 
             }
-            $command->insert('faktura', array(
+            Yii::app()->db->createCommand()->insert('faktura', array(
                 'realize_date' => $dates,
                 'provider_id' => $provId['provider_id']
             ));
             $lastId = Yii::app()->db->lastInsertID;
             foreach ($prodCount as $key => $val) {
                 $count = $expense->changeToFloat($val);
-                $command->insert('realize', array(
+                Yii::app()->db->createCommand()->insert('realize', array(
                     'faktura_id' => $lastId,
                     'prod_id' => $key,
                     'price' => $_POST['price'][$key],
@@ -418,7 +444,7 @@ class FakturaController extends Controller
 
             }
 
-            $command->update('request',array(
+            Yii::app()->db->createCommand()->update('request',array(
                 'status'=>1
             ),'request_id = :id',array(':id'=>$_POST['list']));
             $this->redirect(array('site/index'));

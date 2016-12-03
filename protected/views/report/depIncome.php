@@ -4,8 +4,23 @@
     $this->widget(
         'bootstrap.widgets.TbDatePicker',
         array(
-
+            'value'=>$dates,
             'name' => 'from',
+            'options' => array(
+                'language' => 'ru',
+                'format' => 'yyyy-mm-dd',
+            )
+        )
+    );
+    ?>
+</div>
+<div class="input-prepend">
+    <span class="add-on"><i class="icon-calendar"></i></span><?
+    $this->widget(
+        'bootstrap.widgets.TbDatePicker',
+        array(
+            'value'=>$dates,
+            'name' => 'till',
             'options' => array(
                 'language' => 'ru',
                 'format' => 'yyyy-mm-dd',
@@ -19,17 +34,28 @@
 <div id="data"></div>
 <script>
     $(document).ready(function(){
-        var from;
+        var from,
+            till;
         $('#view').click(function(){
             from = $('#from').val();
+            till = $('#till').val();
             $.ajax({
                 type: "POST",
                 url: "<?php echo Yii::app()->createUrl('report/ajaxDepIncome'); ?>",
-                data: "dates="+from,
+                data: "from="+from+"&till="+till,
                 success: function(data){
                     $('#data').html(data);
                 }
             });
         });
     });
+</script>
+
+
+<script>
+    $(document).on('click','td',function(){
+            $('tr').css("background-color","white");
+            $(this).parent().css("background-color","#D9F2F5");
+        });
+
 </script>

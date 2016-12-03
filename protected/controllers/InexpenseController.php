@@ -32,11 +32,11 @@ class InexpenseController extends Controller
 	{
 		return array(
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
-				'actions'=>array('index','view','create','update','stuffList','move','admin','delete','deleteInorder','export','import','editable','toggle','listStuff','ProdList','createDish','listDish','dishList','struct','count','today'),
+				'actions'=>array('index','view',),
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(),
+                'actions'=>array('create','update','stuffList','move','admin','delete','deleteInorder','export','import','editable','toggle','listStuff','ProdList','createDish','listDish','dishList','struct','count','today'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -83,7 +83,11 @@ class InexpenseController extends Controller
 
 
     public function actionMove(){
-        $dates = date('Y:m:d H:i:s');
+        if($_POST['from'] == ''){
+            $dates = date('Y:m:d H:i:s');
+        }else{
+            $dates = $_POST['from'];
+        }
         $model=new Inexpense;
 
         // Uncomment the following line if AJAX validation is needed
@@ -116,7 +120,7 @@ class InexpenseController extends Controller
                     }
                     $transaction->commit();
                     Yii::app()->user->setFlash($messageType, $message);
-                    //$this->redirect(array('view','id'=>$model->dep_realize_id));
+                    $this->redirect(array('move'));
                 }
             }
             catch (Exception $e){
@@ -133,10 +137,14 @@ class InexpenseController extends Controller
     }
 
     public function actionStuffList(){
+        if($_POST['dates'] == ''){
+            $dates = date('Y-m-d');
+        }else{
+            $dates = $_POST['dates'];
+        }
         $stuff = array();
         $depId = $_POST['depId'];
         $depsId = $_POST['depsId'];
-        $dates = date('Y-m-d');
 
         $model = DepBalance::model()->with('stuff')->findAll('t.department_id = :depId AND date(t.b_date) = :dates AND t.type = :type',array(':depId'=>$depsId,':dates'=>$dates,':type'=>2));
 
@@ -178,6 +186,7 @@ class InexpenseController extends Controller
 	 */
      
     public function actionListStuff(){
+        echo "asdadsad";
         $dep_id = $_POST['depId'];
         $stuffs = array();
         $model = new Halfstaff();
@@ -239,7 +248,11 @@ class InexpenseController extends Controller
 
 	public function actionCreate()
 	{
-
+        if($_POST['from'] == ''){
+            $dates = date('Y:m:d H:i:s');
+        }else{
+            $dates = $_POST['from'];
+        }
 		$model=new Inexpense;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -247,7 +260,7 @@ class InexpenseController extends Controller
 		if(isset($_POST['Inexpense']))
 		{
             $_POST['Inexpense']['type'] = 1;
-            $_POST['Inexpense']['inexp_date'] = date('Y-m-d H:i:s');
+            $_POST['Inexpense']['inexp_date'] = $dates;
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
 				$messageType='warning';
@@ -262,7 +275,7 @@ class InexpenseController extends Controller
                                 $newModel = new Inorder;
                                 $newModel->inexpense_id = $model->inexpense_id;
                                 $newModel->stuff_id = $value;
-                                $newModel->count = $_POST['count'][$key];
+                                $newModel->count = $this->changeToFloat($_POST['count'][$key]);
                                 $newModel->save();
                             }
     				    }
@@ -288,7 +301,7 @@ class InexpenseController extends Controller
 					*/
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
-					$this->redirect(array('view','id'=>$model->inexpense_id));
+                    $this->redirect(array('create'));
 				}				
 			}
 			catch (Exception $e){

@@ -46,19 +46,18 @@ class SiteController extends Controller
         if (Yii::app()->user->isGuest)
             $this->redirect(Yii::app()->createUrl('site/login'));
         else {
-
-            if(Yii::app()->user->checkAccess('1')){
+            /*if(Yii::app()->user->checkAccess(1)){
                 $this->redirect(Yii::app()->createUrl('order/expense/create'));
             }
-            elseif(Yii::app()->user->checkAccess('0')){
+            elseif(Yii::app()->user->checkAccess(0)){
                 $this->redirect(Yii::app()->createUrl('/cooking'));
             }
-            else {
+            else {*/
                 $this->render('index', array(
                     'coockieModel' => $coockieModel,
                     'beforeCoockie' => $beforeCoockie
                 ));
-            }
+            /*}*/
         }
 	}
 
