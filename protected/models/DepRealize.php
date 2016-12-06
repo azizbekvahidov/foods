@@ -51,7 +51,8 @@ class DepRealize extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-            'product'=>array(self::BELONGS_TO,'Products','prod_id')
+            'product'=>array(self::BELONGS_TO,'Products','prod_id'),
+            'faktura'=>array(self::BELONGS_TO,'DepFaktura','dep_faktura_id')
 		);
 	}
 

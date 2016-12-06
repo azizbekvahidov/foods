@@ -162,6 +162,7 @@ class Functions {
     }
 
     public function getStorageCount($dates){
+        $Products = array();
         $storageModel = Storage::model()->findAll();
         $balanceModel = Balance::model()->with('products')->findAll('b_date = :b_date',array(':b_date'=>$dates));
         // баланс на утро указанного
@@ -225,5 +226,85 @@ class Functions {
 
         $prod['name']=$products; $prod['id'] = $Products;
         return $prod;
+    }
+
+    public function getCurProdCount($id,$dates){
+        $count = 0;
+
+        $Products = array();
+        $storageModel = Storage::model()->findAll();
+        $balanceModel = Balance::model()->find('b_date = :b_date AND prod_id = :id',array(':b_date'=>$dates,':id'=>$id));
+        $Products = $balanceModel->startCount;
+        // баланс на утро указанного
+        //Приход на уквзвнную дату
+        $realizedProd = Realize::model()->with('fakture')->findAll('date(fakture.realize_date) = :realize_date AND prod_id = :id',array('realize_date'=>$dates,':id'=>$id));
+        foreach($realizedProd as $value){
+                $Products = $Products + $value->count;
+        }
+        // перемещенные продукты по отделам на указанную дату
+        $realizeStorageProd = DepRealize::model()->with('faktura')->findAll('date(faktura.real_date) = :real_date AND faktura.fromDepId = :fromDepId AND prod_id = :id',array(':real_date'=>$dates,':fromDepId'=>0,':id'=>$id));
+
+        foreach($realizeStorageProd as $value){
+                $Products = $Products - $value->count;
+        }
+        // Списанные продукты на указаннуюдату
+        $expBalance = Yii::app()->db->createCommand()
+            ->select('o.just_id,o.count')
+            ->from('orders o')
+            ->join('expense ex','o.expense_id = ex.expense_id')
+            ->where('date(ex.order_date) = :dates AND ex.kind = :kind AND o.just_id = :id',array(':dates'=>$dates,':kind'=>1,':id'=>$id))
+            ->queryAll();
+        foreach ($expBalance as $val) {
+            $Products = $Products - $val['count'];
+        }
+        // Обмен продуктов на указанную дату
+        $exRec = Yii::app()->db->createCommand()
+            ->select()
+            ->from('exList el')
+            ->join('exchange ex','el.exchange_id = ex.exchange_id')
+            ->where('date(ex.exchange_date) = :dates AND ex.recived = 0 AND el.prod_id = :id' ,array(':dates'=>$dates,':id'=>$id))
+            ->queryAll();
+        foreach ($exRec as $val) {
+            $Products = $Products + $val['count'];
+        }
+
+        $exSend = Yii::app()->db->createCommand()
+            ->select()
+            ->from('exList el')
+            ->join('exchange ex','el.exchange_id = ex.exchange_id')
+            ->where('date(ex.exchange_date) = :dates AND ex.recived = 1 AND el.prod_id = :id',array(':dates'=>$dates,':id'=>$id))
+            ->queryAll();
+
+        foreach ($exSend as $val) {
+            $Products = $Products - $val['count'];
+        }
+
+
+        // кол-во по отделам
+
+        $balanceDep = Yii::app()->db->createCommand()
+            ->select('sum(startCount) as count')
+            ->from('dep_balance')
+            ->where('b_date = :dates AND prod_id = :id',array(':id'=>$id,':dates'=>$dates))
+            ->queryRow();
+        $Products = $Products + $balanceDep['count'];
+
+        $depRealize = Yii::app()->db->createCommand()
+            ->select('sum(count) as count')
+            ->from('dep_realize dr')
+            ->join('dep_faktura df','df.dep_faktura_id = dr.dep_faktura_id')
+            ->where('date(df.real_date) = :dates AND dr.prod_id = :id AND df.fromDepId = 0',array(':id'=>$id,':dates'=>$dates))
+            ->queryRow();
+        $Products = $Products + $depRealize['count'];
+
+        $off = Yii::app()->db->createCommand()
+            ->select('sum(ol.count) as count')
+            ->from('offList ol')
+            ->join('off o','o.off_id = ol.off_id')
+            ->where('date(o.off_date) = :dates AND ol.prod_id = :id AND ol.type = 3',array(':dates'=>$dates,':id'=>$id))
+            ->queryRow();
+        $Products = $Products - $off['count'];
+        $count = $Products;
+        return $count;
     }
 }
