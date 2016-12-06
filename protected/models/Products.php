@@ -31,7 +31,7 @@ class Products extends CActiveRecord
 			/*
 			//Example username
 			array('username', 'match', 'pattern' => '/^[A-Za-z0-9_]+$/u',
-                 'message'=>'Username can contain only alphanumeric 
+                 'message'=>'Username can contain only alphanumeric
                              characters and hyphens(-).'),
           	array('username','unique'),
           	*/
@@ -41,7 +41,7 @@ class Products extends CActiveRecord
 		);
 	}
 
-	/** 
+	/**
 	 * @return array relational rules.
 	 */
 	public function relations()
@@ -71,7 +71,7 @@ class Products extends CActiveRecord
             'groupProd_id'=>'Группа',
             'price'=>'Цена',
             'department_id' => 'Отдел',
-			
+
 		);
 	}
 
@@ -114,36 +114,36 @@ class Products extends CActiveRecord
 	{
 		return parent::model($className);
 	}
-	
-	public function beforeSave() 
+
+	public function beforeSave()
     {
         $userId=0;
 		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-		
+
 		if($this->isNewRecord)
-        {           
-                        						
+        {
+
         }else{
-                        						
+
         }
 
-        
+
         return parent::beforeSave();
     }
 
     public function beforeDelete () {
 		$userId=0;
 		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-                                
+
         return false;
     }
 
     public function afterFind()    {
-         
+
         parent::afterFind();
     }
-	
-		
+
+
 	public function defaultScope()
     {
     	/*
@@ -156,7 +156,7 @@ class Products extends CActiveRecord
         */
         $scope=array();
 
-        
+
         return $scope;
     }
     //получить ед.измерения по id
@@ -202,30 +202,39 @@ class Products extends CActiveRecord
     }
     //получить приходную сумму продукта по его id и дате прихода
     public function getCostPrice($id,$dates){
+        $time = time();
         $func = new Functions();
         $costPrice = 0;
         $dates = date('Y-m-d',strtotime($dates));
-        $curCount = $func->getCurProdCount($id,$dates);
-        $i = 0;
-        $count = 0;
-        $price = 0;
-        do{
-            $doDate = date('Y-m-d',strtotime($dates)-86400*$i);
-            $model = Yii::app()->db->createCommand()
-                ->select('sum(r.count) as count, sum(r.count*r.price) as price')
-                ->from('faktura f')
-                ->join('realize r','r.faktura_id = f.faktura_id')
-                ->where('date(f.realize_date) = :dates AND r.prod_id = :prod_id',array(':dates'=>$doDate,':prod_id'=>$id))
-                ->queryRow();
-            $count = $count + $model['count'];
-            $price = $price + $model['price'];
-            $i++;
-        }
-        while($count < $curCount);
-
-        if($count != 0) {
-            $costPrice = $price / $count;
-        }
+        // $curCount = $func->getCurProdCount($id,$dates);
+        // $i = 0;
+        // $count = 0;
+        // $price = 0;
+        // do{
+        //     $doDate = date('Y-m-d',strtotime($dates)-86400*$i);
+        //     $model = Yii::app()->db->createCommand()
+        //         ->select('sum(r.count) as count, sum(r.count*r.price) as price')
+        //         ->from('faktura f')
+        //         ->join('realize r','r.faktura_id = f.faktura_id')
+        //         ->where('date(f.realize_date) = :dates AND r.prod_id = :prod_id',array(':dates'=>$doDate,':prod_id'=>$id))
+        //         ->queryRow();
+        //     $count = $count + $model['count'];
+        //     $price = $price + $model['price'];
+        //     $i++;
+        // }
+        // while($count < $curCount);
+        //
+        // if($count != 0) {
+        //     $costPrice = $price / $count;
+        // }
+        $model = Yii::app()->db->createCommand()
+              ->select('')
+              ->from('faktura f')
+              ->join('realize r','r.faktura_id = f.faktura_id')
+              ->where('date(f.realize_date) <= :dates AND r.prod_id = :prod_id',array(':dates'=>$dates,':prod_id'=>$id))
+              ->order('f.realize_date DESC')
+              ->queryRow();
+              $costPrice = $model['price'];
         if($costPrice == 0){
             $model = Yii::app()->db->createCommand()
                 ->select('price')
@@ -234,7 +243,36 @@ class Products extends CActiveRecord
                 ->queryRow();
                 $costPrice = $model['price'];
         }
-        return number_format($costPrice,0,',','');
+        return time()-$time;//number_format($costPrice,0,',','');
+    }
+
+    public function getNewCostPrice($id,$dates){
+        $time = time();
+      $func = new Functions();
+      $costPrice = 0;
+      $dates = date('Y-m-d',strtotime($dates));
+      $curCount = $func->getCurProdCount($id,$dates);
+      $i = 0;
+      $count = 0;
+      $price = 0;
+      do{
+          $doDate = date('Y-m-d',strtotime($dates)-86400*$i);
+          $model = Yii::app()->db->createCommand()
+              ->select('sum(r.count) as count, sum(r.count*r.price) as price')
+              ->from('faktura f')
+              ->join('realize r','r.faktura_id = f.faktura_id')
+              ->where('date(f.realize_date) = :dates AND r.prod_id = :prod_id',array(':dates'=>$doDate,':prod_id'=>$id))
+              ->queryRow();
+          $count = $count + $model['count'];
+          $price = $price + $model['price'];
+          $i++;
+      }
+      while($count < $curCount);
+
+      if($count != 0) {
+          $costPrice = $price / $count;
+      }
+      return time()-$time;//number_format($costPrice,0,',','');
     }
 
     // получить лист используемых продуктов

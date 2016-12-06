@@ -366,6 +366,9 @@ class ReportController extends Controller
 
     public function actionDepIncome(){
         $dates = date('Y-m-d',strtotime(date('Y-m-d'))-86400);
+        $prod = new Products();
+        echo $prod->getCostPrice(32,'2016-12-01')."<br>";
+        echo $prod->getNewCostPrice(32,'2016-12-01');
         $this->render('depIncome',array(
             'dates'=>$dates
         ));

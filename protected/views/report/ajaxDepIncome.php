@@ -55,9 +55,6 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
         <?foreach ($model as $val) {
             //$beforeDates = date('Y-m-d',strtotime($dates)-86400);
             $costPrice = $expense->getDepCost($val['department_id'],$from,$till);
-            echo "<pre>";
-            print_r($costPrice);
-            echo "</pre>";
             $realized = $depRealize->getDepRealizesSumm($from,$till,$val['department_id']);
             $inRealized = $depRealize->getDepInRealizesSumm($from,$till,$val['department_id']);
             $inexp = $depRealize->getDepInExp($from,$till,$val['department_id']);
@@ -211,5 +208,3 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
     </div>
 
 <?php  $this->endWidget(); ?>
-
-
