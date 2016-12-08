@@ -502,7 +502,6 @@ class Expense extends CActiveRecord
             foreach ($temp as $key => $val) {
                 $summ = $summ + $prod->getCostPrice($key,$from)*$val;
             }
-						echo $summ;
 
             $temp2 = $this->getDishStuff($depId,$till,$from);
             foreach ($temp2 as $key => $val) {

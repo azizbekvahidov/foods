@@ -368,8 +368,8 @@ class ReportController extends Controller
         $dates = date('Y-m-d',strtotime(date('Y-m-d'))-86400);
         $prod = new Products(); $expense = new Expense();
         // $costPrice = $expense->getDepCost(1,'2016-12-01','2016-12-01');
-        // echo $prod->getCostPrice(93,'2016-12-01')."<br>";
-        // echo $prod->getNewCostPrice(32,'2016-12-01');
+        // echo $prod->getCostPrice(32,'2016-12-01')."<br>";
+        // echo $prod->getOldCostPrice(32,'2016-12-01');
         $this->render('depIncome',array(
             'dates'=>$dates
         ));

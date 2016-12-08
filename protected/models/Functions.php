@@ -295,6 +295,7 @@ class Functions {
             ->queryRow();
         $Products = $Products - $off['count'];
         $count = $Products;
+        // echo microtime()-$time."<br>";
         return $count;
     }
 }

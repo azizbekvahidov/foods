@@ -31,7 +31,7 @@ class Logs extends CActiveRecord
 			/*
 			//Example username
 			array('username', 'match', 'pattern' => '/^[A-Za-z0-9_]+$/u',
-                 'message'=>'Username can contain only alphanumeric 
+                 'message'=>'Username can contain only alphanumeric
                              characters and hyphens(-).'),
           	array('username','unique'),
           	*/
@@ -105,36 +105,36 @@ class Logs extends CActiveRecord
 	{
 		return parent::model($className);
 	}
-	
-	public function beforeSave() 
+
+	public function beforeSave()
     {
         $userId=0;
 		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-		
+
 		if($this->isNewRecord)
-        {           
-                        						
+        {
+
         }else{
-                        						
+
         }
 
-        
+
         return parent::beforeSave();
     }
 
     public function beforeDelete () {
 		$userId=0;
 		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-                                
+
         return false;
     }
 
     public function afterFind()    {
-         
+
         parent::afterFind();
     }
-	
-		
+
+
 	public function defaultScope()
     {
     	/*
@@ -147,7 +147,7 @@ class Logs extends CActiveRecord
         */
         $scope=array();
 
-        
+
         return $scope;
     }
 
@@ -157,7 +157,7 @@ class Logs extends CActiveRecord
         $model = Yii::app()->db->createCommand()
             ->select('')
             ->from('logs')
-            ->where('log_date <= :dates AND curId = :id AND table_name = :table AND actions != :action',array(':dates'=>$dates,':id'=>$id,':table'=>$table,':action'=>'delete'))
+            ->where('date(log_date) <= date(:dates) AND curId = :id AND table_name = :table AND actions != :action',array(':dates'=>$dates,':id'=>$id,':table'=>$table,':action'=>'delete'))
             ->order('log_date DESC')
             ->queryRow();
         $name = explode('->',$model['message']);
