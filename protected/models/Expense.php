@@ -502,74 +502,16 @@ class Expense extends CActiveRecord
             foreach ($temp as $key => $val) {
                 $summ = $summ + $prod->getCostPrice($key,$from)*$val;
             }
+						echo $summ;
 
             $temp2 = $this->getDishStuff($depId,$till,$from);
             foreach ($temp2 as $key => $val) {
                 $summ = $summ + $stuff->getCostPrice($key,$from)*$val;
             }
-
-//            $model = Yii::app()->db->createCommand()
-//                ->select('ex.order_date,ord.just_id,sum(ord.count) as count')
-//                ->from('expense ex')
-//                ->join('orders ord', 'ord.expense_id = ex.expense_id')
-//                ->join('dishes d', 'd.dish_id = ord.just_id')
-//                ->where('date(ex.order_date) BETWEEN :from AND :till AND ord.type = :types AND ex.status = :status AND d.department_id = :depId', array(':from' => $from, ':till' => $till, ':types' => 1, ':status' => 0, ':depId' => $depId))
-//                ->group('ord.just_id')
-//                ->queryAll();
-//
-//            foreach ($model as $val) {
-//                $summ = $summ + $dish->getCostPrice($val['just_id'], $val['order_date']) * $val['count'];
-//            }
-//            $model2 = Yii::app()->db->createCommand()
-//                ->select('ex.order_date,ord.just_id,sum(ord.count) as count')
-//                ->from('expense ex')
-//                ->join('orders ord', 'ord.expense_id = ex.expense_id')
-//                ->join('halfstaff h', 'h.halfstuff_id = ord.just_id')
-//                ->where('date(ex.order_date) BETWEEN :from AND :till AND ord.type = :types AND ex.status = :status AND h.department_id = :depId', array(':from' => $from, ':till' => $till, ':types' => 2, ':status' => 0, ':depId' => $depId))
-//                ->group('ord.just_id')
-//                ->queryAll();
-//            foreach ($model2 as $val) {
-//                $summ = $summ + $stuff->getCostPrice($val['just_id'], $val['order_date']) * $val['count'];
-//            }
-//
-//            $model3 = Yii::app()->db->createCommand()
-//                ->select('ex.order_date,ord.just_id,sum(ord.count) as count')
-//                ->from('expense ex')
-//                ->join('orders ord', 'ord.expense_id = ex.expense_id')
-//                ->join('products p', 'p.product_id = ord.just_id')
-//                ->where('date(ex.order_date) BETWEEN :from AND :till AND ord.type = :types AND ex.status = :status AND p.department_id = :depId', array(':from' => $from, ':till' => $till, ':types' => 3, ':status' => 0, ':depId' => $depId))
-//                ->group('ord.just_id')
-//                ->queryAll();
-//            foreach ($model3 as $val) {
-//                $summ = $summ + $prod->getCostPrice($val['just_id'], $val['order_date']) * $val['count'];
-//            }
-//
-//            $otherOutProd = Yii::app()->db->createCommand()
-//                ->select()
-//                ->from('off o')
-//                ->join('offList ol', 'ol.off_id = o.off_id')
-//                ->where('date(o.off_date) <= :dates AND date(o.off_date) >= :fromDate AND o.department_id = :depId AND ol.type = :types', array(':dates' => $till, ':fromDate' => $from, ':depId' => $depId, ':types' => 3))
-//                ->query();
-//            foreach ($otherOutProd as $val) {
-//                $summ = $summ + $prod->getCostPrice($val['prod_id'], $val['off_date']) * $val['count'];
-//            }
-//            $otherOutStuff = Yii::app()->db->createCommand()
-//                ->select()
-//                ->from('off o')
-//                ->join('offList ol', 'ol.off_id = o.off_id')
-//                ->where('date(o.off_date) <= :dates AND date(o.off_date) >= :fromDate AND o.department_id = :depId AND ol.type = :types', array(':dates' => $till, ':fromDate' => $from, ':depId' => $depId, ':types' => 2))
-//                ->queryAll();
-//            foreach ($otherOutStuff as $val) {
-//                $summ = $summ + $stuff->getCostPrice($val['prod_id'], $val['off_date']) * $val['count'];
-//            }
             $from = date('Y-m-d',strtotime($from)+86400);
             $till = date('Y-m-d',strtotime($till)+86400);
             $summs = $summs + $summ;
-//            echo $summ."<br>";
         }
-//        echo $summs;
-//        echo "<br>";
-//        echo "<br>";
         return $summs;
     }
 

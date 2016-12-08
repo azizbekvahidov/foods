@@ -34,7 +34,7 @@ class Functions {
         $ss = implode($arr);
         return $ss;
     }
-    
+
     public function depMoveIn($depId,$dates,$fromDate){
         $departMoveIn = Yii::app()->db->createCommand()
             ->select('')
@@ -42,13 +42,13 @@ class Functions {
             ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
             ->where('date(df.real_date) <= :till AND date(df.real_date) > :from AND df.department_id = :depId AND df.fromDepId != :fromDepId ',array(':till'=>$dates,':from'=>$fromDate,':depId'=>$depId,':fromDepId'=>0))
             ->queryAll();
-    
+
         foreach($departMoveIn as $value){
             $depIn[$value['prod_id']] = $depIn[$value['prod_id']] + $value['count'];
         }
         return $depIn;
-    } 
-    
+    }
+
     public function depMoveOut($depId,$dates,$fromDate){
         $departMoveOut = Yii::app()->db->createCommand()
             ->select('')
@@ -59,10 +59,10 @@ class Functions {
         foreach($departMoveOut as $key => $value){
             $depOut[$value['prod_id']] = $depOut[$value['prod_id']] + $value['count'];
         }
- 
-        return $depOut;        
+
+        return $depOut;
     }
-    
+
     public function depInProducts($depId,$dates,$fromDate){
         $inProducts = array();
         $model = Yii::app()->db->createCommand()
@@ -76,7 +76,7 @@ class Functions {
         }
         return $inProducts;
     }
-    
+
     public function depInStuff($depId,$dates,$fromDate){
         $models = Yii::app()->db->createCommand()
             ->select('ino.stuff_id,ino.count as inCount')
@@ -89,7 +89,7 @@ class Functions {
         }
         return $instuff;
     }
-    
+
     public function depOutStuffProd($depId,$dates,$fromDate){
         $models2 = Yii::app()->db->createCommand()
             ->select('hs.prod_id,((hs.amount/h.count)*ino.count) as count')
@@ -105,7 +105,7 @@ class Functions {
         }
         return $outStuffProd;
     }
-    
+
     public function depOutStuff($depId,$dates,$fromDate){
         $model3 = Yii::app()->db->createCommand()
             ->select('hs.prod_id,((hs.amount/h.count)*ino.count) as count')
@@ -120,7 +120,7 @@ class Functions {
         }
         return $outStuff;
     }
-    
+
     public function stuffOtherOut($dates,$fromDate,$dep = 0){
         $result = array();
         $model = Yii::app()->db->createCommand()
@@ -134,7 +134,7 @@ class Functions {
         }
         return $result;
     }
-    
+
     public function prodOtherOut($dates,$fromDate,$dep = 0){
         $result = array();
         $model = Yii::app()->db->createCommand()
@@ -148,7 +148,7 @@ class Functions {
         }
         return $result;
     }
-    
+
     public function getRefuseTimes($type,$id,$dates){
         $model = Yii::app()->db->createCommand()
             ->select('unix_timestamp(orr.status_time)-unix_timestamp(orr.refuse_time) as dates')
@@ -229,6 +229,7 @@ class Functions {
     }
 
     public function getCurProdCount($id,$dates){
+      $time = microtime();
         $count = 0;
 
         $Products = array();
@@ -237,65 +238,54 @@ class Functions {
         $Products = $balanceModel->startCount;
         // баланс на утро указанного
         //Приход на уквзвнную дату
-        $realizedProd = Realize::model()->with('fakture')->findAll('date(fakture.realize_date) = :realize_date AND prod_id = :id',array('realize_date'=>$dates,':id'=>$id));
-        foreach($realizedProd as $value){
-                $Products = $Products + $value->count;
-        }
-        // перемещенные продукты по отделам на указанную дату
-        $realizeStorageProd = DepRealize::model()->with('faktura')->findAll('date(faktura.real_date) = :real_date AND faktura.fromDepId = :fromDepId AND prod_id = :id',array(':real_date'=>$dates,':fromDepId'=>0,':id'=>$id));
 
-        foreach($realizeStorageProd as $value){
-                $Products = $Products - $value->count;
-        }
+        $realizedProd = Yii::app()->db->createCommand()
+          ->select('sum(r.count) as count')
+          ->from('realize r')
+          ->join('faktura f','f.faktura_id = r.faktura_id')
+          ->where('date(f.realize_date) = :realize_date AND r.prod_id = :id',array('realize_date'=>$dates,':id'=>$id))
+          ->queryRow();
+                $Products = $Products + $realizedProd['count'];
+        // перемещенные продукты по отделам на указанную дату
         // Списанные продукты на указаннуюдату
         $expBalance = Yii::app()->db->createCommand()
-            ->select('o.just_id,o.count')
+            ->select('o.just_id,sum(o.count) as count')
             ->from('orders o')
             ->join('expense ex','o.expense_id = ex.expense_id')
             ->where('date(ex.order_date) = :dates AND ex.kind = :kind AND o.just_id = :id',array(':dates'=>$dates,':kind'=>1,':id'=>$id))
-            ->queryAll();
-        foreach ($expBalance as $val) {
-            $Products = $Products - $val['count'];
-        }
+            ->queryRow();
+            $Products = $Products - $expBalance['count'];
         // Обмен продуктов на указанную дату
         $exRec = Yii::app()->db->createCommand()
-            ->select()
+            ->select('sum(el.count) as count')
             ->from('exList el')
             ->join('exchange ex','el.exchange_id = ex.exchange_id')
             ->where('date(ex.exchange_date) = :dates AND ex.recived = 0 AND el.prod_id = :id' ,array(':dates'=>$dates,':id'=>$id))
-            ->queryAll();
-        foreach ($exRec as $val) {
-            $Products = $Products + $val['count'];
-        }
+            ->queryRow();
+            $Products = $Products + $exRec['count'];
 
         $exSend = Yii::app()->db->createCommand()
-            ->select()
+            ->select('sum(el.count) as count')
             ->from('exList el')
             ->join('exchange ex','el.exchange_id = ex.exchange_id')
             ->where('date(ex.exchange_date) = :dates AND ex.recived = 1 AND el.prod_id = :id',array(':dates'=>$dates,':id'=>$id))
-            ->queryAll();
+            ->queryRow();
 
-        foreach ($exSend as $val) {
-            $Products = $Products - $val['count'];
-        }
-
+            $Products = $Products - $exSend['count'];
+                      //
+                      // echo "<pre>";
+                      // print_r($Products);
+                      // echo "</pre>";
 
         // кол-во по отделам
 
         $balanceDep = Yii::app()->db->createCommand()
             ->select('sum(startCount) as count')
             ->from('dep_balance')
-            ->where('b_date = :dates AND prod_id = :id',array(':id'=>$id,':dates'=>$dates))
+            ->where('b_date = :dates AND prod_id = :id AND type = 1',array(':id'=>$id,':dates'=>$dates))
             ->queryRow();
         $Products = $Products + $balanceDep['count'];
 
-        $depRealize = Yii::app()->db->createCommand()
-            ->select('sum(count) as count')
-            ->from('dep_realize dr')
-            ->join('dep_faktura df','df.dep_faktura_id = dr.dep_faktura_id')
-            ->where('date(df.real_date) = :dates AND dr.prod_id = :id AND df.fromDepId = 0',array(':id'=>$id,':dates'=>$dates))
-            ->queryRow();
-        $Products = $Products + $depRealize['count'];
 
         $off = Yii::app()->db->createCommand()
             ->select('sum(ol.count) as count')
