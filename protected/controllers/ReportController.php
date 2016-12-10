@@ -33,7 +33,7 @@ class ReportController extends Controller
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
                 'actions'=>array(
-                    'ajaxDetail','ajaxSettedMargin','settedMargin','ajaxSettedMargin','prodExp','ajaxProdExp',
+                    'ajaxDetail','ajaxSettedMargin','settedMargin','ajaxSettedMargin','prodExp','ajaxProdExp','infoReport','ajaxInfoReport',
                     'allProd','ajaxAllProd','depDish','depDishList','dishIncome','ajaxDishIncome','depIncome','ajaxDepIncome',
                     'intervalFaktura','ajaxIntervalFaktura','empExpense','ajaxEmpExpense','ReadyTime','ajaxReadyTime','ajaxReadyTimeDetail'
                 ),
@@ -732,4 +732,28 @@ class ReportController extends Controller
         return $aryRange;
     }
 
+    public function actionInfoReport(){
+        $till = $_POST['till'];
+        $from = $_POST['from'];
+
+        $this->render('infoReport',array(
+            'till'=>$till,
+            'from'=>$from
+        ));
+    }
+
+    public function actionAjaxInfoReport(){
+        $from = $_POST['from'];
+        $till = $_POST['till'];
+
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from('MInfo')
+            ->where('info_date >= :from AND info')
+            ->queryAll();
+
+        $this->renderPartial('ajaxInfoReport',array(
+
+        ));
+    }
 }
