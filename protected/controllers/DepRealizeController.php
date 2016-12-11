@@ -2,27 +2,27 @@
 
 class DepRealizeController extends Controller
 {
-	
-	
+
+
 	/**
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
 	 * using two-column layout. See 'protected/views/layouts/column2.php'.
 	 */
-		
-	public $layout='//layouts/column1';		
+
+	public $layout='//layouts/column1';
 		/**
 	 * @return array action filters
 	 */
 	public function filters()
 	{
 		return array(
-						
+
 			'accessControl', // perform access control for CRUD operations
 			'postOnly + delete', // we only allow deletion via POST request
-						
+
 		);
 	}
-	
+
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -36,7 +36,7 @@ class DepRealizeController extends Controller
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('create','view','admin','delete','export','import','editable','toggle','todayStorage','move','prodlist','getDepOut','DepOut'),
+                'actions'=>array('ajaxBackStorage','backStorage','create','view','admin','delete','export','import','editable','toggle','todayStorage','move','prodlist','getDepOut','DepOut'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -44,7 +44,7 @@ class DepRealizeController extends Controller
 			),
 		);
 	}
-		
+
 	/**
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
@@ -59,25 +59,25 @@ class DepRealizeController extends Controller
             if ($arr[$k] == ',')
                 $arr[$k] = '.';
             $k++;
-        } 
+        }
         $ss = implode($arr);
         return $ss;
      }
-     
+
 	public function actionView($id)
 	{
-		
+
 		if(isset($_GET['asModal'])){
 			$this->renderPartial('view',array(
 				'model'=>$this->loadModel($id),
 			));
 		}
 		else{
-						
+
 			$this->render('view',array(
 				'model'=>$this->loadModel($id),
 			));
-			
+
 		}
 	}
 
@@ -149,7 +149,7 @@ class DepRealizeController extends Controller
                 $depBalance = new DepBalance();
                 $newModel->real_date = $dates;
                 $newModel->department_id = $_POST['department'];
-                
+
 				//$uploadFile=CUploadedFile::getInstance($model,'filename');
 				if($newModel->save()){
 				    foreach($_POST['products'] as $key => $val){
@@ -165,28 +165,93 @@ class DepRealizeController extends Controller
 				    }
 					$messageType = 'success';
 					$message = "<strong>Well done!</strong> You successfully create data ";
-				
+
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
-                    
+
 					$this->redirect(array('create'));
-				}				
+				}
 			}
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 				//$this->refresh();
 			}
-			
+
 		}
 
 		$this->render('create',array(
 			'model'=>$model,
             'Products'=>$Products,
 					));
-		
-				
+
+
 	}
+
+		public function actionBackStorage(){
+
+
+				if(isset($_POST['products']))
+				{
+			        if($_POST['from'] == ''){
+			            $dates = date('Y:m:d H:i:s');
+			        }else{
+			            $dates = $_POST['from']." ".date("H:i:s");
+			        }
+					$transaction = Yii::app()->db->beginTransaction();
+					try{
+						$messageType='warning';
+						$message = "There are some errors ";
+										$newModel = new DepFaktura();
+										$newModel->real_date = $dates;
+										$newModel->department_id = 0;
+										$newModel->fromDepId = $_POST['department'];
+
+						//$uploadFile=CUploadedFile::getInstance($model,'filename');
+						if($newModel->save()){
+								foreach($_POST['products'] as $key => $val){
+										if($val != null){
+													$realizeModel = new DepRealize();
+																$realizeModel->dep_faktura_id = $newModel->dep_faktura_id;
+																$realizeModel->prod_id = $key;
+																$realizeModel->price = 0;
+																$realizeModel->count = $this->changeToFloat($val);
+																$realizeModel->save();
+														}
+								}
+							$messageType = 'success';
+							$message = "<strong>Well done!</strong> You successfully create data ";
+
+							$transaction->commit();
+							Yii::app()->user->setFlash($messageType, $message);
+
+							$this->redirect(array('backStorage'));
+						}
+					}
+					catch (Exception $e){
+						$transaction->rollBack();
+						Yii::app()->user->setFlash('error', "{$e->getMessage()}");
+						//$this->refresh();
+					}
+
+			}
+							$this->render('backStorage');
+		}
+
+		public function actionAjaxBackStorage(){
+        if($_POST['dates'] == ''){
+            $dates = date('Y:m:d');
+        }else{
+            $dates = $_POST['dates'];
+        }
+				$depId = $_POST['depId'];
+				$depRealize = new DepRealize();
+				$prod = $depRealize->getDepProdCurCount($depId,$dates);
+				$this->renderPartial('ajaxBackStorage',array(
+						'products' => $prod
+				));
+		}
+
     public function actionProdlist(){
         if($_POST['dates'] == ''){
             $dates = date('Y:m:d');
@@ -204,28 +269,28 @@ class DepRealizeController extends Controller
 
         //$model = new Products();
         //$products = $model->getProdName($depId);
-        
-        
+
+
         $departMoveOut = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id = :depId AND t.fromDepId <> :fromDepId',array(':dates'=>$dates,':depId'=>$_POST['depsId'],':fromDepId'=>0));
-        
+
         foreach($departMoveOut as $key => $val){
             foreach($val->getRelated('realizedProd') as $value){
                 $depIn[$value->prod_id] = $depIn[$value->prod_id] + $value->count;
             }
-        } 
+        }
 
         $departMoveIn = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.fromDepId = :depId',array(':dates'=>$dates,':depId'=>$_POST['depsId']));
-        
-        foreach($departMoveIn as $value){ 
+
+        foreach($departMoveIn as $value){
             foreach($value->getRelated('realizedProd') as $val){
-                
+
                 $depOut[$val->prod_id] = $depOut[$val->prod_id] + $val->count;
             }
         }
         $balance = DepBalance::model()->with('products')->findAll('t.b_date = :dates AND t.department_id = :depId AND t.type = :types',array(':dates'=>$dates,':depId'=>$_POST['depsId'],':types'=>1));
-        
 
-        
+
+
         $model = DepFaktura::model()->with('realizedProd')->findAll('t.department_id = :depId AND date(t.real_date) = :dates',array(':depId'=>$_POST['depsId'],':dates'=>$dates));
         if(!empty($model)){
             foreach($model as $value){
@@ -234,21 +299,21 @@ class DepRealizeController extends Controller
                 }
             }
         }
-        
+
         $dishProd = Expense::model()->with('order.dish.dishStruct.Struct')->findAll('date(order_date) = :dates AND dish.department_id = :department_id',array(':dates'=>$dates,':department_id'=>$_POST['depsId']));
-        
+
         if(!empty($dishProd)){
             foreach($dishProd as $value){
                 foreach($value->getRelated('order') as $val){
                     foreach($val->getRelated('dish')->getRelated('dishStruct') as $vals){
-                        
+
                         $outProduct[$vals->prod_id] = $outProduct[$vals->prod_id] + $vals->amount/$val->getRelated('dish')->count*$val->count;
-                        
+
                     }
                 }
             }
         }
-        
+
         $Prod = Expense::model()->with('order.products')->findAll('date(order_date) = :dates AND products.department_id = :department_id',array(':dates'=>$dates,':department_id'=>$_POST['depsId']));
         if(!empty($Prod)){
             foreach($Prod as $value){
@@ -266,7 +331,7 @@ class DepRealizeController extends Controller
             'halfstuff' => $halfstuff,
             'inHalfstuff' => $inHalfstuff,
         ));
-        
+
     }
     public function actionMove(){
 
@@ -290,7 +355,7 @@ class DepRealizeController extends Controller
                 $newModel->real_date = $dates;
                 $newModel->department_id = $_POST['department'];
                 $newModel->fromDepId = $_POST['departments'];
-                
+
 				if($newModel->save()){
 				    foreach($_POST['products'] as $key => $val){
 			            if($val != null){
@@ -302,28 +367,28 @@ class DepRealizeController extends Controller
                             if($realizeModel->save()){
             					$messageType = 'success';
             					$message = "<strong>Well done!</strong> You successfully create data ";
-            					
+
                             }
                         }
 				    }
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('move'));
-				}				
+				}
 			}
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 				//$this->refresh();
 			}
-			
+
 		}
 
 		$this->render('move',array(
 			'model'=>$model,
             'Products'=>$Products,
 					));
-		
+
     }
 	/**
 	 * Updates a particular model.
@@ -332,7 +397,7 @@ class DepRealizeController extends Controller
 	 */
 	public function actionUpdate($id)
 	{
-		
+
 		$model=$this->loadModel($id);
 
 		// Uncomment the following line if AJAX validation is needed
@@ -361,7 +426,7 @@ class DepRealizeController extends Controller
 							$messageType = 'warning';
 							$message .= 'but file not uploded';
 						}
-					}						
+					}
 				}
 				*/
 
@@ -374,7 +439,7 @@ class DepRealizeController extends Controller
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				// $this->refresh(); 
+				// $this->refresh();
 			}
 
 			$model->attributes=$_POST['DepRealize'];
@@ -385,7 +450,7 @@ class DepRealizeController extends Controller
 		$this->render('update',array(
 			'model'=>$model,
 					));
-		
+
 			}
 
 	/**
@@ -419,7 +484,7 @@ class DepRealizeController extends Controller
 			'dataProvider'=>$dataProvider,
 		));
 		*/
-		
+
 		$model=new DepRealize('search');
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['DepRealize']))
@@ -428,7 +493,7 @@ class DepRealizeController extends Controller
 		$this->render('index',array(
 			'model'=>$model,
 					));
-		
+
 			}
 
 	/**
@@ -436,7 +501,7 @@ class DepRealizeController extends Controller
 	 */
 	public function actionAdmin()
 	{
-		
+
 		$model=new DepRealize('search');
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['DepRealize']))
@@ -445,7 +510,7 @@ class DepRealizeController extends Controller
 		$this->render('admin',array(
 			'model'=>$model,
 					));
-		
+
 			}
 
 	/**
@@ -475,7 +540,7 @@ class DepRealizeController extends Controller
 			Yii::app()->end();
 		}
 	}
-	
+
 	public function actionExport()
     {
         $model=new DepRealize;
@@ -491,7 +556,7 @@ class DepRealizeController extends Controller
             'grid_mode'=>'export',
             'exportType'=>$exportType,
             'columns' => array(
-	                
+
 					'dep_realize_id',
 					'dep_faktura_id',
 					'prod_id',
@@ -507,7 +572,7 @@ class DepRealizeController extends Controller
 	*/
 	public function actionImport()
 	{
-		
+
 		$model=new DepRealize;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -530,7 +595,7 @@ class DepRealizeController extends Controller
 					$inserted=0;
 					$read_status = false;
 					while(!empty($sheetData[$baseRow]['A'])){
-						$read_status = true;						
+						$read_status = true;
 						//$dep_realize_id=  $sheetData[$baseRow]['A'];
 						$dep_faktura_id=  $sheetData[$baseRow]['B'];
 						$prod_id=  $sheetData[$baseRow]['C'];
@@ -552,11 +617,11 @@ class DepRealizeController extends Controller
 						catch (Exception $e){
 							Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 							//$this->refresh();
-						} 
+						}
 						$baseRow++;
-					}	
-					Yii::app()->user->setFlash('success', ($inserted).' row inserted');	
-				}	
+					}
+					Yii::app()->user->setFlash('success', ($inserted).' row inserted');
+				}
 				else
 				{
 					Yii::app()->user->setFlash('warning', 'Wrong file type (xlsx, xls, and ods only)');
@@ -576,8 +641,8 @@ class DepRealizeController extends Controller
 	}
 
 	public function actionEditable(){
-		Yii::import('bootstrap.widgets.TbEditableSaver'); 
-	    $es = new TbEditableSaver('DepRealize'); 
+		Yii::import('bootstrap.widgets.TbEditableSaver');
+	    $es = new TbEditableSaver('DepRealize');
 			    $es->update();
 	}
 
@@ -591,5 +656,5 @@ class DepRealizeController extends Controller
     	);
 	}
 
-	
+
 }

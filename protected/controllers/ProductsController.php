@@ -2,27 +2,27 @@
 
 class ProductsController extends Controller
 {
-	
-	
+
+
 	/**
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
 	 * using two-column layout. See 'protected/views/layouts/column2.php'.
 	 */
-		
-	public $layout='//layouts/column1';		
+
+	public $layout='//layouts/column1';
 		/**
 	 * @return array action filters
 	 */
 	public function filters()
 	{
 		return array(
-						
+
 			'accessControl', // perform access control for CRUD operations
 			'postOnly + delete', // we only allow deletion via POST request
-						
+
 		);
 	}
-	
+
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -44,7 +44,7 @@ class ProductsController extends Controller
 			),
 		);
 	}
-		
+
 	/**
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
@@ -56,7 +56,7 @@ class ProductsController extends Controller
 				'model'=>$this->loadModel($id),
 			));
 		}
-		else{	
+		else{
 			$this->render('view',array(
 				'model'=>$this->loadModel($id),
 			));
@@ -111,11 +111,11 @@ class ProductsController extends Controller
                     $this->logs('create','products',$model->product_id,$model->name);
 					$messageType = 'success';
 					$message = "<strong>Поздравляю!</strong> Вы успешно добавили продукт ";
-					
+
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('create','id'=>$model->product_id));
-				}				
+				}
 			}
 			catch (Exception $e){
 				$transaction->rollBack();
@@ -126,14 +126,14 @@ class ProductsController extends Controller
 
 		$this->render('create',array(
 			'model'=>$model,
-					));				
+					));
 	}
 
      public function checkProd($id){
         $max_date = Balance::model()->find(array('select'=>'MAX(b_date) as b_date'));
         $result;
         $curProd = Balance::model()->findAll('date(t.b_date) = :dates',array(':dates'=>$max_date->b_date));
-        
+
         foreach($curProd as $value){
             if($value->prod_id == $id){
                 $result = true;
@@ -145,7 +145,7 @@ class ProductsController extends Controller
         }
         return $result;
     }
-    
+
     public function addProd($id){
         if($this->checkProd($id) != true){
             $max_date = Balance::model()->find(array('select'=>'MAX(b_date) as b_date'));
@@ -164,7 +164,7 @@ class ProductsController extends Controller
 	 */
 	public function actionUpdate($id)
 	{
-		
+
 		$model=$this->loadModel($id);
 
 		// Uncomment the following line if AJAX validation is needed
@@ -190,7 +190,7 @@ class ProductsController extends Controller
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				// $this->refresh(); 
+				// $this->refresh();
 			}
 
 			$model->attributes=$_POST['Products'];
@@ -201,7 +201,7 @@ class ProductsController extends Controller
 		$this->render('update',array(
 			'model'=>$model,
 					));
-		
+
 			}
 
 	/**
@@ -240,7 +240,7 @@ class ProductsController extends Controller
 		));
 		*/
         $newModel = Products::model()->with('measure')->findAll();
-		
+
 		$model=new Products('search');
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['Products']))
@@ -250,7 +250,7 @@ class ProductsController extends Controller
 			'model'=>$model,
             'newModel'=>$newModel,
 					));
-		
+
 			}
 
 	/**
@@ -259,7 +259,7 @@ class ProductsController extends Controller
 	public function actionAdmin()
 	{
         $newModel = Products::model()->with('measure')->findAll('status = :status',array(':status'=>0));
-		
+
 		$model=new Products('search');
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['Products']))
@@ -269,7 +269,7 @@ class ProductsController extends Controller
 			'model'=>$model,
             'newModel'=>$newModel,
         ));
-		
+
     }
 
 	/**
@@ -299,7 +299,7 @@ class ProductsController extends Controller
 			Yii::app()->end();
 		}
 	}
-	
+
 	public function actionExport()
     {
         $model=new Products;
@@ -315,7 +315,7 @@ class ProductsController extends Controller
             'grid_mode'=>'export',
             'exportType'=>$exportType,
             'columns' => array(
-	                
+
 					'product_id',
 					'name',
 					'measure_id',
@@ -329,7 +329,7 @@ class ProductsController extends Controller
 	*/
 	public function actionImport()
 	{
-		
+
 		$model=new Products;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -352,7 +352,7 @@ class ProductsController extends Controller
 					$inserted=0;
 					$read_status = false;
 					while(!empty($sheetData[$baseRow]['A'])){
-						$read_status = true;						
+						$read_status = true;
 						//$product_id=  $sheetData[$baseRow]['A'];
 						$name=  $sheetData[$baseRow]['B'];
 						$measure_id=  $sheetData[$baseRow]['C'];
@@ -370,11 +370,11 @@ class ProductsController extends Controller
 						catch (Exception $e){
 							Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 							//$this->refresh();
-						} 
+						}
 						$baseRow++;
-					}	
-					Yii::app()->user->setFlash('success', ($inserted).' row inserted');	
-				}	
+					}
+					Yii::app()->user->setFlash('success', ($inserted).' row inserted');
+				}
 				else
 				{
 					Yii::app()->user->setFlash('warning', 'Wrong file type (xlsx, xls, and ods only)');
@@ -394,8 +394,8 @@ class ProductsController extends Controller
 	}
 
 	public function actionEditable(){
-		Yii::import('bootstrap.widgets.TbEditableSaver'); 
-	    $es = new TbEditableSaver('Products'); 
+		Yii::import('bootstrap.widgets.TbEditableSaver');
+	    $es = new TbEditableSaver('Products');
 			    $es->update();
 	}
 
@@ -411,5 +411,5 @@ class ProductsController extends Controller
 
 
 
-	
+
 }

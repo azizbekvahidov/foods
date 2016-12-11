@@ -89,7 +89,7 @@ float: left;
 .navbar-top-links {
 margin-right: 0!important;
 }
-.navbar-top-links li {
+.navbar-top-links > li {
 display: inline-block!important;
 }
 .navbar-default {
@@ -97,9 +97,9 @@ background-color: #f8f8f8;
 border-color: #e7e7e7!important;
 }
 .MainNavbar {
- position: relative; 
+ position: relative;
  min-height: 30px;
- margin-bottom: 20px; 
+ margin-bottom: 20px;
 border: 1px solid transparent;
 }
 .navbar-default .navbar-brand {
@@ -282,5 +282,3 @@ display: none;
     font-weight: bold;
     color: #037152;
 }
-
-

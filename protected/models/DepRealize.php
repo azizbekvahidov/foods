@@ -33,7 +33,7 @@ class DepRealize extends CActiveRecord
 			/*
 			//Example username
 			array('username', 'match', 'pattern' => '/^[A-Za-z0-9_]+$/u',
-                 'message'=>'Username can contain only alphanumeric 
+                 'message'=>'Username can contain only alphanumeric
                              characters and hyphens(-).'),
           	array('username','unique'),
           	*/
@@ -109,36 +109,36 @@ class DepRealize extends CActiveRecord
 	{
 		return parent::model($className);
 	}
-	
-	public function beforeSave() 
+
+	public function beforeSave()
     {
         $userId=0;
 		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-		
+
 		if($this->isNewRecord)
-        {           
-                        						
+        {
+
         }else{
-                        						
+
         }
 
-        
+
         return parent::beforeSave();
     }
 
     public function beforeDelete () {
 		$userId=0;
 		if(null!=Yii::app()->user->id) $userId=(int)Yii::app()->user->id;
-                                
+
         return false;
     }
 
     public function afterFind()    {
-         
+
         parent::afterFind();
     }
-	
-		
+
+
 	public function defaultScope()
     {
     	/*
@@ -151,7 +151,7 @@ class DepRealize extends CActiveRecord
         */
         $scope=array();
 
-        
+
         return $scope;
     }
 
@@ -183,4 +183,86 @@ class DepRealize extends CActiveRecord
         return $price;
 
     }
+
+		public function getDepProdCurCount($depId,$dates){
+
+	        $function = new Functions();
+	        $stuff = new Halfstaff();
+	        //Количественный расчет по отделам
+	        $fromDate = date("Y-m-d",strtotime($dates)-86400);
+
+	            $depId = $depId;
+	            $depIn = array();
+	            $depOut = array();
+	            $inProduct = array();
+	            $instuff = array();
+	            $endProduct = array();
+	            $endStuff = array();
+	            $outProduct = array();
+	            $outStuff = array();
+	            $outStuffProd = array();
+	            //расход продуктов в другой отдел
+	            $depOut = $function->depMoveOut($depId,$dates,$fromDate);
+	            //приход продуктов из других отделов
+	            $depIn = $function->depMoveIn($depId,$dates,$fromDate);
+	            $dish = new Expense();
+
+	            $inProduct = $function->depInProducts($depId,$dates,$fromDate);
+
+	            //Приход загатовок в отдел и расход их продуктов
+
+	            $outProduct = $dish->getDishProd($depId,$dates,$dates);
+	            $curProd = Yii::app()->db->createCommand()
+	                ->select('*')
+	                ->from('dep_balance')
+	                ->where('b_date = :dates AND department_id = :depId AND type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>1))
+	                ->queryAll();
+	            foreach($curProd as $value){
+	                $endProduct[$value['prod_id']] = + ($value['startCount'] + $inProduct[$value['prod_id']]-$outProduct[$value['prod_id']]-$outStuffProd[$value['prod_id']]+$depIn[$value['prod_id']]-$depOut[$value['prod_id']]);
+	            }
+
+							return $endProduct;
+		}
+
+		public function getDepStuffCurCount($depId,$dates){
+
+	        $function = new Functions();
+	        $stuff = new Halfstaff();
+	        //Количественный расчет по отделам
+	        $fromDate = date("Y-m-d",strtotime($dates)-86400);
+
+          $depId = $depId;
+          $depIn = array();
+          $depOut = array();
+          $inProduct = array();
+          $instuff = array();
+          $endProduct = array();
+          $endStuff = array();
+          $outProduct = array();
+          $outStuff = array();
+          $outStuffProd = array();
+          $outDishStuff = $dish->getDishStuff($depId,$dates,$dates);
+
+          //Приход загатовок в отдел и расход их продуктов
+          $instuff = $function->depInStuff($depId,$dates,$fromDate);
+
+          $outStuffProd = $function->depOutStuffProd($depId,$dates,$fromDate);
+          //Приход и расход загатовок в отдел, расход их продуктов
+          $outStuff = $function->depOutStuff($depId,$dates,$fromDate);
+          $outStuff = $stuff->sumArray($outStuff,$outDishStuff);
+
+          $inexpense = new Inexpense();
+          $depStuffIn = $inexpense->getDepIn($depId,$dates,$fromDate);
+          $depStuffOut = $inexpense->getDepOut($depId,$dates,$fromDate);
+          $curStuff = Yii::app()->db->createCommand()
+              ->select('')
+              ->from('dep_balance db')
+              ->where('db.b_date = :dates AND db.department_id = :depId AND db.type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>2))
+              ->queryAll();
+					foreach($curStuff as $value){
+              $endStuff[$value['prod_id']] = ($value['startCount'] + $instuff[$value['prod_id']]+$depStuffIn[$value['prod_id']]-$outStuff[$value['prod_id']]-$depStuffOut[$value['prod_id']]);
+          }
+
+					return $endStuff;
+		}
 }

@@ -30,7 +30,7 @@
     ?>
 </div>
 <a href="javascript:;" id="view" class="btn" style="  margin-top: -11px; margin-left: 10px;">Показать</a>
-<span class="heading-title">Мониторинг доходности отделов</span>
+<span class="heading-title">Расходы денег</span>
 <div id="data"></div>
 <script>
     $(document).ready(function(){

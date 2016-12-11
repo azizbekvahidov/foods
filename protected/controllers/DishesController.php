@@ -17,26 +17,26 @@ class DishesController extends Controller
     public  $dish_stuffstruct;
     public  $stuff_measure;
     public  $stuff_count;
-	
+
 	/**
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
 	 * using two-column layout. See 'protected/views/layouts/column2.php'.
 	 */
-		
-	public $layout='//layouts/column1';		
+
+	public $layout='//layouts/column1';
 		/**
 	 * @return array action filters
 	 */
 	public function filters()
 	{
 		return array(
-						
+
 			'accessControl', // perform access control for CRUD operations
 			'postOnly + delete', // we only allow deletion via POST request
-						
+
 		);
 	}
-	
+
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -58,7 +58,7 @@ class DishesController extends Controller
 			),
 		);
 	}
-		
+
 	/**
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
@@ -73,7 +73,7 @@ class DishesController extends Controller
             if ($arr[$k] == ',')
                 $arr[$k] = '.';
             $k++;
-        } 
+        }
         $ss = implode($arr);
         return $ss;
      }
@@ -93,19 +93,19 @@ class DishesController extends Controller
         $dishProd = $dish->getStruct($id);
 /*
 	    $Products = Dishes::model()->with('dishStruct','products.measure','products.realize.faktures','products.storageProd')->findByPk($id);
-        
+
         $Halfstuff = Dishes::model()->with('stuffs.halfstuffType','halfstuff','stuffs.stuffStruct.Struct.storageProd','stuffs.stuffStruct.Struct.realize.faktures')->findByPk($id);
-        
+
         $HalfstuffProd = Dishes::model()->with('halfstuff.Structs.halfstuffType','halfstuff','halfstuff.Structs.stuffStruct.Struct.storageProd','halfstuff.Structs.stuffStruct.Struct.realize.faktures')->findByPk($id,'stuffStruct.types = :types',array(':types'=>1));
-        
+
         $HalfstuffStuff = Dishes::model()->with('halfstuff.Structs.stuffStruct.stuff.halfstuffType','halfstuff.Structs.stuffStruct.stuff.podstuffStruct.Struct.realize.faktures','halfstuff.Structs.stuffStruct.stuff.podstuffStruct.Struct.storageProd')->findByPk($id,'stuffStruct.types = :types',array(':types'=>2));
-        
+
         $this->dish_product = $Products;
         $this->dish_stuff = $Halfstuff;
-        
+
         $prod_id = CHtml::listData(DishStructure::model()->findAll(array("condition"=>"dish_id = $id")),'struct_id','prod_id');
         $stuff_id = CHtml::listData(DishStructure2::model()->findAll(array("condition"=>"dish_id = $id")),'struct2_id','halfstuff_id');
-         
+
         $this->chosenProduct = CHtml::listData(Products::model()->findAllByPk($prod_id),'product_id','name');
         $this->chosenHalfstuff = CHtml::listData(Halfstaff::model()->findAllByPk($stuff_id),'halfstuff_id','name');
 */
@@ -116,13 +116,13 @@ class DishesController extends Controller
 			));
 		}
 		else{
-						
+
 			$this->render('view',array(
                 'id'=>$id,
 				'model'=>$this->loadModel($id),
                 'dishProd'=>$dishProd,
 			));
-			
+
 		}
 	}
 
@@ -238,7 +238,7 @@ class DishesController extends Controller
 	 * Creates a new model.
 	 * If creation is successful, the browser will be redirected to the 'view' page.
 	 */
-    
+
 	public function actionCreate()
 	{
         $products = new Products();
@@ -248,7 +248,7 @@ class DishesController extends Controller
 		$stuffList = $stuff->getUseStuffList();
         $chosenStuff = array();
 
-        
+
 		$model=new Dishes;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -261,7 +261,7 @@ class DishesController extends Controller
                 if($_POST['Dishes']['count'] == '' or $_POST['Dishes']['count'] == 0){
                     $_POST['Dishes']['count'] = 1;
                 }
-                    
+
 				$messageType='warning';
 				$message = "There are some errors ";
 				$model->attributes=$_POST['Dishes'];
@@ -271,7 +271,7 @@ class DishesController extends Controller
 				        $count = 0;
                         $prodMes = "prod>";
 				        for($i = 0; $i < count($_POST['product_id']); $i++){
-				            
+
                             $ss = $this->changeToFloat($_POST['prod'][$i]);
                             $struct = new DishStructure;
 				            $struct->dish_id = $model->dish_id;
@@ -279,14 +279,14 @@ class DishesController extends Controller
                             $struct->amount = $ss;
                             if($struct->save()){
                                 $prodMes .= $struct->prod_id.",";
-                            } 
+                            }
                             $count++;
 				        }
 				    }
                     if($_POST['stuff_id'] !=null){
                         $stuffMes = "stuff>";
 				        for($i = 0; $i < count($_POST['stuff_id']); $i++){
-				            
+
                             $ss = $this->changeToFloat($_POST['stuff'][$i]);
                             $struct2 = new DishStructure2;
 				            $struct2->dish_id = $model->dish_id;
@@ -308,12 +308,12 @@ class DishesController extends Controller
 				    }*/
                     $messageType = 'success';
 					$message = "<strong>Well done!</strong> You successfully create data ";
-					
+
 					$this->logs('create','dishes',$model->dish_id,$model->name."->".$prodMes."=>".$stuffMes);
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					//$this->redirect(array('view','id'=>$model->dish_id));
-				}		
+				}
 			}
 			catch (Exception $e){
 				$transaction->rollBack();
@@ -329,8 +329,8 @@ class DishesController extends Controller
             'stuffList'=>$stuffList,
             'chosenStuff'=>$chosenStuff
 					));
-		
-				
+
+
 	}
 
 	/**
@@ -370,7 +370,7 @@ class DishesController extends Controller
 				$messageType = 'success';
 				$message = "<strong>Well done!</strong> You successfully update data ";
 
-                
+
 				if($model->save()){
 				    DishStructure::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));
                     DishStructure2::model()->deleteAll('dish_id=:dish_id', array(':dish_id'=>$id));
@@ -378,7 +378,7 @@ class DishesController extends Controller
 				        $count = 0;
                         $prodMes = "prod>";
 				        for($i = 0; $i < count($_POST['product_id']); $i++){
-				            
+
                             $ss = $this->changeToFloat($_POST['prod'][$i]);
                             $struct = new DishStructure;
 				            $struct->dish_id = $id;
@@ -386,14 +386,14 @@ class DishesController extends Controller
                             $struct->amount = $ss;
                             if($struct->save()){
                                 $messageType = 'success';
-                                $prodMes .= $struct->prod_id.":".$struct->amount.",";} 
+                                $prodMes .= $struct->prod_id.":".$struct->amount.",";}
                             $count++;
 				        }
 				    }
-                    if($_POST['stuff_id'] !=null){  
+                    if($_POST['stuff_id'] !=null){
                         $stuffMes = "stuff>";
 				        for($i = 0; $i < count($_POST['stuff_id']); $i++){
-				            
+
                             $ss = $this->changeToFloat($_POST['stuff'][$i]);
                             $struct2 = new DishStructure2;
 				            $struct2->dish_id = $id;
@@ -410,11 +410,11 @@ class DishesController extends Controller
 					$this->redirect(array('view','id'=>$model->dish_id));
 				}
 			}
-            
+
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				// $this->refresh(); 
+				// $this->refresh();
 			}
 
 			$model->attributes=$_POST['Dishes'];
@@ -440,38 +440,38 @@ class DishesController extends Controller
         $stuff_id = CHtml::listData(DishStructure2::model()->findAll(array("condition"=>"dish_id = $id")),'struct2_id','halfstuff_id');
         $this->chosenProduct = CHtml::listData(Products::model()->findAllByPk($prod_id),'product_id','name');
         $this->chosenHalfstuff = CHtml::listData(Halfstaff::model()->findAllByPk($stuff_id),'halfstuff_id','name');
-        
+
         if($_POST){
 			$transaction = Yii::app()->db->beginTransaction();
             try{
                 if($_POST['prod']){
                     foreach($_POST['prod'] as $key => $val){
                         $tempStruct = DishStructure::model()->updateAll(array('amount'=>$val),'dish_id = :dish_id AND prod_id = :prod_id',array(':dish_id'=>$id,':prod_id'=>$key));
-                        
+
                     }
-                }  
+                }
                 if($_POST['half']){
                     foreach($_POST['half'] as $key => $val){
                         $tempStruct = DishStructure2::model()->updateAll(array('amount'=>$val),'dish_id = :dish_id AND halfstuff_id = :halfstuff_id',array(':dish_id'=>$id,':halfstuff_id'=>$key));
-                       
+
                     }
                 }
                     $transaction->commit();
                     Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('index'));
-                
+
             }
             catch(exception $ex){
                 $transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-                
+
             }
-            
+
         }
-                        
+
         $this->render('structSave',array(
               ));
-        
+
     }
 	/**
 	 * Deletes a particular model.
@@ -509,7 +509,7 @@ class DishesController extends Controller
 			'dataProvider'=>$dataProvider,
 		));
 		*/
-        
+
         $DishModel = Dishes::model()->findAll('status = :status',array(':status'=>0));
         $model=new Dishes('search');
         $model->unsetAttributes();  // clear any default values
@@ -520,7 +520,7 @@ class DishesController extends Controller
 			'model'=>$model,
             'dishModel'=>$DishModel,
 					));
-		
+
 			}
 
 	/**
@@ -528,7 +528,7 @@ class DishesController extends Controller
 	 */
 	public function actionAdmin()
 	{
-		
+
         $DishModel = Dishes::model()->findAll('status = :status',array(':status'=>0));
 		$model=new Dishes('search');
 		$model->unsetAttributes();  // clear any default values
@@ -539,7 +539,7 @@ class DishesController extends Controller
 			'model'=>$model,
             'dishModel'=>$DishModel,
 					));
-		
+
 			}
 
 	/**
@@ -551,7 +551,7 @@ class DishesController extends Controller
 	 */
 	public function loadModel($id)
 	{
-	    
+
 		$model=Dishes::model()->findByPk($id);
 		if($model===null)
 			throw new CHttpException(404,'The requested page does not exist.');
@@ -570,7 +570,7 @@ class DishesController extends Controller
 			Yii::app()->end();
 		}
 	}
-	
+
 	public function actionExport()
     {
         $model=new Dishes;
@@ -586,7 +586,7 @@ class DishesController extends Controller
             'grid_mode'=>'export',
             'exportType'=>$exportType,
             'columns' => array(
-	                
+
 					'dish_id',
 					'name',
 	            ),
@@ -599,7 +599,7 @@ class DishesController extends Controller
 	*/
 	public function actionImport()
 	{
-		
+
 		$model=new Dishes;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -622,7 +622,7 @@ class DishesController extends Controller
 					$inserted=0;
 					$read_status = false;
 					while(!empty($sheetData[$baseRow]['A'])){
-						$read_status = true;						
+						$read_status = true;
 						//$dish_id=  $sheetData[$baseRow]['A'];
 						$name=  $sheetData[$baseRow]['B'];
 
@@ -638,11 +638,11 @@ class DishesController extends Controller
 						catch (Exception $e){
 							Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 							//$this->refresh();
-						} 
+						}
 						$baseRow++;
-					}	
-					Yii::app()->user->setFlash('success', ($inserted).' row inserted');	
-				}	
+					}
+					Yii::app()->user->setFlash('success', ($inserted).' row inserted');
+				}
 				else
 				{
 					Yii::app()->user->setFlash('warning', 'Wrong file type (xlsx, xls, and ods only)');
@@ -674,8 +674,8 @@ class DishesController extends Controller
     }
 
 	public function actionEditable(){
-		Yii::import('bootstrap.widgets.TbEditableSaver'); 
-	    $es = new TbEditableSaver('Dishes'); 
+		Yii::import('bootstrap.widgets.TbEditableSaver');
+	    $es = new TbEditableSaver('Dishes');
 			    $es->update();
 	}
 

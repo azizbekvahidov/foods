@@ -2,6 +2,7 @@
 class UserIdentity extends CUserIdentity {
     // Будем хранить id.
     protected $_id;
+    protected $_role;
 
     // Данный метод вызывается один раз при аутентификации пользователя.
     public function authenticate(){
@@ -14,6 +15,7 @@ class UserIdentity extends CUserIdentity {
             // как это определено по умолчанию. Обязательно нужно переопределить
             // метод getId(см. ниже).
             $this->_id = $user->employee_id;
+            $this->_role = $user->role;
 
             // Далее логин нам не понадобится, зато имя может пригодится
             // в самом приложении. Используется как Yii::app()->user->name.
@@ -28,5 +30,9 @@ class UserIdentity extends CUserIdentity {
 
     public function getId(){
         return $this->_id;
+    }
+
+    public function getRole(){
+        return $this->_role;
     }
 }

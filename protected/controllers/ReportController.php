@@ -749,11 +749,12 @@ class ReportController extends Controller
         $model = Yii::app()->db->createCommand()
             ->select()
             ->from('MInfo')
-            ->where('info_date >= :from AND info')
+            ->where('info_date >= :from AND info_date <= :till',array(':till'=>$till,':from'=>$from))
+            ->group('info_date')
             ->queryAll();
 
         $this->renderPartial('ajaxInfoReport',array(
-
+            'model'=>$model
         ));
     }
 }

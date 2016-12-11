@@ -193,6 +193,13 @@ class Functions {
                 $Products[$val->prod_id] = $Products[$val->prod_id] - $val->count;
             }
         }
+        $realizeInStorageProd = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) = :real_date AND fromDepId != 0 AND department_id = 0 ',array(':real_date'=>$dates));
+
+        foreach($realizeInStorageProd as $value){
+            foreach($value->getRelated('realizedProd') as $val){
+                $Products[$val->prod_id] = $Products[$val->prod_id] + $val->count;
+            }
+        }
         // Списанные продукты на указаннуюдату
         $expBalance = Yii::app()->db->createCommand()
             ->select('ord.just_id,ord.count')

@@ -30,7 +30,7 @@
 <body>
     <div id="page">
 
-        
+
         <nav class="navbar-default MainNavbar  navbar-static-top" role="navigation" style="margin-bottom: 0">
             <div class="navbar-header">
                 <!--<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -148,6 +148,7 @@
                             array('label'=>'Все показатели склада','url'=>array('storage/allIn')),
                             array('label'=>'Все показатели отделов','url'=>array('depStorage/allIn')),
                             array('label'=>'Наценки', 'url'=>array('dishes/checkMargin')),
+														array('label'=>'Расходы денег', 'url'=>array('report/infoReport')),
 
                         ),
                     )); ?>
@@ -165,7 +166,8 @@
                         <li><?=CHtml::link('<i class="fa fa-plus-square"></i> Приход заготовок на точку',array('inexpense/create'));?></a></li>
                         <li><?=CHtml::link('<i class="fa fa-plus-square"></i> Списание продуктов и загатовок',array('off/create'));?></a></li>
                         <li><?=CHtml::link('<i class="fa fa-minus-square"></i> Внутренний расход',array('expense/kindCreate'));?></li>
-                        <li><?=CHtml::link('<i class="fa fa-minus-square"></i> Обмен продуктов',array('exchange/create'));?></li>
+												<li><?=CHtml::link('<i class="fa fa-minus-square"></i> Обмен продуктов',array('exchange/create'));?></li>
+                        <li><?=CHtml::link('<i class="fa fa-minus-square"></i> Возврат в склад',array('depRealize/backStorage'));?></li>
 
                     </ul>
                 </li>
@@ -239,17 +241,17 @@
             </div>
         </nav>
         <div id="page-wrapper">
-        	
+
         	<?php if(isset($this->breadcrumbs)):?>
         		<?php $this->widget('bootstrap.widgets.TbBreadcrumbs', array(
         			'links'=>$this->breadcrumbs,
         		)); ?><!-- breadcrumbs -->
         	<?php endif?>
-        
+
         	<?php echo $content; ?>
-        
-        	
-        
+
+
+
         	<!--<div id="footer">
         		Copyright &copy; <?php echo date('Y'); ?> by Azizbek.<br/>
         		Все права защищены.<br/>

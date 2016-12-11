@@ -2,27 +2,27 @@
 
 class StorageController extends Controller
 {
-	
-	
+
+
 	/**
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
 	 * using two-column layout. See 'protected/views/layouts/column2.php'.
 	 */
-		
-	public $layout='//layouts/column1';		
+
+	public $layout='//layouts/column1';
 		/**
 	 * @return array action filters
 	 */
 	public function filters()
 	{
 		return array(
-						
+
 			'accessControl', // perform access control for CRUD operations
 			'postOnly + delete', // we only allow deletion via POST request
-						
+
 		);
 	}
-	
+
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -48,12 +48,12 @@ class StorageController extends Controller
 			),
 		);
 	}
-		
+
 	/**
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
 	 */
-     
+
      private function changeToFloat($number){
         $ss = $number;
         $arr = NULL;
@@ -64,25 +64,25 @@ class StorageController extends Controller
             if ($arr[$k] == ',')
                 $arr[$k] = '.';
             $k++;
-        } 
+        }
         $ss = implode($arr);
         return $ss;
      }
-     
+
 	public function actionView($id)
 	{
-		
+
 		if(isset($_GET['asModal'])){
 			$this->renderPartial('view',array(
 				'model'=>$this->loadModel($id),
 			));
 		}
 		else{
-						
+
 			$this->render('view',array(
 				'model'=>$this->loadModel($id),
 			));
-			
+
 		}
 	}
 
@@ -266,19 +266,19 @@ class StorageController extends Controller
 
 
             // $outProduct = $dish->getDishProd($depId,$dates,$fromDate);
-            
+
             // $outDishStuff = $dish->getDishStuff($depId,$dates,$fromDate);
-            
+
             $inProduct = $function->depInProducts($depId,$dates,$fromDate);
-            
+
             //Приход загатовок в отдел и расход их продуктов
-                
+
             $outProduct = $dish->getDishProd($depId,$dates,$dates);
             $outDishStuff = $dish->getDishStuff($depId,$dates,$dates);
 
             //Приход загатовок в отдел и расход их продуктов
             $instuff = $function->depInStuff($depId,$dates,$fromDate);
-            
+
             $outStuffProd = $function->depOutStuffProd($depId,$dates,$fromDate);
             //Приход и расход загатовок в отдел, расход их продуктов
             $outStuff = $function->depOutStuff($depId,$dates,$fromDate);
@@ -344,6 +344,16 @@ class StorageController extends Controller
 
         foreach($Depfaktura as $val){
             $outProducts[$val['prod_id']] = $outProducts[$val['prod_id']] + $val['count'];
+        }
+				$Depfaktura1 = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dep_faktura df')
+            ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+            ->where('date(df.real_date) BETWEEN :from AND :till AND df.fromDepId != :fromDepId AND df.department_id = 0',array(':till'=>$dates,':from'=>$dates,'fromDepId'=>0))
+            ->queryAll();
+
+        foreach($Depfaktura1 as $val){
+            $inProducts[$val['prod_id']] = $inProducts[$val['prod_id']] + $val['count'];
         }
 
         $expense = Yii::app()->db->createCommand()
@@ -447,7 +457,7 @@ class StorageController extends Controller
         $inProducts = array();
         $outProducts = array();
         $endProducts = array();
-        
+
         $prodModel = Products::model()->findAll();
          //Приход
         $fakturaProd = Faktura::model()->with('realize.products')->findAll('date(realize_date) = :realize_date',array('realize_date'=>$dates));
@@ -458,7 +468,7 @@ class StorageController extends Controller
         }
         //Расход
         $Depfaktura = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) = :real_date',array(':real_date'=>$dates));
-        
+
         foreach($Depfaktura as $value){
             foreach($value->getRelated('realizedProd') as $val){
                 $outProducts[$val->prod_id] = $outProducts[$val->prod_id] + $val->count;
@@ -474,11 +484,11 @@ class StorageController extends Controller
 
         $curProd = Balance::model()->with('products')->findAll('b_date = :dates',array(':dates'=>$dates),array('order'=>'products.name'));
         /*foreach($curProd as $value){
-            
+
              $endProducts[$value->prod_id] = $endProducts[$value->prod_id] + $value->startCount+$inProducts[$value->prod_id]-$outProducts[$value->prod_id] - $inOutProducts[$value->prod_id];
-            
+
         }*/
-        
+
         $this->renderPartial('allstorage',array(
             'prodModel'=>$prodModel,
             'model'=>$curProd,
@@ -495,8 +505,8 @@ class StorageController extends Controller
         $outProducts = array();
         $inOutProducts = array();
         $endProducts = array();
-        
-        
+
+
         $prodModel = Products::model()->findAll();
 
         //Приход
@@ -508,7 +518,7 @@ class StorageController extends Controller
         }
         //Расход
         $Depfaktura = DepFaktura::model()->with('realizedProd')->findAll('date(real_date) = :real_date',array(':real_date'=>$dates));
-        
+
         foreach($Depfaktura as $value){
             foreach($value->getRelated('realizedProd') as $val){
                 $outProducts[$val->prod_id] = $outProducts[$val->prod_id] + $val->count;
@@ -526,11 +536,11 @@ class StorageController extends Controller
 
         $curProd = Balance::model()->with('products')->findAll('b_date = :dates',array(':dates'=>$dates),array('order'=>'products.name'));
         foreach($curProd as $value){
-            
+
              $endProducts[$value->prod_id] = $endProducts[$value->prod_id] + $value->startCount+$inProducts[$value->prod_id]-$outProducts[$value->prod_id]- $inOutProducts[$value->prod_id];
-            
+
         }
-        
+
         $this->render('today',array(
             'prodModel'=>$prodModel,
             'model'=>$curProd,
@@ -545,26 +555,26 @@ class StorageController extends Controller
 	 * Creates a new model.
 	 * If creation is successful, the browser will be redirected to the 'view' page.
 	 */
-     
+
 	public function actionCreate()
 	{
 	    $products = Products::model()->with('measure')->findAll(array('order'=>'t.name'));
 		$curModel = Storage::model()->with('product.measure')->findAll(array('order'=>'product.name'));
         //if(empty($curModel)){
     		$model=new Storage;
-            
+
     		// Uncomment the following line if AJAX validation is needed
     		// $this->performAjaxValidation($model);
-    
+
     		if(isset($_POST['Storage']))
     		{
                 if(!empty($curModel)){
-                    $model->deleteAll(); 
+                    $model->deleteAll();
                 }
                 if($_POST['Storage']['curDate'] == ''){
                     $_POST['Storage']['curDate'] = date('Y-m-d');
                 }
-                
+
     			$transaction = Yii::app()->db->beginTransaction();
     			try{
     				$messageType='warning';
@@ -589,7 +599,7 @@ class StorageController extends Controller
     					$messageType = 'success';
     					$message = "<strong>Well done!</strong> You successfully create data ";
     					/*
-    					$model2 = Storage::model()->findByPk($model->storage_id);						
+    					$model2 = Storage::model()->findByPk($model->storage_id);
     					if(!empty($uploadFile)) {
     						$extUploadFile = substr($uploadFile, strrpos($uploadFile, '.')+1);
     						if(!empty($uploadFile)) {
@@ -602,22 +612,22 @@ class StorageController extends Controller
     								$messageType = 'warning';
     								$message .= 'but file not uploded';
     							}
-    						}						
+    						}
     					}
-    					
+
     					$transaction->commit();
     					Yii::app()->user->setFlash($messageType, $message);
     					$this->redirect(array('view','id'=>$model->storage_id));
-    				}	*/			
+    				}	*/
     			}
     			catch (Exception $e){
     				$transaction->rollBack();
     				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
     				//$this->refresh();
     			}
-    			
+
     		}
-    
+
     		$this->render('create',array(
     			'model'=>$model,
                 'curModel'=>$curModel,
@@ -626,8 +636,8 @@ class StorageController extends Controller
          //} else{
          //   $this->redirect(array('index'));
          //}
-		
-				
+
+
 	}
 
 	/**
@@ -637,7 +647,7 @@ class StorageController extends Controller
 	 */
 	public function actionUpdate($id)
 	{
-		
+
 		$model=$this->loadModel($id);
 
 		// Uncomment the following line if AJAX validation is needed
@@ -666,7 +676,7 @@ class StorageController extends Controller
 							$messageType = 'warning';
 							$message .= 'but file not uploded';
 						}
-					}						
+					}
 				}
 				*/
 
@@ -679,7 +689,7 @@ class StorageController extends Controller
 			catch (Exception $e){
 				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				// $this->refresh(); 
+				// $this->refresh();
 			}
 
 			$model->attributes=$_POST['Storage'];
@@ -690,7 +700,7 @@ class StorageController extends Controller
 		$this->render('update',array(
 			'model'=>$model,
 					));
-		
+
 			}
 
 	/**
@@ -725,7 +735,7 @@ class StorageController extends Controller
 		));
 		*/
 		$newModel = Storage::model()->with('product.measure')->findAll(array('order'=>'product.name'));
-		
+
 		$model=new Storage('search');
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['Storage']))
@@ -735,7 +745,7 @@ class StorageController extends Controller
 			'model'=>$model,
             'newModel'=>$newModel,
 					));
-		
+
 			}
 
 	/**
@@ -753,7 +763,7 @@ class StorageController extends Controller
 			'model'=>$model,
             'newModel'=>$newModel,
 					));
-		
+
 			}
 
 	/**
@@ -783,7 +793,7 @@ class StorageController extends Controller
 			Yii::app()->end();
 		}
 	}
-	
+
 	public function actionExport()
     {
         $model=new Storage;
@@ -799,7 +809,7 @@ class StorageController extends Controller
             'grid_mode'=>'export',
             'exportType'=>$exportType,
             'columns' => array(
-	                
+
 					'storage_id',
 					'curDate',
 					'prod_id',
@@ -814,7 +824,7 @@ class StorageController extends Controller
 	*/
 	public function actionImport()
 	{
-		
+
 		$model=new Storage;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -837,7 +847,7 @@ class StorageController extends Controller
 					$inserted=0;
 					$read_status = false;
 					while(!empty($sheetData[$baseRow]['A'])){
-						$read_status = true;						
+						$read_status = true;
 						//$storage_id=  $sheetData[$baseRow]['A'];
 						$curDate=  $sheetData[$baseRow]['B'];
 						$prod_id=  $sheetData[$baseRow]['C'];
@@ -857,11 +867,11 @@ class StorageController extends Controller
 						catch (Exception $e){
 							Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 							//$this->refresh();
-						} 
+						}
 						$baseRow++;
-					}	
-					Yii::app()->user->setFlash('success', ($inserted).' row inserted');	
-				}	
+					}
+					Yii::app()->user->setFlash('success', ($inserted).' row inserted');
+				}
 				else
 				{
 					Yii::app()->user->setFlash('warning', 'Wrong file type (xlsx, xls, and ods only)');
@@ -881,8 +891,8 @@ class StorageController extends Controller
 	}
 
 	public function actionEditable(){
-		Yii::import('bootstrap.widgets.TbEditableSaver'); 
-	    $es = new TbEditableSaver('Storage'); 
+		Yii::import('bootstrap.widgets.TbEditableSaver');
+	    $es = new TbEditableSaver('Storage');
 			    $es->update();
 	}
 
@@ -896,7 +906,7 @@ class StorageController extends Controller
     	);
 	}
 
-	
+
 	public function actionCalendar()
 	{
 		$model=new Storage('search');
@@ -905,17 +915,17 @@ class StorageController extends Controller
 			$model->attributes=$_GET['Storage'];
 		$this->render('calendar',array(
 			'model'=>$model,
-		));	
+		));
 	}
 
 	public function actionCalendarEvents()
-	{	 	
+	{
 	 	$items = array();
-	 	$model=Storage::model()->findAll();	
+	 	$model=Storage::model()->findAll();
 		foreach ($model as $value) {
 			$items[]=array(
 				'id'=>$value->storage_id,
-								
+
 				//'color'=>'#CC0000',
 	        	//'allDay'=>true,
 	        	'url'=>'#',
@@ -925,5 +935,5 @@ class StorageController extends Controller
 	    Yii::app()->end();
 	}
 
-	
+
 }
