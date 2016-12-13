@@ -112,7 +112,7 @@ class ExpenseController extends Controller
     public function actionEmpOrder(){
 
         $dates = $_POST['dates'];
-        $model = Employee::model()->findAll('role < :numb',array(':numb'=>3));
+        $model = Employee::model()->findAll('role < :numb AND status = 0',array(':numb'=>3));
         foreach ($model as $val) {
             $employee[$val->name] = array('ajax'=>$this->createUrl('expense/orderList?empId='.$val->employee_id.'&dates='.$dates));
         }
@@ -124,7 +124,7 @@ class ExpenseController extends Controller
     }
 
     public function actionEmpList(){
-        $model = Employee::model()->findAll('role < :numb',array(':numb'=>3));
+        $model = Employee::model()->findAll('role < :numb AND status = 0',array(':numb'=>3));
         $this->renderPartial('empList',array(
             'model'=>$model
         ));

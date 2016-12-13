@@ -8,12 +8,14 @@
         </tr>
     </thead>
     <tbody><?
-    foreach($empSum as $key => $val){?>
+    foreach($empSum as $key => $val){
+        if($val != 0){?>
         <tr>
             <td><?=$key?></td> 
             <td><?=number_format($val,0,',',' ')?></td>
             <td><?=number_format(round($empPerSum[$key]/100)*100,0,',',' ')?></td>
         </tr>
+        <?}?>
     <?}
     ?>
     </tbody>

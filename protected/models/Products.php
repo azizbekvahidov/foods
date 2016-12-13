@@ -201,7 +201,7 @@ class Products extends CActiveRecord
         return $model->name;
     }
     //получить приходную сумму продукта по его id и дате прихода
-    public function getOldCostPrice($id,$dates){
+    public function getCostPrice($id,$dates){
         $time = microtime();
         // $func = new Functions();
         $costPrice = 0;
@@ -247,7 +247,7 @@ class Products extends CActiveRecord
         return number_format($costPrice,0,',','');
     }
 
-    public function getCostPrice($id,$dates){
+    public function getNewCostPrice($id,$dates){
         $time = microtime();
       $func = new Functions();
       $costPrice = 0;

@@ -13,7 +13,7 @@
     );
     ?>
 </div>
-<?=CHtml::dropDownList('employee','',CHtml::listData(Employee::model()->findAll(),'employee_id','name'))?>
+<?=CHtml::dropDownList('employee','',CHtml::listData(Employee::model()->findAll('status = 0'),'employee_id','name'))?>
 <button type="button" id="export" class="btn ">Показать</button>
 <div id="data"></div>
 <script>
