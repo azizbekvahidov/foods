@@ -73,7 +73,7 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
             $sumInExp = $sumInExp + $inexp;
             //$beforeSumCostPrice = $beforeSumCostPrice + $beforeCostPrice;
             //$beforeSumPrice = $beforeSumPrice + $beforePrice;
-            $factCostPrice = $tempBalance[0]+$realized+$inRealized-$inexp-$tempBalance[2];
+            $factCostPrice = $tempBalance[4]+$realized+$inRealized-$inexp-$tempBalance[2];
             $sumFaktCost = $sumFaktCost + $factCostPrice;
 
 

@@ -125,7 +125,6 @@ class DepStorageController extends Controller
             $fromDate = date('Y-m-d',strtotime($_GET['dates'])-86400);
             $depId = $_GET['depId'];
         }
-        $function->getCurProdCount(78,$dates);
         $outProduct = array();
         $outStuff = array();
         $depIn = array();

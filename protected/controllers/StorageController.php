@@ -345,7 +345,7 @@ class StorageController extends Controller
         foreach($Depfaktura as $val){
             $outProducts[$val['prod_id']] = $outProducts[$val['prod_id']] + $val['count'];
         }
-				$Depfaktura1 = Yii::app()->db->createCommand()
+        $Depfaktura1 = Yii::app()->db->createCommand()
             ->select('')
             ->from('dep_faktura df')
             ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')

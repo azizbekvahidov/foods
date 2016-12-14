@@ -513,6 +513,67 @@ class Expense extends CActiveRecord
         }
         return $summs;
     }
+    public function getFactCostPrice($from,$till,$depId){
+        $function = new Functions();
+        $outProduct = array();
+        $outStuff = array();
+        $depIn = array();
+        $depOut = array();
+        $prod = 0;
+
+        $depIn = $function->depMoveIn($depId,$till,$from);
+        echo "<pre>";
+        print_r($depIn);
+        echo "</pre>";
+
+        $depOut = $function->depMoveOut($depId,$till,$from);
+
+        $curProd = DepBalance::model()->with('products')->findAll(
+            'date(t.b_date) = :dates AND t.department_id = :department_id AND t.type = :type',
+            array(
+                ':dates'=>$till,
+                ':department_id'=>$depId,
+                ':type'=>1,
+            )
+        );
+
+        $curStuff = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dep_balance t')
+            ->join('halfstaff h','h.halfstuff_id = t.prod_id')
+            ->where(
+                'date(t.b_date) = :dates AND t.department_id = :department_id AND t.type = :type',
+                array(
+                    ':dates'=>$till,
+                    ':department_id'=>$depId,
+                    ':type'=>2,
+                ))
+            ->queryAll();
+
+
+        $dish = new Expense();
+
+        $stuff = new Halfstaff();
+
+        $outProduct = $dish->getDishProd($depId,$till,$from);
+
+        $outDishStuff = $dish->getDishStuff($depId,$till,$from);
+
+
+        $inProducts = $function->depInProducts($depId,$till,$from);
+        //Приход загатовок в отдел и расход их продуктов
+        $instuff = $function->depInStuff($depId,$till,$from);
+
+        $outStuffProd = $function->depOutStuffProd($depId,$till,$from);
+
+        //Приход и расход загатовок в отдел, расход их продуктов
+        $outStuff = $function->depOutStuff($depId,$till,$from);
+
+        $inexpense = new Inexpense();
+        $depStuffIn = $inexpense->getDepIn($depId,$till,$from);
+        $depStuffOut = $inexpense->getDepOut($depId,$till,$from);
+        return 0;
+    }
 
     public function changeToFloat($number){
         $ss = $number;

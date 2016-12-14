@@ -74,6 +74,17 @@ class Functions {
         foreach($model as $key => $val){
             $inProducts[$val['prod_id']] = $inProducts[$val['prod_id']] + $val['count'];
         }
+        $Depfaktura1 = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dep_faktura df')
+            ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+            ->where('date(df.real_date) BETWEEN :from AND :till AND df.fromDepId = :fromDepId AND df.department_id = 0',array(':till'=>$dates,':from'=>$fromDate,'fromDepId'=>$dep))
+            ->queryAll();
+
+        foreach($Depfaktura1 as $val){
+            $inProducts[$val['prod_id']] = $inProducts[$val['prod_id']] - $val['count'];
+        }
+
         return $inProducts;
     }
 
@@ -147,6 +158,20 @@ class Functions {
             $result[$val['prod_id']] = $result[$val['prod_id']] + $val['count'];
         }
         return $result;
+    }
+
+    public function getBackingProd($dates,$fromDate,$dep = 0){
+        $Depfaktura1 = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('dep_faktura df')
+            ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+            ->where('date(df.real_date) BETWEEN :from AND :till AND df.fromDepId == :fromDepId AND df.department_id = 0',array(':till'=>$dates,':from'=>$fromDate,'fromDepId'=>$dep))
+            ->queryAll();
+
+        foreach($Depfaktura1 as $val){
+            $inProducts[$val['prod_id']] = $inProducts[$val['prod_id']] + $val['count'];
+        }
+        return $inProducts;
     }
 
     public function getRefuseTimes($type,$id,$dates){
@@ -305,4 +330,5 @@ class Functions {
         // echo microtime()-$time."<br>";
         return $count;
     }
+
 }

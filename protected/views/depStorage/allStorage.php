@@ -57,10 +57,32 @@ $summ = 0; $sumStart = 0; $sumIn = 0; $sumInDep = 0; $sumOutDep = 0; $sumToStuff
 
         </tr>
         <?$count++; }?>
-        <? }}?>
+        <? }}?><tr>
+        <th colspan="2">Сумма</th>
+        <th colspan=""><?=number_format($sumStart,0,',',' ')?></th>
+        <th colspan=""><?=number_format($sumIn,0,',',' ')?></th>
+        <th colspan=""><?=number_format($sumInDep,0,',',' ')?></th>
+        <th colspan=""><?=number_format($sumOutDep,0,',',' ')?></th>
+        <th colspan=""><?=number_format($sumOut,0,',',' ')?></th>
+        <th colspan=""><?=number_format($summFact,0,',',' ')?></th>
+        <th colspan=""><?=number_format($sumToStuff,0,',',' ')?></th>
+        <th><?=number_format($summ,0,',',' ')?></th>
+        <th colspan="2"><?//=number_format($summEnd,0,',',' ')?></th>
+        <th><?//=$test?></th>
+        <?$summ1 = $summ;
+        $summEnd1 = $summEnd;
+        $summFact1 = $summFact;
+        $sumIn1 = $sumIn;
+        $sumInDep1 = $sumInDep;
+        $sumOutDep1 = $sumOutDep;
+        $sumOut1 = $sumOut;
+        $sumToStuff1 = $sumToStuff;
+        $sumStart1 = $sumStart;
+        $test1 = $test?>
+    </tr>
     <?  if(!empty($curStuff)){?>
         <tr>
-            <th colspan="10">Прлуфабрикаты <?=$sumOut?></th>
+            <th colspan="10">Прлуфабрикаты </th>
         </tr>
     <?;foreach($curStuff as $value){ ?>
             <? //if(number_format( $value->startCount,2) != 0 || number_format( $inProduct[$value->prod_id],2) != 0 || number_format( $outProduct[$value->prod_id],2) != 0){?>
@@ -83,7 +105,7 @@ $summ = 0; $sumStart = 0; $sumIn = 0; $sumInDep = 0; $sumOutDep = 0; $sumToStuff
                     $summ = $summ + $value['endCount']*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
                     $summEnd = $summEnd + $value['CurEndCount']*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
                     $summFact = $summFact + $factOutStuff*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    //$sumIn = $sumIn + ($instuff[$value['prod_id']])*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
+                    $sumIn = $sumIn + ($instuff[$value['prod_id']])*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
                     $sumInDep = $sumInDep + $depStuffIn[$value['prod_id']]*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
                     $sumOutDep = $sumOutDep + $depStuffOut[$value['prod_id']]*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
                     $sumOut = $sumOut + $outDishStuff[$value['prod_id']]*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
@@ -100,6 +122,19 @@ $summ = 0; $sumStart = 0; $sumIn = 0; $sumInDep = 0; $sumOutDep = 0; $sumToStuff
     <tfoot>
         <tr>
             <th colspan="2">Сумма</th>
+            <th colspan=""><?=number_format($sumStart-$sumStart1,0,',',' ')?></th>
+            <th colspan=""><?=number_format($sumIn-$sumIn1,0,',',' ')?></th>
+            <th colspan=""><?=number_format($sumInDep-$sumInDep1,0,',',' ')?></th>
+            <th colspan=""><?=number_format($sumOutDep-$sumOutDep1,0,',',' ')?></th>
+            <th colspan=""><?=number_format($sumOut-$sumOut1,0,',',' ')?></th>
+            <th colspan=""><?=number_format($summFact-$summFact1,0,',',' ')?></th>
+            <th colspan=""><?=number_format($sumToStuff-$sumToStuff1,0,',',' ')?></th>
+            <th><?=number_format($summ-$summ1,0,',',' ')?></th>
+            <th colspan="2"><?//=number_format($summEnd,0,',',' ')?></th>
+            <th><?//=$test?></th>
+        </tr>
+        <tr>
+            <th colspan="2">Общая сумма</th>
             <th colspan=""><?=number_format($sumStart,0,',',' ')?></th>
             <th colspan=""><?=number_format($sumIn,0,',',' ')?></th>
             <th colspan=""><?=number_format($sumInDep,0,',',' ')?></th>

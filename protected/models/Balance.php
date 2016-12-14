@@ -201,6 +201,7 @@ print_r($model);
 echo "</pre>";*/
         foreach ($startProd as $val) {
             $summ[0] = $summ[0] + $val['startCount']*$prod->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($from)-86400));
+            $summ[4] = $summ[4] + $val['startCount']*$prod->getCostPrice($val['prod_id'],$from);
         }
 
         $endProd = Yii::app()->db->createCommand()
@@ -222,6 +223,7 @@ echo "</pre>";*/
 
         foreach ($startStuff as $val) {
             $summ[0] = $summ[0] + $val['startCount']*$stuff->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($from)-86400));
+            $summ[4] = $summ[4] + $val['startCount']*$stuff->getCostPrice($val['prod_id'],$from);
         }
 
         $endStuff = Yii::app()->db->createCommand()
