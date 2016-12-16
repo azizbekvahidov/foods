@@ -367,7 +367,7 @@ class ReportController extends Controller
     public function actionDepIncome(){
         $dates = date('Y-m-d',strtotime(date('Y-m-d'))-86400);
         $prod = new Products(); $expense = new Expense();
-        echo $expense->getFactCostPrice('2016-12-01','2016-12-01',1);
+        //echo $expense->getFactCostPrice('2016-12-01','2016-12-01',1);
         // $costPrice = $expense->getDepCost(1,'2016-12-01','2016-12-01');
         // echo $prod->getCostPrice(32,'2016-12-01')."<br>";
         // echo $prod->getOldCostPrice(32,'2016-12-01');

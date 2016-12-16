@@ -74,14 +74,13 @@ class FakturaController extends Controller
     {
         $dep = CHtml::listData(Department::model()->findAll(),'department_id','name');
         $model = Yii::app()->db->createCommand()
-            ->select('f.realize_date,pr.name as PRname,r.prod_id,p.name as Pname,m.name as Mname,r.price,su(r.count)')
+            ->select('f.realize_date,pr.name as PRname,r.prod_id,p.name as Pname,m.name as Mname,r.price,r.count')
             ->from('faktura f')
             ->join('provider pr','pr.provider_id = f.provider_id')
             ->join('realize r','r.faktura_id = f.faktura_id')
             ->join('products p','p.product_id = r.prod_id')
             ->join('measurement m','m.measure_id = p.measure_id')
-            ->where('date(f.faktura_id) = :dates',array(':dates'=>$dates))
-            ->group('r.prod_id')
+            ->where('date(f.realize_date) = :dates',array(':dates'=>$dates))
             ->queryAll();
         $this->render('viewFaktura',array(
             'dates'=>$dates,

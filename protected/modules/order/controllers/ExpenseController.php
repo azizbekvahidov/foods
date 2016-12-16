@@ -70,6 +70,9 @@ class ExpenseController extends Controller
         
 		if(isset($_POST['Expense']))
 		{
+            echo "<pre>";
+            print_r($_POST);
+            echo "</pre>";
         $_POST['Expense']['order_date'] = date('Y-m-d H:i:s');
 
             if($_POST['Expense']['comment'] == ''){
@@ -95,7 +98,8 @@ class ExpenseController extends Controller
                     'status'=>0,
                     'debt'=>(isset($_POST['Expense']['debt'])) ? $_POST['Expense']['debt'] : 0,
                     'comment'=>$_POST['Expense']['comment'],
-                    'debtor_id'=>$_POST['Expense']['empId'],
+                    'debtor_type'=>(!empty($_POST['Expense']['contr'])) ? 1 : 0,
+                    'debtor_id'=>(!empty($_POST['Expense']['contr'])) ? $_POST['Expense']['contr'] : $_POST['Expense']['empId'],
                     'mType'=>1
                 ));
                 $expId = Yii::app()->db->getLastInsertID();

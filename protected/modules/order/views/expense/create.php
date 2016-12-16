@@ -175,6 +175,7 @@
         </div>
         <?echo $form->textField($model,'comment',array('style'=>'display:none'))?>
         <input type="text" class='hide' name='Expense[empId]' id='Expense_empId'>
+        <input type="text" class='hide' name='Expense[contr]' id='Expense_contr'>
         <div class="form-actions text-center col-xs-6 ">
             <button class="btn btn-success" id="submitBtn" type="button"><?=$model->isNewRecord ? 'Добавить' : 'Сохранить'?></button>
 
@@ -279,13 +280,15 @@ var counts = [],
         $('#Expense_debt').removeAttr('checked');
         $("#Expense_comment").val('');
         $("#Expense_empId").val('');
+        $("#Expense_contr").val('');
         getSum();
     });
 
     $(document).on("click", "#comment", function() {
         var thisValue = $("#ModalBody").children('input').val();
         $("#Expense_comment").val(thisValue);
-        $("#Expense_empId").val($("#ModalBody").children('select').val())
+        $("#Expense_empId").val($("#employee").val());
+        $("#Expense_contr").val($("#contractor").val());
     });
     $(document).on('click','#Expense_debt',function(){
 
@@ -461,8 +464,9 @@ $(document).on("click", '.types' ,function(){
 
 <div class="modal-body" id="ModalBody">
 
-            <input class='span2 form-control' type='text' name='' value='' />
-<?=CHtml::dropDownList('employee','',CHtml::listData(Employee::model()->findAll('status != 1'),'employee_id','name'),array('empty'=>'выберите сотрудника'))?>
+    <input class='span2 form-control' type='text' name='' value='' />
+    <?=CHtml::dropDownList('employee','',CHtml::listData(Employee::model()->findAll('status != 1'),'employee_id','name'),array('empty'=>'выберите сотрудника'))?>
+    <?=CHtml::dropDownList('contractor','',CHtml::listData(Contractor::model()->findAll('status != 1'),'contractor_id','name'),array('empty'=>'выберите контрагента'))?>
 </div>
 
 <div class="modal-footer">

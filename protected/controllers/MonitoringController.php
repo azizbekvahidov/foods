@@ -124,12 +124,14 @@ class MonitoringController extends Controller
         $id = $_POST['id'];
         $text = $_POST['text'];
         $empId = $_POST['empId'];
+        $cont = $_POST['cont'];
 
         $model = Yii::app()->db->createCommand()->update('expense',array(
             'status'=>0,
             'debt'=>1,
             'comment'=>$text,
-            'debtor_id'=>$empId
+            'debtor_id'=>(!empty($cont))? $cont : $empId,
+            'debtor_type'=>(!empty($cont))? 1 : 0
         ),'expense_id = :id',array(':id'=>$id));
     }
 

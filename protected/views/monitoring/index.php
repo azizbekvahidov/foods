@@ -53,11 +53,12 @@
     $(document).on('click','#comment',function(){
         var id =  $("#ModalBody input").val(),
             text =  $("#ModalBody textarea").val(),
-            select = $("#ModalBody select").val();
+            select = $("#ModalBody #employee").val(),
+            select2 = $("#ModalBody #contractor").val();
         $.ajax({
             type: "POST",
             url: "<?php echo Yii::app()->createUrl('monitoring/closeDebt'); ?>",
-            data: 'id='+id+'&text='+text+'&empId='+select,
+            data: 'id='+id+'&text='+text+'&empId='+select+'&cont='+select2,
             success: function(data){
                 $("#ModalBody textarea").val('');
                 refreshTable();
@@ -114,6 +115,7 @@
         <input type="text" value="" style="display: none">
         <textarea class=' form-control'  ></textarea>
         <?=CHtml::dropDownList('employee','',CHtml::listData(Employee::model()->findAll('status != 1'),'employee_id','name'),array('empty'=>'выберите сотрудника'))?>
+        <?=CHtml::dropDownList('contractor','',CHtml::listData(Contractor::model()->findAll('status != 1'),'contractor_id','name'),array('empty'=>'выберите Контрагента'))?>
     </div>
 
     <div class="modal-footer">

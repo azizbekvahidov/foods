@@ -21,7 +21,7 @@ class ExpenseController extends Controller
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('taken','test','view','index','empExpense','empOrder','debtList','debtClose','paidDebt','lists','ajaxEmpExpense','orderList','empList','print'),
+                'actions'=>array('ajaxDeptList','taken','test','view','index','empExpense','empOrder','debtList','debtClose','paidDebt','lists','ajaxEmpExpense','orderList','empList','print'),
                 'roles'=>array('2'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -386,10 +386,17 @@ class ExpenseController extends Controller
         'newModel2'=>$newModel2,
         ));
     }
+    public function actionDebtList()
+    {
+        $this->render('debtList');
+    }
 
-    public function actionDebtList(){
-        $model = Expense::model()->with()->findAll('t.comment != :comment AND t.debt = :debt',array(':comment'=>'',':debt'=>1));
-        $this->render('debtList',array(
+    public function actionAjaxDeptList(){
+
+        $from = $_POST['from'];
+        $till = $_POST['till'];
+        $model = Expense::model()->with()->findAll('date(t.order_date) BETWEEN :from AND :till AND t.comment != :comment AND t.debt = :debt',array(':comment'=>'',':debt'=>1,':from'=>$from,':till'=>$till));
+        $this->renderPartial('ajaxDeptList',array(
             'model'=>$model,
         ));
 
