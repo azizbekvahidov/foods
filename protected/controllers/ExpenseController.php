@@ -395,7 +395,8 @@ class ExpenseController extends Controller
 
         $from = $_POST['from'];
         $till = $_POST['till'];
-        $model = Expense::model()->with()->findAll('date(t.order_date) BETWEEN :from AND :till AND t.comment != :comment AND t.debt = :debt',array(':comment'=>'',':debt'=>1,':from'=>$from,':till'=>$till));
+
+        $model = Expense::model()->with()->findAll('date(t.order_date) BETWEEN :from AND :till AND  t.debt = :debt',array(':debt'=>1,':from'=>$from,':till'=>$till));
         $this->renderPartial('ajaxDeptList',array(
             'model'=>$model,
         ));

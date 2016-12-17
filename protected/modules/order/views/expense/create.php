@@ -176,20 +176,25 @@
         <?echo $form->textField($model,'comment',array('style'=>'display:none'))?>
         <input type="text" class='hide' name='Expense[empId]' id='Expense_empId'>
         <input type="text" class='hide' name='Expense[contr]' id='Expense_contr'>
-        <div class="form-actions text-center col-xs-6 ">
+        <div class="form-actions text-center col-xs-4 ">
             <button class="btn btn-success" id="submitBtn" type="button"><?=$model->isNewRecord ? 'Добавить' : 'Сохранить'?></button>
 
         </div>
-        <div class="form-actions text-center col-xs-6 ">
+        <div class="form-actions text-center col-xs-4 ">
             <button class="btn btn-info" id="closeBtn" type="button"><?=$model->isNewRecord ? 'Закрыть' : 'Сохранить'?></button>
+
+        </div>
+        <div class="form-actions text-center col-xs-4 ">
+            <button class="btn btn-info" id="closeTerm" type="button" data-toggle="modal" data-target="#modal-sm">Терминал</button>
 
         </div>
     </div>
     
 <script>
 var counts = [],
-    temps;
-    var count;
+    temps,
+    count,
+    expId = 0;
     function str_split ( str, len ) {
     			
     	str = str.split('_');
@@ -270,12 +275,35 @@ var counts = [],
             var data = $("#expense-form").serialize();
             $.ajax({
                 type: "POST",
-                url: "<?php echo Yii::app()->createUrl('order/expense/create'); ?>",
-                data: data
+                url: "<?php echo Yii::app()->createUrl('order/expense/addExp'); ?>",
+                data: data,
+                success: function(data){
+                    expId = data;
+                }
             });
     });
     $('#closeBtn').click(function(){
 
+            $('#order').children('tr').remove();
+        $('#Expense_debt').removeAttr('checked');
+        $("#Expense_comment").val('');
+        $("#Expense_empId").val('');
+        $("#Expense_contr").val('');
+        getSum();
+    });
+    $(document).on('click','#saveTerm',function(){
+        var id =  expId,
+            term = $("#termSum").val();
+        $.ajax({
+            type: "POST",
+            url: "<?php echo Yii::app()->createUrl('monitoring/closeTerm'); ?>",
+            data: 'id='+id+'&term='+term,
+            success: function(data){
+                $("#termSum").val('');
+                $("#expIdFSum").val('');
+                $('#modal-sm').modal('hide');
+            }
+        });
             $('#order').children('tr').remove();
         $('#Expense_debt').removeAttr('checked');
         $("#Expense_comment").val('');
@@ -299,7 +327,7 @@ var counts = [],
             return true;
         }
     })
-$(document).on("click", '.types' ,function(){
+    $(document).on("click", '.types' ,function(){
         var thisId = $(this).parent().attr('id');
         $.ajax({
            type: "POST",
@@ -491,6 +519,22 @@ $(document).on("click", '.types' ,function(){
 <?php  $this->endWidget(); ?>
 
 
+<div class="modal fade bs-example-modal-sm" id="modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">сумма терминал</h4>
+        </div>
+        <div class="modal-content">
+            <input type="text" value="" id="expIdFSum" style="display: none">
+            <input type="number" id="termSum" class="form-control"/>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="saveTerm" class="btn btn-primary">Сохранить</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+        </div>
+    </div>
+</div>
 <?php $this->beginWidget(
     'bootstrap.widgets.TbModal',
     array('id' => 'Modals')

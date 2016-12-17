@@ -331,4 +331,21 @@ class Functions {
         return $count;
     }
 
+    public function getDebtorName($debtorType,$id){
+        if($debtorType == 1){
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from('contractor')
+                ->where('contractor_id = :id',array(':id'=>$id))
+                ->queryRow();
+        }
+        else{
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from('employee')
+                ->where('employee_id = :id',array(':id'=>$id))
+                ->queryRow();
+        }
+        return $model['name'];
+    }
 }

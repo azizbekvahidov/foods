@@ -138,10 +138,21 @@ class MonitoringController extends Controller
     public function actionCloseTerm(){
         $id = $_POST['id'];
         $summ = $_POST['term'];
+        $dates = date('Y-m-d');
+        if($summ == ''){
+            $func = new Expense();
+            $summ = $func->getExpenseSum($id,$dates);
 
-        $model = Yii::app()->db->createCommand()->update('expense',array(
-            'status'=>0,
-            'terminal'=>$summ
-        ),'expense_id = :id',array(':id'=>$id));
+            $model = Yii::app()->db->createCommand()->update('expense',array(
+                'status'=>0,
+                'terminal'=>$summ
+            ),'expense_id = :id',array(':id'=>$id));
+        }
+        else{
+            $model = Yii::app()->db->createCommand()->update('expense',array(
+                'status'=>0,
+                'terminal'=>$summ
+            ),'expense_id = :id',array(':id'=>$id));
+        }
     }
 }

@@ -3,7 +3,7 @@
         padding: 0px 12px;
     }
 </style>
-<? $count = 1; $expense = new Expense(); $curPercent = 0; $summaP = 0; $summa = 0;?>
+<? $count = 1; $expense = new Expense(); $curPercent = 0; $summaP = 0; $summa = 0; $func = new Functions()?>
 <table class="table table-hover table-bordered" id="dataTable">
     <thead>
     <tr>
@@ -40,6 +40,7 @@
             <td><?=$curPercent?></td>
             <td><?=number_format($temp/100*$curPercent + $temp,0,'.',','); $summaP = $summaP + $temp/100*$curPercent + $temp?></td>
             <td><?=$value->comment?></td>
+            <td><?=$func->getDebtorName($value->debtor_type,$value->debtor_id) ?></td>
             <td>
                 <?=CHtml::link('Оплатить долг',array('expense/debtClose?id='.$value->expense_id),array('class'=>'btn btn-success debt-close'))?>
                 <?=CHtml::link('<i class="fa fa-eye fa-fw"></i>  Просмотр',array('expense/view?id='.$value->employee_id.'&order_date='.$value->order_date))?>

@@ -23,7 +23,7 @@ class ExpenseController extends Controller
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('create','update','RemoveFromOrder'),
+                'actions'=>array('addExp','create','update','RemoveFromOrder'),
                 'roles'=>array('1'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -67,13 +67,21 @@ class ExpenseController extends Controller
         
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
-        
-		if(isset($_POST['Expense']))
-		{
-            echo "<pre>";
-            print_r($_POST);
-            echo "</pre>";
-        $_POST['Expense']['order_date'] = date('Y-m-d H:i:s');
+
+
+		$this->render('create',array(
+			'model'=>$model,
+            'menuModel'=>$menuModel,
+		));
+		
+				
+    }
+
+    public function actionAddExp(){
+
+        if(isset($_POST['Expense']))
+        {
+            $_POST['Expense']['order_date'] = date('Y-m-d H:i:s');
 
             if($_POST['Expense']['comment'] == ''){
                 $_POST['Expense']['comment'] = '';
@@ -138,76 +146,13 @@ class ExpenseController extends Controller
                 $archive = new ArchiveOrder();
                 $archive->setArchive('create', $expId, $archive_message);
                 $transaction->commit();
+                echo $expId;
             } catch (Exception $e) {
                 $transaction->rollBack();
                 Yii::app()->user->setFlash('error', "{$e->getMessage()}");
                 //$this->refresh();
             }
-			/*try{
-                $archive = new ArchiveOrder();
-                $archive_message = '';
-				$messageType='warning';
-				$message = "There are some errors ";
-				$model->attributes=$_POST['Expense'];
-				if($model->save()){
-					$messageType = 'success';
-					$message = "<strong>Well done!</strong> You successfully create data ";
-                    if(isset($_POST['dish'])){
-                        $archive_message .= '*dish=>';
-                        foreach($_POST['dish']['id'] as $key => $val){
-                            $prodModel = new Orders;
-                            $prodModel->expense_id = $model->expense_id;
-                            $prodModel->just_id = $val;
-                            $prodModel->type = 1;
-                            $prodModel->count = $this->changeToFloat($_POST['dish']['count'][$key]);
-                            $prodModel->save();
-                            $archive_message .= $val.":".$this->changeToFloat($_POST['dish']['count'][$key]).",";
-                        }
-                    }
-                    if(isset($_POST['stuff'])){
-                        $archive_message .= '*stuff=>';
-                        foreach($_POST['stuff']['id'] as $key => $val){
-                            $prodModel = new Orders;
-                            $prodModel->expense_id = $model->expense_id;
-                            $prodModel->just_id = $val;
-                            $prodModel->type = 2;
-                            $prodModel->count = $this->changeToFloat($_POST['stuff']['count'][$key]);
-                            $prodModel->save();
-                            $archive_message .= $val.":".$this->changeToFloat($_POST['stuff']['count'][$key]).",";
-                        }
-                    }
-                    if(isset($_POST['product'])){
-                        $archive_message .= '*prod=>';
-                        foreach($_POST['product']['id'] as $key => $val){
-                            $prodModel = new Orders;
-                            $prodModel->expense_id = $model->expense_id;
-                            $prodModel->just_id = $val;
-                            $prodModel->type = 3;
-                            $prodModel->count = $this->changeToFloat($_POST['product']['count'][$key]);
-                            $prodModel->save();
-                            $archive_message .= $val.":".$this->changeToFloat($_POST['product']['count'][$key]).",";
-                        }
-                    }
-				    $archive->setArchive('create',$model->expense_id,$archive_message);
-					$transaction->commit();
-					Yii::app()->user->setFlash($messageType, $message);
-					//$this->redirect(array('view','id'=>$model->expense_id));
-				}
-			}
-			catch (Exception $e){
-				$transaction->rollBack();
-				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				//$this->refresh();
-			}*/
-			
-		}
-
-		$this->render('create',array(
-			'model'=>$model,
-            'menuModel'=>$menuModel,
-		));
-		
-				
+        }
     }
     
     public function actionLists(){
