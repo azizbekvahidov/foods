@@ -204,7 +204,7 @@ class RealizeController extends Controller
 			try{
 				$messageType='warning';
 				$message = "There are some errors ".count($_POST['product_id']);
-
+                $text = $currentDate.' : '.$fakturaId." \n";
                 if($_POST['product_id']){
                     foreach($_POST['product_id'] as $key => $val){
                         $models = new Realize;
@@ -213,11 +213,19 @@ class RealizeController extends Controller
                         $models->price = $_POST['price'][$key];
                         $models->count = $this->changeToFloat($_POST['count'][$key]);
                         if($models->save()) {
+                            $text .= $val.' --> '.$_POST['price'][$key]." --> ".$_POST['count'][$key]."\n";
                             $messageType = 'success';
                             $message = "<strong>Well done!</strong> You successfully create data ";
                         }
+
                     }
                 }
+                $webroot = Yii::getPathOfAlias('webroot');
+                $text .= "---------------------------------------------------\n";
+                $file =  $webroot . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'realize.txt';
+                $handle = fopen($file, a);
+                fwrite($handle, $text);
+                fclose($handle);
                 Yii::app()->user->setFlash($messageType, $message);
                 $transaction->commit();
 					$this->redirect(array('create'));
