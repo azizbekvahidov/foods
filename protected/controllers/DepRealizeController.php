@@ -150,6 +150,7 @@ class DepRealizeController extends Controller
                 $newModel->real_date = $dates;
                 $newModel->department_id = $_POST['department'];
 
+                $text = $dates.' : '.$newModel->dep_faktura_id." : ".$_POST['department_id']."\n";
 				//$uploadFile=CUploadedFile::getInstance($model,'filename');
 				if($newModel->save()){
 				    foreach($_POST['products'] as $key => $val){
@@ -161,6 +162,7 @@ class DepRealizeController extends Controller
                             $realizeModel->count = $this->changeToFloat($val);
                             $realizeModel->save();
                             $depBalance->addProd($key,$_POST['department'],$max_date['b_date']);
+                            $text .= $key." --> ".$this->changeToFloat($val)."\n";
                         }
 				    }
 					$messageType = 'success';
@@ -168,7 +170,12 @@ class DepRealizeController extends Controller
 
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
-
+                    $webroot = Yii::getPathOfAlias('webroot');
+                    $text .= "---------------------------------------------------\n";
+                    $file =  $webroot . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'dep_realize.txt';
+                    $handle = fopen($file, 'a');
+                    fwrite($handle, $text);
+                    fclose($handle);
 					$this->redirect(array('create'));
 				}
 			}
