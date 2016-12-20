@@ -222,7 +222,7 @@ class RealizeController extends Controller
                 }
                 $webroot = Yii::getPathOfAlias('webroot');
                 $text .= "---------------------------------------------------\n";
-                $file =  $webroot . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'realize.txt';
+                $file =  $webroot . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'realize.php';
                 $handle = fopen($file, a);
                 fwrite($handle, $text);
                 fclose($handle);

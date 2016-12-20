@@ -1,6 +1,6 @@
 <?$cnt = 1; $expense = new Expense();
 $depRealize = new DepFaktura(); $sumCostPrice = 0; $sumPrice = 0; $beforeSumCostPrice = 0; $beforeSumPrice = 0; $balance = new Balance();
-$sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount = 0; $curEndCount = 0; $sumFaktCost =0;?>
+$sumRealized = 0; $sumInRealized = 0; $sumInExp = 0;$startCount1 = 0; $startCount = 0; $endCount = 0; $curEndCount = 0; $sumFaktCost =0;?>
     <style>
         td,th{
             font-size: 12px;
@@ -66,6 +66,7 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
             $sumCostPrice = $sumCostPrice + $costPrice ;
             $sumPrice = $sumPrice + $price;
             $startCount = $startCount + $tempBalance[0];
+            $startCount1 = $startCount1 + $tempBalance[4];
             $endCount = $endCount + $tempBalance[1];
             $curEndCount = $curEndCount + $tempBalance[2];
             $sumRealized = $sumRealized + $realized ;
@@ -148,12 +149,12 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0; $startCount = 0; $endCount 
             <th><?=number_format($sumInRealized,0,',',' ')?></th>
             <th><?=number_format($sumInExp,0,',',' ')?></th>
             <th><?=number_format($sumCostPrice,0,',',' ')?></th>
-            <th><?=number_format($startCount+$sumRealized-$curEndCount,0,',',' ')?></th>
+            <th><?=number_format($startCount1+$sumRealized-$curEndCount,0,',',' ')?></th>
             <th><?=number_format($endCount,0,',',' ')?></th>
             <th><?=number_format($curEndCount,0,',',' ')?></th>
             <th><?=number_format($sumPrice,0,',',' ')?></th>
             <th><?=number_format($sumPrice*100/($sumCostPrice),0,',',' ')?></th>
-            <th><?=number_format($sumPrice*100/($startCount+$sumRealized-$curEndCount),0,',',' ')?></th>
+            <th><?=number_format($sumPrice*100/($startCount1+$sumRealized-$curEndCount),0,',',' ')?></th>
             <th><?=number_format($sumFaktCost/2,0,',',' ')?></th>
             <th><?=number_format($sumPrice-$sumFaktCost,0,',',' ')?></th>
             <th><?=number_format(($sumPrice-$sumFaktCost)-$sumFaktCost/2,0,',',' ')?></th>

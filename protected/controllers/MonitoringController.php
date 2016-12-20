@@ -135,13 +135,20 @@ class MonitoringController extends Controller
         ),'expense_id = :id',array(':id'=>$id));
     }
 
-    public function actionCloseTerm(){
-        $id = $_POST['id'];
+    public function actionCloseTerm($id = 0){
+        if($id == 0) {
+            $id = $_POST['id'];
+        }
         $summ = $_POST['term'];
-        $dates = date('Y-m-d');
+
+        $dates = Yii::app()->db->createCommand()
+            ->select('date(order_date) as dates')
+            ->from('expense')
+            ->where('expense_id = :id',array(':id'=>$id))
+            ->queryRow();
         if($summ == ''){
             $func = new Expense();
-            $summ = $func->getExpenseSum($id,$dates);
+            $summ = $func->getExpenseSum($id,$dates['dates']);
 
             $model = Yii::app()->db->createCommand()->update('expense',array(
                 'status'=>0,

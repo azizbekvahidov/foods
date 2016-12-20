@@ -1,6 +1,13 @@
 <style>
-    .btn{
+    .btn {
         padding: 0px 12px;
+    }
+    .modal{
+        left:50%!important;
+    }
+    .modal-content{
+        box-shadow: none!important;
+        border: none!important;
     }
 </style>
 <? $count = 1; $expense = new Expense(); $curPercent = 0; $summaP = 0; $summa = 0; $func = new Functions()?>
@@ -43,6 +50,7 @@
             <td><?=$func->getDebtorName($value->debtor_type,$value->debtor_id) ?></td>
             <td>
                 <?=CHtml::link('Оплатить долг',array('expense/debtClose?id='.$value->expense_id),array('class'=>'btn btn-success debt-close'))?>
+                <?=CHtml::link('Оплатить долг по терминалу',array('id='.$value->expense_id),array('class'=>'btn btn-info term-debt-close','data-toggle'=>"modal",'data-target'=>"#modal-sm"))?>
                 <?=CHtml::link('<i class="fa fa-eye fa-fw"></i>  Просмотр',array('expense/view?id='.$value->employee_id.'&order_date='.$value->order_date))?>
             </td>
         </tr>
@@ -75,4 +83,44 @@
         });
         return false;
     });
+    jQuery(document).on('click','.term-debt-close',function() {
+        JQuery(this).attr('')
+    };
+    jQuery(document).on('click','#saveTerm',function() {
+        var th = this,
+            afterDelete = function(){};
+        console.log(jQuery('.term-debt-close').attr('href'));
+        jQuery('.term-debt-close').parent().parent().remove();
+        jQuery.ajax({
+            type: 'POST',
+            url: jQuery('.term-debt-close').attr('href'),
+            success: function(data) {
+                $("#termSum").val('');
+                $("#expIdFSum").val('');
+                $('#modal-sm').modal('hide');
+                //jQuery('#dataTable').yiiGridView('update');
+                afterDelete(th, true, data);
+            },
+            error: function(XHR) {
+                return afterDelete(th, false, XHR);
+            }
+        });
+        return false;
+    });
 </script>
+<div class="modal fade bs-example-modal-sm" id="modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">сумма терминал</h4>
+        </div>
+        <div class="modal-content">
+            <input type="text" value="" id="expIdFSum" style="display: none">
+            <input type="number" id="termSum" class="form-control"/>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="saveTerm" class="btn btn-primary">Сохранить</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+        </div>
+    </div>
+</div>

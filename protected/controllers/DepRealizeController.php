@@ -172,7 +172,7 @@ class DepRealizeController extends Controller
 					Yii::app()->user->setFlash($messageType, $message);
                     $webroot = Yii::getPathOfAlias('webroot');
                     $text .= "---------------------------------------------------\n";
-                    $file =  $webroot . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'dep_realize.txt';
+                    $file =  $webroot . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'dep_realize.php';
                     $handle = fopen($file, 'a');
                     fwrite($handle, $text);
                     fclose($handle);
