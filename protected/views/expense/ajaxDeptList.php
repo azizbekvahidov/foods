@@ -50,7 +50,7 @@
             <td><?=$func->getDebtorName($value->debtor_type,$value->debtor_id) ?></td>
             <td>
                 <?=CHtml::link('Оплатить долг',array('expense/debtClose?id='.$value->expense_id),array('class'=>'btn btn-success debt-close'))?>
-                <?=CHtml::link('Оплатить долг по терминалу',array('id='.$value->expense_id),array('class'=>'btn btn-info term-debt-close','data-toggle'=>"modal",'data-target'=>"#modal-sm"))?>
+                <?=CHtml::link('Оплатить долг по терминалу',array('javascript:;'),array('id'=>$value->expense_id,'class'=>'btn btn-info term-debt-close','data-toggle'=>"modal",'data-target'=>"#modal-sm"))?>
                 <?=CHtml::link('<i class="fa fa-eye fa-fw"></i>  Просмотр',array('expense/view?id='.$value->employee_id.'&order_date='.$value->order_date))?>
             </td>
         </tr>
@@ -84,22 +84,37 @@
         return false;
     });
     jQuery(document).on('click','.term-debt-close',function() {
-        JQuery(this).attr('')
-    };
+        console.log($(this).attr('id'));
+        $('#expIdFSum').val($(this).attr('id'));
+    });
     jQuery(document).on('click','#saveTerm',function() {
         var th = this,
             afterDelete = function(){};
-        console.log(jQuery('.term-debt-close').attr('href'));
-        jQuery('.term-debt-close').parent().parent().remove();
-        jQuery.ajax({
+        var expId = $('#expIdFSum').val(),
+            term = $("#termSum").val();
+        var child = document.getElementById(expId).parentElement.parentElement;
+        var parent = child.parentElement;
+        parent.removeChild(child);
+        $.ajax({
+            type: 'GET',
+            url: '/expense/debtClose',
+            data: 'id=' + expId,
+            success: function (data) {
+                //jQuery('#dataTable').yiiGridView('update');
+            },
+            error: function (XHR) {
+                return afterDelete(th, false, XHR);
+            }
+        });
+        $.ajax({
             type: 'POST',
-            url: jQuery('.term-debt-close').attr('href'),
+            url: '/monitoring/closeTerm',
+            data: 'id='+expId+"&term="+term,
             success: function(data) {
                 $("#termSum").val('');
                 $("#expIdFSum").val('');
                 $('#modal-sm').modal('hide');
                 //jQuery('#dataTable').yiiGridView('update');
-                afterDelete(th, true, data);
             },
             error: function(XHR) {
                 return afterDelete(th, false, XHR);
