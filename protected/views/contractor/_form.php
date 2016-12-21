@@ -25,7 +25,7 @@
 	</div>
 
 	<div class=" buttons form-group">
-		<?php echo CHtml::submitButton($model->isNewRecord ? 'Create' : 'Save',array('class'=>'btn btn-default')); ?>
+		<?php echo CHtml::submitButton($model->isNewRecord ? 'Добавить' : 'Сохранить',array('class'=>'btn btn-default')); ?>
 	</div>
 
 <?php $this->endWidget(); ?>

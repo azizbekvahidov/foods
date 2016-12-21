@@ -19,6 +19,7 @@ $('.search-form form').submit(function(){
 
 <div class="btn-group pull-right" role="group" aria-label="...">
     <a href="/contractor/admin" class="btn btn-default btn-success">Администрирование</a>
+    <a href="/contractor/create" class="btn btn-default btn-success">Создать</a>
 </div>
 
 <?php $box = $this->beginWidget(
