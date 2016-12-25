@@ -61,8 +61,8 @@
     </tbody>
     <tfoot>
         <tr>
-            <th colspan="4">Итого : </th>
-            <th><?=number_format(($summ/100*$percent + $summ)/100,0,'','')*100?></th>
+            <th colspan="3">Итого : </th>
+            <th colspan="2"><?=number_format(($summ/100*$percent + $summ)/100,0,'','')*100?></th>
         </tr>
         <tr>
             <th colspan="5" class="text-center">Обслуживание 10%</th>

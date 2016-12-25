@@ -753,6 +753,22 @@ class ReportController extends Controller
             ->where('info_date >= :from AND info_date <= :till',array(':till'=>$till,':from'=>$from))
             ->group('info_date')
             ->queryAll();
+        $newModel = Expense::model()->findAll('date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 1',array(':from'=>$from,':to'=>$till,':status'=>1,':debt'=>1));
+        foreach($newModel as $vale){
+            if($val->check_percent == 1){
+                $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
+            }
+            $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
+            $empsum = $empsum + $temp;
+            $empPersum = $empPersum + ($temp + $temp*$percent/100);
+        }
+        $sum['cont'][$val->name] = $empsum;
+        $sumPer['cont'][$val->name] = $empPersum;
+        $summ['cont'] = $summ['cont'] + $empsum;
+        $perSumm['cont'] = $perSumm['cont'] + $empPersum;
+        echo "<pre>";
+        print_r($newModel);
+        echo "</pre>";
 
         $this->renderPartial('ajaxInfoReport',array(
             'model'=>$model

@@ -53,8 +53,6 @@ class ExpenseController extends Controller
         $PERSENT = new Percent();
         $expense = new Expense();
         $model = Employee::model()->findAll();
-        $summ = 0;
-        $perSumm = 0;
         foreach($model as $val){
             $empsum = 0;
             $empPersum = 0;
@@ -69,12 +67,66 @@ class ExpenseController extends Controller
                 $empsum = $empsum + $temp;
                 $empPersum = $empPersum + ($temp + $temp*$percent/100);
             }
-            $sum[$val->name] = $empsum;
-            $sumPer[$val->name] = $empPersum;
-            $summ = $summ + $empsum;
-            $perSumm = $perSumm + $empPersum;
-            
+            $sum['cost'][$val->name] = $empsum;
+            $sumPer['cost'][$val->name] = $empPersum;
+            $summ['cost'] = $summ['cost'] + $empsum;
+            $perSumm['cost'] = $perSumm['cost'] + $empPersum;
+            $empsum = 0;
+            $empPersum = 0;
+            $percent = 0;
+            $newModel = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id = 0',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+            //echo $val->employee_id."<br>";
+            foreach($newModel as $vale){
+                if($val->check_percent == 1){
+                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
+                }
+                $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
+                $empsum = $empsum + $temp;
+                $empPersum = $empPersum + ($temp + $temp*$percent/100);
+            }
+            $sum['debt'][$val->name] = $empsum;
+            $sumPer['debt'][$val->name] = $empPersum;
+            $summ['debt'] = $summ['debt'] + $empsum;
+            $perSumm['debt'] = $perSumm['debt'] + $empPersum;
+
+            $empsum = 0;
+            $empPersum = 0;
+            $percent = 0;
+            $newModel = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 0',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+            //echo $val->employee_id."<br>";
+            foreach($newModel as $vale){
+                if($val->check_percent == 1){
+                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
+                }
+                $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
+                $empsum = $empsum + $temp;
+                $empPersum = $empPersum + ($temp + $temp*$percent/100);
+            }
+            $sum['empdebt'][$val->name] = $empsum;
+            $sumPer['empdebt'][$val->name] = $empPersum;
+            $summ['empdebt'] = $summ['empdebt'] + $empsum;
+            $perSumm['empdebt'] = $perSumm['empdebt'] + $empPersum;
+
+
+            $empsum = 0;
+            $empPersum = 0;
+            $percent = 0;
+            $newModel = Expense::model()->findAll('t.employee_id= :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+            //echo $val->employee_id."<br>";
+            foreach($newModel as $vale){
+                if($val->check_percent == 1){
+                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
+                }
+                $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
+                $empsum = $empsum + $temp;
+                $empPersum = $empPersum + ($temp + $temp*$percent/100);
+            }
+            $sum['cont'][$val->name] = $empsum;
+            $sumPer['cont'][$val->name] = $empPersum;
+            $summ['cont'] = $summ['cont'] + $empsum;
+            $perSumm['cont'] = $perSumm['cont'] + $empPersum;
         }
+
         $this->renderPartial('test',array(
             'sum'=>$summ,
             'empSum'=>$sum,
