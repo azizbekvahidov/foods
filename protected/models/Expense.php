@@ -589,4 +589,49 @@ class Expense extends CActiveRecord
         $ss = implode($arr);
         return $ss;
     }
+
+    public function getDebt($from){
+		$PERSENT = new Percent();
+		$expense = new Expense();
+
+        $contractor = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from('expense ex')
+            ->join('contractor c','c.contractor_id = ex.debtor_id')
+            ->join('employee e','e.employee_id = ex.employee_id')
+            ->where('date(ex.order_date) = :from AND ex.status != :status AND ex.debt = :debt AND ex.kind != 1 AND ex.debtor_id != 0 AND ex.debtor_type = 1',array(':from'=>$from,':status'=>1,':debt'=>1))
+            ->queryAll();
+        $empPersum = 0;
+        $empPersum1 = 0;
+        foreach($contractor as $vale){
+            if($val['check_percent'] == 1){
+                $percent = $PERSENT->getPercent(date('Y-m-d',strtotime(['$vale->order_date'])));
+            }
+            if($vale['types'] == 0){
+                $temp = $expense->getExpenseSum($vale['expense_id'],date('Y-m-d',strtotime($vale['order_date'])));
+                $empPersum = $empPersum + ($temp + $temp*$percent/100);
+            }
+            if($vale['types'] == 1){
+                $temp = $expense->getExpenseSum($vale['expense_id'],date('Y-m-d',strtotime($vale['order_date'])));
+                $empPersum1 = $empPersum1 + ($temp + $temp*$percent/100);
+            }
+        }
+        $perSumm['cont'] = $perSumm['cont'] + $empPersum;
+
+        $perSumm['mag'] = $perSumm['mag'] + $empPersum1;
+
+
+        $debtor = Expense::model()->findAll('date(t.order_date) = :from AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 0',array(':from'=>$from,':status'=>1,':debt'=>1));
+
+        $empPersum = 0;
+        foreach($debtor as $vale){
+            if($val->check_percent == 1){
+                $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
+            }
+            $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
+            $empPersum = $empPersum + ($temp + $temp*$percent/100);
+        }
+        $perSumm['perDebt'] = $perSumm['perDebt'] + $empPersum;
+				return $perSumm;
+    }
 }
