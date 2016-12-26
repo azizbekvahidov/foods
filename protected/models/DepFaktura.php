@@ -176,16 +176,16 @@ class DepFaktura extends CActiveRecord
         foreach ($model as $val) {
             $summ = $summ + $val['count']*$prod->getCostPrice($val['prod_id'],$val['real_date']);
         }
-        $Depfaktura1 = Yii::app()->db->createCommand()
-            ->select('')
-            ->from('dep_faktura df')
-            ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
-            ->where('date(df.real_date) BETWEEN :from AND :till AND df.fromDepId = :fromDepId AND df.department_id = 0',array(':till'=>$till,':from'=>$from,'fromDepId'=>$depId))
-            ->queryAll();
-
-        foreach($Depfaktura1 as $val){
-            $summ = $summ - $val['count']*$prod->getCostPrice($val['prod_id'],$val['real_date']);
-        }
+//        $Depfaktura1 = Yii::app()->db->createCommand()
+//            ->select('')
+//            ->from('dep_faktura df')
+//            ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
+//            ->where('date(df.real_date) BETWEEN :from AND :till AND df.fromDepId = :fromDepId AND df.department_id = 0',array(':till'=>$till,':from'=>$from,'fromDepId'=>$depId))
+//            ->queryAll();
+//
+//        foreach($Depfaktura1 as $val){
+//            $summ = $summ - $val['count']*$prod->getCostPrice($val['prod_id'],$val['real_date']);
+//        }
 
         return $summ;
     }

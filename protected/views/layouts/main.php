@@ -148,8 +148,8 @@
                             array('label'=>'Все показатели склада','url'=>array('storage/allIn')),
                             array('label'=>'Все показатели отделов','url'=>array('depStorage/allIn')),
                             array('label'=>'Наценки', 'url'=>array('dishes/checkMargin')),
-														array('label'=>'Расходы денег', 'url'=>array('report/infoReport')),
-
+                            array('label'=>'Расходы денег', 'url'=>array('report/infoReport')),
+                            array('label'=>'Обмен продуктов', 'url'=>array('report/exchange')),
                         ),
                     )); ?>
                 <li class="dropdown">
