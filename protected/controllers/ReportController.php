@@ -35,7 +35,8 @@ class ReportController extends Controller
                 'actions'=>array(
                     'ajaxDetail','ajaxSettedMargin','settedMargin','ajaxSettedMargin','prodExp','ajaxProdExp','infoReport','ajaxInfoReport',
                     'allProd','ajaxAllProd','depDish','depDishList','dishIncome','ajaxDishIncome','depIncome','ajaxDepIncome',
-                    'intervalFaktura','ajaxIntervalFaktura','empExpense','ajaxEmpExpense','ReadyTime','ajaxReadyTime','ajaxReadyTimeDetail'
+                    'intervalFaktura','ajaxIntervalFaktura','empExpense','ajaxEmpExpense','ReadyTime','ajaxReadyTime','ajaxReadyTimeDetail',
+                    'exchange','ajaxExchange'
                 ),
                 'roles'=>array('3'),
             ),
@@ -746,8 +747,6 @@ class ReportController extends Controller
     public function actionAjaxInfoReport(){
         $from = $_POST['from'];
         $till = $_POST['till'];
-        $PERSENT = new Percent();
-        $expense = new Expense();
 
         $model = Yii::app()->db->createCommand()
             ->select()
@@ -757,8 +756,36 @@ class ReportController extends Controller
             ->queryAll();
         $this->renderPartial('ajaxInfoReport',array(
             'model'=>$model,
-            'summ'=>$summ
         ));
     }
 
+    public function actionExchange(){
+        $this->render('exchange');
+    }
+
+    public function actionAjaxExchange(){
+        $from = $_POST['from'];
+        $till = $_POST['to'];
+        $cont = $_POST['cont'];
+        $model = Yii::app()->db->createCommand()
+            ->select('ex.exchange_date, co.name as Cname, p.name as Pname, el.count')
+            ->from('exchange ex')
+            ->join('contractor co','co.contractor_id = ex.contractor_id')
+            ->join('exList el','el.exchange_id = ex.exchange_id')
+            ->join('products p','p.product_id = el.prod_id')
+            ->where('ex.exchange_date BETWEEN :from AND :till AND ex.contractor_id = :id AND ex.recived = 0',array(':from'=>$from,':till'=>$till,':id'=>$cont))
+            ->queryAll();
+        $model2 = Yii::app()->db->createCommand()
+            ->select('ex.exchange_date, co.name as Cname, p.name as Pname, el.count')
+            ->from('exchange ex')
+            ->join('contractor co','co.contractor_id = ex.contractor_id')
+            ->join('exList el','el.exchange_id = ex.exchange_id')
+            ->join('products p','p.product_id = el.prod_id')
+            ->where('ex.exchange_date BETWEEN :from AND :till AND ex.contractor_id = :id AND ex.recived = 1',array(':from'=>$from,':till'=>$till,':id'=>$cont))
+            ->queryAll();
+        $this->renderPartial('ajaxExchange',array(
+            'model'=>$model,
+            'model2'=>$model2
+        ));
+    }
 }
