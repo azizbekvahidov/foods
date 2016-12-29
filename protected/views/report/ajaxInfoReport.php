@@ -38,7 +38,7 @@
   <tbody>
     <?foreach ($model as $key => $value) {
       $summ = $expense->getDebt($value['info_date']);
-      $begin = $value['proceed']-$value['term']-$value['genDir'];
+      $begin = $value['proceed']-($value['term']+$value['azizTerm'])-$value['genDir']-$summ['mag']-$summ['cont']-$summ['perDebt']+$value['meat'];
       ?>
       <tr>
         <td><?=date('d.m.Y',strtotime($value['info_date']))?></td>
@@ -47,11 +47,11 @@
         <td><?=$summ['mag']?></td>
         <td><?=$summ['cont']?></td>
         <td><?=$value['term']+$value['azizTerm']?></td>
-        <td> </td>
+        <td><?=$value['meat']?></td>
         <td> </td>
         <td><?=$value['genDir']?></td>
         <td><?=$summ['perDebt']?></td>
-        <td><?=$begin+$summ['mag']+$summ['cont']+$value['term']+$value['azizTerm']+$value['genDir']+$summ['perDebt']?></td>
+        <td><?=$begin+$summ['mag']+$summ['cont']+$value['term']+$value['azizTerm']+$value['genDir']+$summ['perDebt']-$value['meat']?></td>
         <td><?=$summ['mag']?></td>
         <td><?=$summ['cont']?></td>
         <td><?=$value['gosBank']?></td>
