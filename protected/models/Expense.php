@@ -263,6 +263,12 @@ class Expense extends CActiveRecord
         $model3 = Expense::model()->with('order.products')->findByPk($id,'order.deleted != 1');
         if(!empty($model))
             foreach ($model->getRelated('order') as $val) {
+//                echo "<pre>";
+//                print_r($val);
+//                echo "</pre>";
+//                echo "<pre>";
+//                print_r($prices->getPrice($val->just_id,1,1,$dates));
+//                echo "</pre>";
                 $summ = $summ + $prices->getPrice($val->just_id,1,1,$dates)*$val->count;
             }
         if(!empty($model2))

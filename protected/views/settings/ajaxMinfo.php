@@ -43,7 +43,7 @@
                 </div>
             </div>
             <div class="control-group">
-                <label class="control-label" for="inputEmail">Доставка</label>
+                <label class="control-label" for="inputEmail">Мясо</label>
                 <div class="controls">
                     <input type="number" name="Info[meat]"  placeholder="">
                 </div>

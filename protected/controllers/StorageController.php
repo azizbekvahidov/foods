@@ -373,7 +373,7 @@ class StorageController extends Controller
             ->where('date(ex.exchange_date) = :dates AND ex.recived = 0',array(':dates'=>$dates))
             ->queryAll();
         foreach ($exRec as $val) {
-            $inProducts[$val['prod_id']] = $inProducts[$val['prod_id']] + $val['count'];
+            $recive[$val['prod_id']] = $recive[$val['prod_id']] + $val['count'];
         }
 
         $exSend = Yii::app()->db->createCommand()
@@ -383,7 +383,7 @@ class StorageController extends Controller
             ->where('date(ex.exchange_date) = :dates AND ex.recived = 1',array(':dates'=>$dates))
             ->queryAll();
         foreach ($exSend as $val) {
-            $outProducts[$val['prod_id']] = $outProducts[$val['prod_id']] - $val['count'];
+            $send[$val['prod_id']] = $send[$val['prod_id']] + $val['count'];
         }
         $curProd = Yii::app()->db->createCommand()
             ->select('')
@@ -391,7 +391,7 @@ class StorageController extends Controller
             ->where('b.b_date = :dates',array(':dates'=>$dates))
             ->queryAll();
         foreach($curProd as $value){
-            $endStorageProducts[$value['prod_id']] = $endStorageProducts[$value['prod_id']] + $value['startCount']+$inProducts[$value['prod_id']]-$outProducts[$value['prod_id']] - $inOutProducts[$value['prod_id']];
+            $endStorageProducts[$value['prod_id']] = $endStorageProducts[$value['prod_id']] + $value['startCount']+$inProducts[$value['prod_id']]-$outProducts[$value['prod_id']] - $inOutProducts[$value['prod_id']]+$recive[$value['prod_id']]-$send[$value['prod_id']];
             Yii::app()->db->createCommand()->update('balance',array(
                 'endCount'=>$endStorageProducts[$value['prod_id']]
             ),'prod_id = :prod_id AND b_date = :dates',array(':prod_id'=>$value['prod_id'],':dates'=>$dates));

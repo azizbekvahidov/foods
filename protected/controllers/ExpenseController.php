@@ -74,9 +74,9 @@ class ExpenseController extends Controller
             $empsum = 0;
             $empPersum = 0;
             $percent = 0;
-            $newModel = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id = 0',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+            $newModel2 = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id = 0',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
             //echo $val->employee_id."<br>";
-            foreach($newModel as $vale){
+            foreach($newModel2 as $vale){
                 if($val->check_percent == 1){
                     $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
                 }
@@ -92,9 +92,9 @@ class ExpenseController extends Controller
             $empsum = 0;
             $empPersum = 0;
             $percent = 0;
-            $newModel = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 0',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+            $newModel3 = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 0',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
             //echo $val->employee_id."<br>";
-            foreach($newModel as $vale){
+            foreach($newModel3 as $vale){
                 if($val->check_percent == 1){
                     $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
                 }
@@ -111,9 +111,12 @@ class ExpenseController extends Controller
             $empsum = 0;
             $empPersum = 0;
             $percent = 0;
-            $newModel = Expense::model()->findAll('t.employee_id= :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+            $newModel4 = Expense::model()->findAll('t.employee_id= :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+//echo "<pre>";
+//print_r($newModel4);
+//echo "</pre>";
             //echo $val->employee_id."<br>";
-            foreach($newModel as $vale){
+            foreach($newModel4 as $vale){
                 if($val->check_percent == 1){
                     $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
                 }
