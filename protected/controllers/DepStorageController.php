@@ -1,7 +1,7 @@
 <?php
 
 
-class DepStorageController extends Controller
+class DepStorageController extends SetupController
 {
 	
 	   
@@ -14,16 +14,15 @@ class DepStorageController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
-						
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-						
-		);
-	}
-	
+
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -37,7 +36,7 @@ class DepStorageController extends Controller
 				'roles'=>array('2'),
 			),
             array('allow',
-                'actions'=>array('update','admin','delete','export','import','editable','toggle','calendar', 'calendarEvents','today','viewStorage','storageView','depForm','allIn','allStorage','usedProdLists','usedProd','downloadCsv'),
+                'actions'=>array('monthStorage','update','admin','delete','export','import','editable','toggle','calendar', 'calendarEvents','today','viewStorage','storageView','depForm','allIn','allStorage','usedProdLists','usedProd','downloadCsv'),
                 'roles'=>array('3'),
             ),
             array('allow',
@@ -95,9 +94,9 @@ class DepStorageController extends Controller
             $tempDate = $dates[0]."-".$dates[1]."-".$i;
             $listDate[$i] = $tempDate;
 
-            $realized[$tempDate] = $depRealize->getDepRealizesSumm($tempDate,$depId);
-            $expenses[$tempDate] = $expense->getDepCost($depId,$tempDate);
-            $tempBalance = $balance->getDepBalanceSumm($tempDate,$depId);
+            $realized[$tempDate] = $depRealize->getDepRealizesSumm($tempDate,$tempDate,$depId);
+            $expenses[$tempDate] = $expense->getDepCost($depId,$tempDate,$tempDate);
+            $tempBalance = $balance->getDepBalanceSumm($tempDate,$tempDate,$depId);
             $startCount[$tempDate] = $tempBalance[0];
             $endCount[$tempDate] = $tempBalance[1];
             $curEndCount[$tempDate] = $tempBalance[2];
@@ -138,29 +137,74 @@ class DepStorageController extends Controller
          
 
         $depOut = $function->depMoveOut($depId,$dates,$fromDate);
-                
-        $curProd = DepBalance::model()->with('products')->findAll(
-            'date(t.b_date) = :dates AND t.department_id = :department_id AND t.type = :type',
-            array(
-                ':dates'=>$dates,
-                ':department_id'=>$depId,
-                ':type'=>1,
-            )
-        );
-        
-        $curStuff = Yii::app()->db->createCommand()
+
+        $prod = array();
+        $curProd1 = Yii::app()->db->createCommand()
+                ->select()
+                ->from("dep_balance t")
+                ->join("products p","p.product_id = t.prod_id")
+                ->where('date(t.b_date) = :dates AND t.department_id = :department_id AND t.type = :type',
+                    array(
+                        ':dates'=>$dates,
+                        ':department_id'=>$depId,
+                        ':type'=>1,
+                    ))
+                ->queryAll();
+
+        foreach ($curProd1 as $value){
+            $prod["start"][$value["prod_id"]]["name"] = $value["name"];
+            $prod["start"][$value["prod_id"]]["cnt"] = $value["CurEndCount"];
+            $curProd = Yii::app()->db->createCommand()
+                ->select()
+                ->from("dep_balance t")
+                ->join("products p","p.product_id = t.prod_id")
+                ->where('date(t.b_date) = :dates AND t.department_id = :department_id AND t.type = :type AND t.prod_id = :id',
+                    array(
+                        ':dates'=>$dates,
+                        ':department_id'=>$depId,
+                        ':type'=>1,
+                        ':id'=>$value["prod_id"]
+                    ))
+                ->queryRow();
+            $prod["end"][$value["prod_id"]]["cnt"] = $curProd["endCount"];
+            $prod["end"][$value["prod_id"]]["date"] = $curProd["b_date"];
+            $prod["curEnd"][$value["prod_id"]]["cnt"] = $curProd["CurEndCount"];
+        }
+        $stuffs = array();
+        $curStuff1 = Yii::app()->db->createCommand()
             ->select('')
             ->from('dep_balance t')
             ->join('halfstaff h','h.halfstuff_id = t.prod_id')
             ->where(
                 'date(t.b_date) = :dates AND t.department_id = :department_id AND t.type = :type',
                 array(
-                    ':dates'=>$dates,
+                    ':dates'=>$fromDate,
                     ':department_id'=>$depId,
                     ':type'=>2,
                 ))
             ->queryAll();
 
+        foreach ($curStuff1 as $value) {
+            $stuffs["start"][$value["prod_id"]]["name"] = $value["name"];
+            $stuffs["start"][$value["prod_id"]]["cnt"] = $value["CurEndCount"];
+            $curStuff = Yii::app()->db->createCommand()
+                ->select('')
+                ->from('dep_balance t')
+                ->join('halfstaff h','h.halfstuff_id = t.prod_id')
+                ->where(
+                    'date(t.b_date) = :dates AND t.department_id = :department_id AND t.type = :type AND t.prod_id = :id',
+                    array(
+                        ':dates'=>$dates,
+                        ':department_id'=>$depId,
+                        ':type'=>2,
+                        ':id'=>$value["prod_id"]
+                    ))
+                ->queryRow();
+            $stuffs["end"][$value["prod_id"]]["cnt"] = $curStuff["endCount"];
+            $stuffs["end"][$value["prod_id"]]["date"] = $curStuff["b_date"];
+            $stuffs["curEnd"][$value["prod_id"]]["cnt"] = $curStuff["CurEndCount"];
+
+        }
 
         $dish = new Expense();
 
@@ -195,8 +239,8 @@ class DepStorageController extends Controller
             'depStuffOut'=>$depStuffOut,
             'depStuffIn'=>$depStuffIn,
             'prodModel'=>$prodModel,
-            'model'=>$curProd,
-            'curStuff'=>$curStuff,
+            'prod'=>$prod,
+            'stuffs'=>$stuffs,
             'inProduct'=>$inProducts,
             'outDishStuff'=>$outDishStuff,
             'instuff'=>$instuff,

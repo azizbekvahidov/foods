@@ -1,6 +1,6 @@
 <?php
 
-class DepRealizeController extends Controller
+class DepRealizeController extends SetupController
 {
 
 
@@ -13,16 +13,15 @@ class DepRealizeController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
 
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-
-		);
-	}
-
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -141,6 +140,7 @@ class DepRealizeController extends Controller
 
 		if(isset($_POST['department']))
 		{
+		    $storage = new Storage();
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
 				$messageType='warning';
@@ -150,7 +150,6 @@ class DepRealizeController extends Controller
                 $newModel->real_date = $dates;
                 $newModel->department_id = $_POST['department'];
 
-                $text = $dates.' : '.$newModel->dep_faktura_id." : ".$_POST['department_id']."\n";
 				//$uploadFile=CUploadedFile::getInstance($model,'filename');
 				if($newModel->save()){
 				    foreach($_POST['products'] as $key => $val){
@@ -161,8 +160,9 @@ class DepRealizeController extends Controller
                             $realizeModel->price = 0;
                             $realizeModel->count = $this->changeToFloat($val);
                             $realizeModel->save();
-                            $depBalance->addProd($key,$_POST['department'],$max_date['b_date']);
-                            $text .= $key." --> ".$this->changeToFloat($val)."\n";
+                            $storage->removeToStorage($key,$this->changeToFloat($val));
+                            $storage->addToStorageDep($key,$this->changeToFloat($val),1,$_POST['department']);
+                            //$depBalance->addProd($key,$_POST['department'],$max_date['b_date']);
                         }
 				    }
 					$messageType = 'success';
@@ -170,12 +170,6 @@ class DepRealizeController extends Controller
 
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
-                    $webroot = Yii::getPathOfAlias('webroot');
-                    $text .= "---------------------------------------------------\n";
-                    $file =  $webroot . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'dep_realize.php';
-                    $handle = fopen($file, 'a');
-                    fwrite($handle, $text);
-                    fclose($handle);
 					$this->redirect(array('create'));
 				}
 			}
@@ -195,69 +189,72 @@ class DepRealizeController extends Controller
 
 	}
 
-		public function actionBackStorage(){
+    public function actionBackStorage(){
 
 
-				if(isset($_POST['products']))
-				{
-			        if($_POST['from'] == ''){
-			            $dates = date('Y:m:d H:i:s');
-			        }else{
-			            $dates = $_POST['from']." ".date("H:i:s");
-			        }
-					$transaction = Yii::app()->db->beginTransaction();
-					try{
-						$messageType='warning';
-						$message = "There are some errors ";
-										$newModel = new DepFaktura();
-										$newModel->real_date = $dates;
-										$newModel->department_id = 0;
-										$newModel->fromDepId = $_POST['department'];
+        if(isset($_POST['products']))
+        {
+            if($_POST['from'] == ''){
+                $dates = date('Y:m:d H:i:s');
+            }else{
+                $dates = $_POST['from']." ".date("H:i:s");
+            }
+            $transaction = Yii::app()->db->beginTransaction();
+            try{
+                $storage = new Storage();
+                $messageType='warning';
+                $message = "There are some errors ";
+                                $newModel = new DepFaktura();
+                                $newModel->real_date = $dates;
+                                $newModel->department_id = 0;
+                                $newModel->fromDepId = $_POST['department'];
 
-						//$uploadFile=CUploadedFile::getInstance($model,'filename');
-						if($newModel->save()){
-								foreach($_POST['products'] as $key => $val){
-										if($val != null){
-													$realizeModel = new DepRealize();
-																$realizeModel->dep_faktura_id = $newModel->dep_faktura_id;
-																$realizeModel->prod_id = $key;
-																$realizeModel->price = 0;
-																$realizeModel->count = $this->changeToFloat($val);
-																$realizeModel->save();
-														}
-								}
-							$messageType = 'success';
-							$message = "<strong>Well done!</strong> You successfully create data ";
+                //$uploadFile=CUploadedFile::getInstance($model,'filename');
+                if($newModel->save()){
+                    foreach($_POST['products'] as $key => $val){
+                        if($val != null){
+                            $realizeModel = new DepRealize();
+                            $realizeModel->dep_faktura_id = $newModel->dep_faktura_id;
+                            $realizeModel->prod_id = $key;
+                            $realizeModel->price = 0;
+                            $realizeModel->count = $this->changeToFloat($val);
+                            $realizeModel->save();
+                            $storage->removeToStorageDep($key,$this->changeToFloat($val),1,$_POST['department']);
+                            $storage->addToStorage($key,$this->changeToFloat($val));
+                        }
+                    }
+                    $messageType = 'success';
+                    $message = "<strong>Well done!</strong> You successfully create data ";
 
-							$transaction->commit();
-							Yii::app()->user->setFlash($messageType, $message);
+                    $transaction->commit();
+                    Yii::app()->user->setFlash($messageType, $message);
 
-							$this->redirect(array('backStorage'));
-						}
-					}
-					catch (Exception $e){
-						$transaction->rollBack();
-						Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-						//$this->refresh();
-					}
+                    $this->redirect(array('backStorage'));
+                }
+            }
+            catch (Exception $e){
+                $transaction->rollBack();
+                Yii::app()->user->setFlash('error', "{$e->getMessage()}");
+                //$this->refresh();
+            }
 
-			}
-							$this->render('backStorage');
-		}
-
-		public function actionAjaxBackStorage(){
-        if($_POST['dates'] == ''){
-            $dates = date('Y:m:d');
-        }else{
-            $dates = $_POST['dates'];
         }
-				$depId = $_POST['depId'];
-				$depRealize = new DepRealize();
-				$prod = $depRealize->getDepProdCurCount($depId,$dates);
-				$this->renderPartial('ajaxBackStorage',array(
-						'products' => $prod
-				));
-		}
+                        $this->render('backStorage');
+    }
+
+    public function actionAjaxBackStorage(){
+    if($_POST['dates'] == ''){
+        $dates = date('Y:m:d');
+    }else{
+        $dates = $_POST['dates'];
+    }
+            $depId = $_POST['depId'];
+            $depRealize = new DepRealize();
+            $prod = $depRealize->getDepProdCurCount($depId,$dates);
+            $this->renderPartial('ajaxBackStorage',array(
+                    'products' => $prod
+            ));
+    }
 
     public function actionProdlist(){
         if($_POST['dates'] == ''){
@@ -269,15 +266,23 @@ class DepRealizeController extends Controller
         $products = array();
         $inProducts = array();
         $inHalfstuff = array();
-        $depId = $_POST['depId'];$model = DepBalance::model()->with('products')->findAll('t.department_id = :depId AND t.type = :type',array(':depId'=>$depId,'type'=>1));
+        $depId = $_POST['depId'];
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from("storage_dep s")
+            ->join("products p","s.prod_id = p.product_id")
+            ->where('s.department_id = :depId AND s.prod_type = :type',array(':depId'=>$depId,'type'=>1))
+            ->queryAll();
+
+            //DepBalance::model()->with('products')->findAll('t.department_id = :depId AND t.type = :type',array(':depId'=>$depId,'type'=>1));
         foreach ($model as $val) {
-            $products[$val->prod_id] = $val->getRelated('products')->name;
+            $products[$val["prod_id"]] = $val["name"];
         }
 
         //$model = new Products();
         //$products = $model->getProdName($depId);
 
-
+        /*
         $departMoveOut = DepFaktura::model()->with('realizedProd')->findAll('date(t.real_date) = :dates AND t.department_id = :depId AND t.fromDepId <> :fromDepId',array(':dates'=>$dates,':depId'=>$_POST['depsId'],':fromDepId'=>0));
 
         foreach($departMoveOut as $key => $val){
@@ -293,11 +298,17 @@ class DepRealizeController extends Controller
 
                 $depOut[$val->prod_id] = $depOut[$val->prod_id] + $val->count;
             }
-        }
-        $balance = DepBalance::model()->with('products')->findAll('t.b_date = :dates AND t.department_id = :depId AND t.type = :types',array(':dates'=>$dates,':depId'=>$_POST['depsId'],':types'=>1));
+        }*/
+        $balance = Yii::app()->db->createCommand()
+            ->select()
+            ->from("storage_dep s")
+            ->join("products p","s.prod_id = p.product_id")
+            ->where('s.department_id = :depId AND s.prod_type = :type',array(':depId'=>$_POST['depsId'],'type'=>1))
+            ->queryAll();
+        //DepBalance::model()->with('products')->findAll('t.b_date = :dates AND t.department_id = :depId AND t.type = :types',array(':dates'=>$dates,':depId'=>$_POST['depsId'],':types'=>1));
 
 
-
+/*
         $model = DepFaktura::model()->with('realizedProd')->findAll('t.department_id = :depId AND date(t.real_date) = :dates',array(':depId'=>$_POST['depsId'],':dates'=>$dates));
         if(!empty($model)){
             foreach($model as $value){
@@ -328,9 +339,9 @@ class DepRealizeController extends Controller
                     $outProduct[$val->just_id] = $outProduct[$val->just_id] + $val->count;
                 }
             }
-        }
+        }*/
         foreach($balance as $value){
-            $endCount[$value->prod_id] = $value->startCount + $inProducts[$value->prod_id] - $outProduct[$value->prod_id] + $depIn[$value->prod_id] - $depOut[$value->prod_id];
+            $endCount[$value["prod_id"]] = $value["cnt"];
         }
         $this->renderPartial('lists',array(
             'endCount' => $endCount,
@@ -345,7 +356,7 @@ class DepRealizeController extends Controller
         if($_POST['from'] == ''){
             $dates = date('Y:m:d H:i:s');
         }else{
-            $dates = $_POST['from'];
+            $dates = $_POST['from']." ".date('H:i:s');
         }
 		$model=new DepRealize;
 
@@ -354,6 +365,7 @@ class DepRealizeController extends Controller
 
 		if(isset($_POST['department']) && isset($_POST['departments']))
 		{
+		    $storage = new Storage();
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
 				$messageType='warning';
@@ -372,6 +384,8 @@ class DepRealizeController extends Controller
                             $realizeModel->price = 0;
                             $realizeModel->count = $this->changeToFloat($val);
                             if($realizeModel->save()){
+                                $storage->addToStorageDep($key,$this->changeToFloat($val),1,$_POST['department']);
+                                $storage->removeToStorageDep($key,$this->changeToFloat($val),1,$_POST['departments']);
             					$messageType = 'success';
             					$message = "<strong>Well done!</strong> You successfully create data ";
 
@@ -458,7 +472,7 @@ class DepRealizeController extends Controller
 			'model'=>$model,
 					));
 
-			}
+    }
 
 	/**
 	 * Deletes a particular model.
@@ -501,7 +515,7 @@ class DepRealizeController extends Controller
 			'model'=>$model,
 					));
 
-			}
+    }
 
 	/**
 	 * Manages all models.
@@ -518,7 +532,7 @@ class DepRealizeController extends Controller
 			'model'=>$model,
 					));
 
-			}
+    }
 
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.
@@ -662,6 +676,5 @@ class DepRealizeController extends Controller
         		)
     	);
 	}
-
 
 }

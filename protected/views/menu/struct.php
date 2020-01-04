@@ -97,9 +97,14 @@
     </table>
 </div>
 <script>
-    <? foreach($listDep as $key => $val){?>
-        optionData += "<option value=<?=$key?>><?=$val?></option>"
-    <?}?>
+    var optionData;
+    <?$cnt=0; foreach($listDep as $key => $val){
+
+        if($cnt == 0){?>
+            optionData += "<option selected='selected' value=<?=$key?>><?=$val?></option>";
+        <?}else{?>
+            optionData += "<option value=<?=$key?>><?=$val?></option>"
+    <?}$cnt++;}?>
     $("#dish").chosen({
         no_results_text: "Oops, nothing found!",
     });

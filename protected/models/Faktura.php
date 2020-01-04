@@ -207,5 +207,94 @@ class Faktura extends CActiveRecord
     }
 
 
+    public function getDepFakturaSum($dates){
+        $prod = new Products();
+
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from('dep_faktura df')
+            ->where('date(df.real_date) = :dates ',
+                array(':dates' => $dates, ))
+            ->queryAll();
+
+        foreach ($model as $val) {
+            $sum = 0;
+            $model1 = Yii::app()->db->createCommand()
+                ->select()
+                ->from('dep_realize df')
+                ->where('df.dep_faktura_id = :id',
+                    array(':id' => $val['dep_faktura_id'], ))
+                ->queryAll();
+            foreach ($model1 as $value) {
+                $sum = $sum + $value['count']*$prod->getCostPrice($value['prod_id'],$val['real_date']);
+            }
+            Yii::app()->db->createCommand()->update('dep_faktura',array(
+                'faktura_sum'=>$sum
+            ),'dep_faktura_id = :id',array(':id'=>$val['dep_faktura_id']));
+
+
+        }
+
+    }
+
+    public function getDepInexpenseSum($dates){
+        $prod = new Halfstaff();
+
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from('inexpense df')
+            ->where('date(df.inexp_date) = :dates ',
+                array(':dates' => $dates, ))
+            ->queryAll();
+
+        foreach ($model as $val) {
+            $sum = 0;
+            $model1 = Yii::app()->db->createCommand()
+                ->select()
+                ->from('inorder df')
+                ->where('df.inexpense_id = :id',
+                    array(':id' => $val['inexpense_id'], ))
+                ->queryAll();
+            foreach ($model1 as $value) {
+                $sum = $sum + $value['count']*$prod->getCostPrice($value['stuff_id'],$val['inexp_date']);
+            }
+            Yii::app()->db->createCommand()->update('inexpense',array(
+                'inexpSum'=>$sum
+            ),'inexpense_id = :id',array(':id'=>$val['inexpense_id']));
+
+
+        }
+
+    }
+
+    public function getFakturaSum($dates){
+        $prod = new Products();
+
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from('faktura df')
+            ->where('date(df.realize_date) = :dates ',
+                array(':dates' => $dates, ))
+            ->queryAll();
+
+        foreach ($model as $val) {
+            $sum = 0;
+            $model1 = Yii::app()->db->createCommand()
+                ->select()
+                ->from('realize df')
+                ->where('df.faktura_id = :id',
+                    array(':id' => $val['faktura_id'], ))
+                ->queryAll();
+            foreach ($model1 as $value) {
+                $sum = $sum + $value['count']*$value['price'];
+            }
+            Yii::app()->db->createCommand()->update('faktura',array(
+                'fakSum'=>$sum
+            ),'faktura_id = :id',array(':id'=>$val['faktura_id']));
+
+
+        }
+
+    }
 
 }

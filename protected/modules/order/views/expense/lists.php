@@ -60,7 +60,7 @@
         var types = str_split(thisId,1);
           $('#order').append("<tr class="+thisId+">\
                                     <td >\
-                                        <a type='button' class='removed btn'>\
+                                        <a type='button' class='removed' href='#'>\
                                             <i class='fa fa-times'></i>\
                                         </a>\
                                         <input style='display:none' name='id[]' value='"+thisId+"' />\
@@ -69,11 +69,11 @@
                                     <td>"+$(this).children('div').text()+"</td>\
                                     <td class='cnt'>\
                                         <input name='count[]' style='display:none' value='1' />\
-                                        <a type='button' class='pluss btn'>\
+                                        <a type='button' class='pluss ' href='#'>\
                                             <i class='fa fa-plus'></i>\
                                         </a>\
                                         <span>" +1+"</span>\
-                                        <a type='button' class='minus btn'>\
+                                        <a type='button' class='minus ' href='#'>\
                                             <i class='fa fa-minus'></i>\
                                         </a>\
                                     </td>\

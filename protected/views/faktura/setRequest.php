@@ -19,6 +19,7 @@
 <?= CHtml::dropDownList('products','',CHtml::listData(Products::model()->findAll(),'product_id','name'),array('empty' => '--Выберите продукт--','id'=>'product'))?>&nbsp; &nbsp;
 
         <div id="data"></div>
+<!--
 <div class="form-inline debtList">
     <h2>Долги</h2>
     <div class="row">
@@ -69,7 +70,7 @@
             </div>
         </div>
     </div>
-    <span  class="addCostRow btn btn-success"><i class="glyphicon glyphicon-plus"></i></span>
+    <span  class="addCostRow btn btn-success"><i class="glyphicon glyphicon-plus"></i></span>-->
     <div class="form-actions">
         <?php $this->widget('bootstrap.widgets.TbButton', array(
             'buttonType'=>'submit',

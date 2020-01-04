@@ -74,10 +74,7 @@
             series: [{
                 name: 'Выручка без %',
                 data: [<?=$summ?>]
-            },{
-                name: 'Выручка c %',
-                data: [<?=$summP?>]
-            },{
+                },{
                 name: 'Факт. выручка',
                 data: [<?=$curProceed?>]
             }, ]

@@ -1,22 +1,21 @@
 <?php
-
 // uncomment the following to define a path alias
- Yii::setPathOfAlias('local','test');
+ //Yii::setPathOfAlias('local','test');
 
 // This is the main Web application configuration. Any writable
 // CWebApplication properties can be configured here.
 return array(
 	'basePath'=>dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
-	'name'=>'Фудс',
+	'name'=>'Al Jasur',
     'language'=>'ru',
     
     'aliases'=>array(
-		'bootstrap'=> realpath(__DIR__.'/../extensions/yiibooster'),
+//		'bootstrap'=> realpath(__DIR__.'/../extensions/yiibooster'),
 	),
 
 	// preloading 'log' component
-	'preload'=>array('log','bootstrap'),
-    'theme'=>'heart',
+	'preload'=>array('log'),
+//    'theme'=>'heart',
 
 	// autoloading model and component classes
 	'import'=>array(
@@ -35,11 +34,16 @@ return array(
 		),
         'order',
 		'cooking',
-	),
+        'getorder' => array(
+
+        ),
+    ),
 
 	// application components
 	'components'=>array(
-
+        'config' => array(
+            'class' => 'application.extensions.EConfig',
+        ),
 		'user'=>array(
 			// enable cookie-based authentication
 			'allowAutoLogin'=>true,
@@ -52,7 +56,7 @@ return array(
             // Будем использовать свой менеджер авторизации
             'class' => 'PhpAuthManager',
             // Роль по умолчанию. Все, кто не админы, модераторы и юзеры — гости.
-            //'defaultRoles' => array('0'),
+            'defaultRoles' => array('0'),
         ),
 
 		'urlManager'=>array(
@@ -82,19 +86,19 @@ return array(
 					'levels'=>'error, warning, info',
 				),
 				// uncomment the following to show log messages on web pages
-
+				
 				/*array(
 					'class'=>'CWebLogRoute',
 				),*/
-
+				
 			),
 		),
-        'bootstrap'=>array(
-			'class'=>'bootstrap.components.Bootstrap',
-			'fontAwesomeCss'=>true,
-			'minify'=>true,
-					
-		),
+//        'bootstrap'=>array(
+//			'class'=>'bootstrap.components.Bootstrap',
+//			'fontAwesomeCss'=>true,
+//			'minify'=>true,
+//
+//		),
 		'themeManager'=>array(
 			'basePath'=>'protected/extensions',
 		), 
@@ -106,5 +110,6 @@ return array(
 	'params'=>array(
 		// this is used in contact page
 		'adminEmail'=>'webmaster@example.com',
+        ''
 	),
 );

@@ -12,7 +12,6 @@
         <th>Оплаченная дата</th>
         <th>Ответственный за заказ</th>
         <th>Стол №</th>
-        <th>Сумма</th>
         <th>Процент обслуживания</th>
         <th>Сумма счета</th>
         <th>Комментарий</th>
@@ -29,7 +28,7 @@
         else
             $curPercent = 0;
 
-        $temp = $expense->getExpenseSum($value->getRelated('expense')->expense_id,$value->getRelated('expense')->expense_id->order_date);
+        $temp = $value->getRelated('expense')->expSum;
         ?>
 
         <tr>
@@ -38,9 +37,8 @@
             <td><?=$value->d_date?></td>
             <td><?=$value->getRelated('expense')->getRelated('employee')->name?></td>
             <td><?=$value->getRelated('expense')->table?></td>
-            <td><?=number_format($temp,0,'.',','); $summa = $summa + $temp?></td>
             <td><?=$curPercent?></td>
-            <td><?=number_format($temp/100*$curPercent + $temp,0,'.',','); $summaP = $summaP + $temp/100*$curPercent + $temp?></td>
+            <td><?=number_format($temp,0,'.',','); $summa = $summa + $temp?></td>
             <td><?=$value->getRelated('expense')->comment?></td>
             <td>
                 <?=CHtml::link('<i class="fa fa-eye fa-fw"></i>  Просмотр',array('expense/view?id='.$value->getRelated('expense')->employee_id.'&order_date='.$value->getRelated('expense')->order_date))?>

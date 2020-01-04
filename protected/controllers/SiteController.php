@@ -1,6 +1,6 @@
 <?php
 
-class SiteController extends Controller
+class SiteController extends SetupController
 {
 	/**
 	 * Declares class-based actions.
@@ -21,6 +21,15 @@ class SiteController extends Controller
 		);
 	}
 
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
+
 	/**
 	 * This is the default 'index' action that is invoked
 	 * when an action is not explicitly requested by users.
@@ -33,7 +42,7 @@ class SiteController extends Controller
             ->select('')
             ->from('coockie t')
             ->where('date(t.coockie_date) = :dates',array(':dates'=>$dates))
-            ->queryAll();
+            ->queryRow();
         $beforeCoockie = Yii::app()->db->createCommand()
             ->select('')
             ->from('coockie t')
@@ -43,6 +52,9 @@ class SiteController extends Controller
 
         // renders the view file 'protected/views/site/index.php'
         // using the default layout 'protected/views/layouts/main.php'
+        /*if(Yii::app()->user->getRole() == 2){
+            $this->redirect(Yii::app()->createUrl('order'));
+        }*/
         if (Yii::app()->user->isGuest)
             $this->redirect(Yii::app()->createUrl('site/login'));
         else {
@@ -60,6 +72,14 @@ class SiteController extends Controller
             /*}*/
         }
 	}
+
+	public function actionReset(){
+	    Yii::app()->db->createCommand()->delete("expense");
+        Yii::app()->db->createCommand()->delete("orders");
+        Yii::app()->db->createCommand()->delete("archiveorder");
+        Yii::app()->db->createCommand()->delete("debt");
+        $this->redirect("/");
+    }
 
 	/**
 	 * This is the action to handle external exceptions.

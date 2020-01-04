@@ -8,23 +8,43 @@
     <thead>
         <tr>
             <th></th>
-            <th>Название</th>
+            <th>Наименование</th>
             <th>Кол-во</th>
-            <th>Себестоимость (<?=number_format(array_sum($cost),0,',',' ')?> сум)</th>
-            <th>Выручка (<?=number_format(array_sum($summ),0,',',' ')?> сум)</th>
+            <th>Себестоимость (<?=number_format($cost,0,',',' ')?> )</th>
+            <th>Прибыль (<?=number_format($summ,0,',',' ')?> )</th>
         </tr>
     </thead>
     <tbody>
-        <? foreach ($summ as $key => $val) {?>
+        <? if(!empty($dishes))  foreach ($dishes["summ"] as $key => $val) {?>
         <tr>
             <td><?=$count?></td>
-            <td><?=$dishes[$key]?></td>
-            <td><?=$counting[$key]?></td>
-            <td><?=number_format($cost[$key],0,',',' ')?></td>
-            <td><?=number_format($summ[$key],0,',',' ')?></td>
+            <td><?=$dishes["name"][$key]?></td>
+            <td><?=$dishes["counting"][$key]?></td>
+            <td><?=number_format($dishes["cost"][$key],0,',',' ')?></td>
+            <td><?=number_format($dishes["summ"][$key],0,',',' ')?></td>
         </tr>
         <? $count++;}
         ?>
+    <? if(!empty($stuffs)) foreach ($stuffs["summ"] as $key => $val) {?>
+        <tr>
+            <td><?=$count?></td>
+            <td><?=$stuffs["name"][$key]?></td>
+            <td><?=$stuffs["counting"][$key]?></td>
+            <td><?=number_format($stuffs["cost"][$key],0,',',' ')?></td>
+            <td><?=number_format($stuffs["summ"][$key],0,',',' ')?></td>
+        </tr>
+        <? $count++;}
+    ?>
+    <? if(!empty($prods)) foreach ($prods["summ"] as $key => $val) {?>
+        <tr>
+            <td><?=$count?></td>
+            <td><?=$prods["name"][$key]?></td>
+            <td><?=$prods["counting"][$key]?></td>
+            <td><?=number_format($prods["cost"][$key],0,',',' ')?></td>
+            <td><?=number_format($prods["summ"][$key],0,',',' ')?></td>
+        </tr>
+        <? $count++;}
+    ?>
     </tbody>
 </table>
 <div id="bottom_anchor"></div>

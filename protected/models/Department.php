@@ -26,7 +26,7 @@ class Department extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('point_id, status', 'numerical', 'integerOnly'=>true),
-			array('name, color', 'length', 'max'=>100),
+			array('name, color, printer', 'length', 'max'=>100),
 			/*
 			//Example username
 			array('username', 'match', 'pattern' => '/^[A-Za-z0-9_]+$/u',
@@ -59,7 +59,8 @@ class Department extends CActiveRecord
 		return array(
 			'department_id' => 'Department',
 			'name' => 'Название',
-			'color' => 'Цвет'
+			'color' => 'Цвет',
+			'printer' => 'Принтер'
 		);
 	}
 
@@ -84,6 +85,7 @@ class Department extends CActiveRecord
 		$criteria->compare('department_id',$this->department_id);
 		$criteria->compare('name',$this->name);
 		$criteria->compare('color',$this->color);
+        $criteria->compare('printer',$this->printer);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

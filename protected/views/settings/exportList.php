@@ -24,7 +24,7 @@ foreach ($department as $val) {
     <tr>
         <td colspan="2">Продукты</td>
     </tr>
-    <?foreach ($prod + $prodList as $value) {?>
+    <?foreach ($prod + $prodList as $key => $value) {?>
         <tr>
             <td><?=$count?></td>
             <td><?=$value?></td>
@@ -33,7 +33,7 @@ foreach ($department as $val) {
     <tr>
         <td colspan="2">Полуфабрикаты</td>
     </tr>
-    <?foreach ($stuffList as $value) {?>
+    <?foreach ($stuffList as $key => $value) {?>
         <tr>
             <td><?=$count?></td>
             <td><?=$value?></td>

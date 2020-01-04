@@ -1,5 +1,5 @@
 <?php 
-class AjaxController extends Controller
+class AjaxController extends SetupController
 {
     public function actionIndex()
     {

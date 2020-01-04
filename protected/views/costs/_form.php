@@ -30,7 +30,7 @@
 		<?php echo $form->error($model,'summ'); ?>
 	</div>
 
-	<div class="form-group">
+	<!--<div class="form-group">
 		<?php echo $form->labelEx($model,'contractor_id'); ?>
 		<?php echo $form->dropDownList($model,'contractor_id',CHtml::listData(Contractor::model()->findAll(),'contractor_id','name'),array('empty'=>'выберите контрагента')); ?>
 		<?php echo $form->error($model,'contractor_id'); ?>
@@ -40,7 +40,7 @@
         <?php echo $form->labelEx($model,'employee_id'); ?>
         <?php echo $form->dropDownList($model,'employee_id',CHtml::listData(Employee::model()->findAll('status != 1'),'employee_id','name'),array('empty'=>'выберите сотрудника')); ?>
         <?php echo $form->error($model,'employee_id'); ?>
-    </div>
+    </div>-->
 
 	<div class="form-group buttons">
 		<?php echo CHtml::submitButton($model->isNewRecord ? 'Добавить' : 'Save',array('class'=>'btn btn-default')); ?>

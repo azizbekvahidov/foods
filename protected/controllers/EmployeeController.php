@@ -1,6 +1,6 @@
 <?php
 
-class EmployeeController extends Controller
+class EmployeeController extends SetupController
 {
 	
 	
@@ -13,15 +13,15 @@ class EmployeeController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
-						
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-						
-		);
-	}
+
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 	
 		/**
 	 * Specifies the access control rules.
@@ -201,7 +201,9 @@ class EmployeeController extends Controller
 		{
 			// we only allow deletion via POST request
 			$this->loadModel($id)->updateByPk($id,array(
-                'status'=>1
+                'status'=>1,
+                'password' => "",
+                'login' => ""
             ));
 
 			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser

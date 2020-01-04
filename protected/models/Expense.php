@@ -27,7 +27,7 @@ class Expense extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('employee_id, table, status, kind, debt, mType, debtor_id', 'numerical', 'integerOnly'=>true),
+			array('employee_id, table, status, kind, debt, mType, debtor_id, expSum', 'numerical', 'integerOnly'=>true),
 			array('order_date', 'safe'),
             array('comment', 'length', 'max'=>100),
 			/*
@@ -157,10 +157,80 @@ class Expense extends CActiveRecord
         return $scope;
     }
 
+    public function getDepCostPrice($depId,$dates,$fromDate){
+        $result = 0;
+        $prodModel = new Products();
+        $stuffModel = new Halfstaff();
+        $temp = $this->getDishProd($depId,$dates,$dates);
+        foreach ($temp as $key => $val) {
+            $result = $result + $prodModel->getCostPrice($key,$dates)*$val;
+        }
+
+        $temp2 = $this->getDishStuff($depId,$dates,$dates);
+        $count = 0;
+        foreach ($temp2 as $key => $val) {
+            $result = $result + $stuffModel->getCostPrice($key,$dates)*$val;
+        }
+
+        /*
+        $dish = Yii::app()->db->createCommand()
+            ->select('ord.just_id,ord.count,ord.costPrice')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('dishes d','d.dish_id = ord.just_id')
+            ->where('date(ex.order_date) BETWEEN :from AND :dates AND ord.type = :types AND d.department_id = :depId AND ex.kind = :kind AND ord.deleted != 1',array(':dates'=>$dates,':types'=>1,':kind'=>0,':depId'=>$depId,':from'=>$fromDate))
+            ->queryAll();
+        foreach($dish as $val){
+
+            $result = $result + $val['costPrice'];
+        }
+
+        $Stuff = Yii::app()->db->createCommand()
+            ->select('ord.just_id,ord.count,ord.costPrice')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('halfstaff h','h.halfstuff_id = ord.just_id')
+            ->where('date(ex.order_date) BETWEEN :from AND :dates AND h.department_id = :department_id AND ord.type = :types  AND ex.kind = :kind AND ord.deleted != 1',array(':types'=>2,':kind'=>0,':dates'=>$dates,':department_id'=>$depId,':from'=>$fromDate))
+            ->queryAll();
+        if(!empty($Stuff)){
+            foreach($Stuff as $val){
+                $result = $result + $val['costPrice'];
+            }
+        }
+
+        $Prod = Yii::app()->db->createCommand()
+            ->select('ord.just_id,ord.count,ord.costPrice')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('products p','p.product_id = ord.just_id')
+            ->where('date(ex.order_date) BETWEEN :from AND :dates AND p.department_id = :department_id AND ord.type = :types  AND ex.kind = :kind AND ord.deleted != 1',array(':types'=>3,':kind'=>0,':dates'=>$dates,':department_id'=>$depId,':from'=>$fromDate))
+            ->queryAll();
+        if(!empty($Prod)){
+            foreach($Prod as $val){
+                $result = $result + $val['costPrice'];
+            }
+        }
+        $off = Yii::app()->db->createCommand()
+            ->select()
+            ->from('off o')
+            ->join('offList ol','ol.off_id = o.off_id')
+            ->where('date(o.off_date) BETWEEN :fromDate AND :dates AND o.department_id = :depId AND ol.type = :types',array(':dates'=>$dates,':fromDate'=>$fromDate,':depId'=>$depId,':types'=>3))
+            ->queryAll();
+        foreach($off as $val){
+            $result = $result + $val['costPrice'];
+        }*/
+
+        return $result;
+    }
+
     public function getDishProd($depId,$dates,$fromDate){
 //        if($fromDate == $dates){
 //            $fromDate = date("Y-m-d",strtotime($dates)-86400);
 //        }
+        $func = new Functions();
+        $timeShift = $func->getTime($fromDate,$dates);
+        $fromDate = $timeShift[0];
+        $dates = $timeShift[1];
         $dishes = new Dishes();
         $stuff = new Halfstaff();
         $result = array();
@@ -169,7 +239,7 @@ class Expense extends CActiveRecord
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('dishes d','d.dish_id = ord.just_id')
-            ->where('date(ex.order_date) BETWEEN :from AND :dates AND ord.type = :types AND d.department_id = :depId AND ex.kind = :kind AND ord.deleted != 1',array(':dates'=>$dates,':types'=>1,':kind'=>0,':depId'=>$depId,':from'=>$fromDate))
+            ->where('ex.order_date BETWEEN :from AND :dates AND ord.type = :types AND d.department_id = :depId AND ex.kind = :kind AND ord.deleted != 1',array(':dates'=>$dates,':types'=>1,':kind'=>0,':depId'=>$depId,':from'=>$fromDate))
             ->queryAll();
         foreach($model as $val){
 
@@ -183,8 +253,9 @@ class Expense extends CActiveRecord
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('products p','p.product_id = ord.just_id')
-            ->where('date(ex.order_date) BETWEEN :from AND :dates AND p.department_id = :department_id AND ord.type = :types  AND ex.kind = :kind AND ord.deleted != 1',array(':types'=>3,':kind'=>0,':dates'=>$dates,':department_id'=>$depId,':from'=>$fromDate))
+            ->where('ex.order_date BETWEEN :from AND :dates AND p.department_id = :department_id AND ord.type = :types  AND ex.kind = :kind AND ord.deleted != 1',array(':types'=>3,':kind'=>0,':dates'=>$dates,':department_id'=>$depId,':from'=>$fromDate))
             ->queryAll();
+
         if(!empty($Prod)){
             foreach($Prod as $val){
                 $result[$val['just_id']] = $result[$val['just_id']] + $val['count'];
@@ -194,7 +265,7 @@ class Expense extends CActiveRecord
             ->select()
             ->from('off o')
             ->join('offList ol','ol.off_id = o.off_id')
-            ->where('date(o.off_date) BETWEEN :fromDate AND :dates AND o.department_id = :depId AND ol.type = :types',array(':dates'=>$dates,':fromDate'=>$fromDate,':depId'=>$depId,':types'=>3))
+            ->where('o.off_date BETWEEN :fromDate AND :dates AND o.department_id = :depId AND ol.type = :types',array(':dates'=>$dates,':fromDate'=>$fromDate,':depId'=>$depId,':types'=>3))
             ->queryAll();
         foreach($model as $val){
             $result[$val['prod_id']] = $result[$val['prod_id']] + $val['count'];
@@ -209,6 +280,10 @@ class Expense extends CActiveRecord
 //        if($fromDate == $dates){
 //            $fromDate = date("Y-m-d",strtotime($dates)-86400);
 //        }
+        $func = new Functions();
+        $timeShift = $func->getTime($fromDate,$dates);
+        $fromDate = $timeShift[0];
+        $dates = $timeShift[1];
         $dish = new Dishes();
         $stuff = new Halfstaff();
         $result = array();
@@ -217,7 +292,7 @@ class Expense extends CActiveRecord
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('dishes d','d.dish_id = ord.just_id')
-            ->where('date(ex.order_date) BETWEEN :from AND :dates AND ord.type = :types AND d.department_id = :depId AND ex.kind = :kind  AND ord.deleted != 1',array(':dates'=>$dates,':from'=>$fromDate,':types'=>1,':kind'=>0,':depId'=>$depId))
+            ->where('ex.order_date BETWEEN :from AND :dates AND ord.type = :types AND d.department_id = :depId AND ex.kind = :kind  AND ord.deleted != 1',array(':dates'=>$dates,':from'=>$fromDate,':types'=>1,':kind'=>0,':depId'=>$depId))
             ->queryAll();
         if(!empty($Stuff)){
             foreach($Stuff as $val){
@@ -231,7 +306,7 @@ class Expense extends CActiveRecord
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('halfstaff h','h.halfstuff_id = ord.just_id')
-            ->where('date(ex.order_date) BETWEEN :from AND :dates AND ord.type = :types AND h.department_id = :depId AND ex.kind = :kind  AND ord.deleted != 1',array(':dates'=>$dates,':from'=>$fromDate,':types'=>2,':kind'=>0,':depId'=>$depId))
+            ->where('ex.order_date BETWEEN :from AND :dates AND ord.type = :types AND h.department_id = :depId AND ex.kind = :kind  AND ord.deleted != 1',array(':dates'=>$dates,':from'=>$fromDate,':types'=>2,':kind'=>0,':depId'=>$depId))
             ->queryAll();
 
         if(!empty($dishStuff)){
@@ -244,7 +319,7 @@ class Expense extends CActiveRecord
             ->select()
             ->from('off o')
             ->join('offList ol','ol.off_id = o.off_id')
-            ->where('date(o.off_date) BETWEEN :fromDate AND :dates AND o.department_id = :depId AND ol.type = :types',array(':dates'=>$dates,':fromDate'=>$fromDate,':depId'=>$depId,':types'=>2))
+            ->where('o.off_date BETWEEN :fromDate AND :dates AND o.department_id = :depId AND ol.type = :types',array(':dates'=>$dates,':fromDate'=>$fromDate,':depId'=>$depId,':types'=>2))
             ->query();
         foreach($model as $val){
             $result[$val['prod_id']] = $result[$val['prod_id']] + $val['count'];
@@ -253,7 +328,13 @@ class Expense extends CActiveRecord
         return $result;
     }
 
-    public function getExpenseSum($id,$dates){
+    public function getExpenseSum($id){
+        $model = Expense::model()->findByPk($id);
+
+        return $model->expSum;
+    }
+
+    public function getExpenseSumReal($id,$dates){
         $summ = 0;
         $prices = new Prices();
         $model = Expense::model()->with('order.dish')->findByPk($id,'order.deleted != 1');
@@ -263,79 +344,119 @@ class Expense extends CActiveRecord
         $model3 = Expense::model()->with('order.products')->findByPk($id,'order.deleted != 1');
         if(!empty($model))
             foreach ($model->getRelated('order') as $val) {
-//                echo "<pre>";
-//                print_r($val);
-//                echo "</pre>";
-//                echo "<pre>";
-//                print_r($prices->getPrice($val->just_id,1,1,$dates));
-//                echo "</pre>";
-                $summ = $summ + $prices->getPrice($val->just_id,1,1,$dates)*$val->count;
+                $temp = $prices->getPrice($val->just_id,1,1,$dates)*$val->count;
+                $summ = $summ + $temp;
             }
         if(!empty($model2))
             foreach ($model2->getRelated('order') as $val) {
-                $summ = $summ + $prices->getPrice($val->just_id,1,2,$dates)*$val->count;
+                $temp = $prices->getPrice($val->just_id,1,2,$dates)*$val->count;
+                $summ = $summ + $temp;
             }
         if(!empty($model3))
             foreach ($model3->getRelated('order') as $val) {
-                $summ = $summ + $prices->getPrice($val->just_id,1,3,$dates)*$val->count;
+                $temp = $prices->getPrice($val->just_id,1,3,$dates)*$val->count;
+                $summ = $summ + $temp;
             }
-
 
         return $summ;
+
     }
     public function getSum($dates){
-	    $percent = new Percent();
         $summa = 0;
-        $summaP = 0;
-        $curPercent = 0;
-	    $employee = Employee::model()->findAll();
-        $stuff = new Halfstaff();
         $debt = Debt::model()->findAll('t.d_date = :dates',array(':dates'=>$dates));
-        $debts = array();
-	    foreach ( $employee as $vals ) {
-            $summ = 0;
-            if ( $vals->check_percent == 1 ) {
-                $curPercent = $percent->getPercent($dates);
+        $av = Yii::app()->db->createCommand()
+            ->select("expSum")
+            ->from("prepaid")
+            ->where("date(prepDate) = :dates",array(":dates"=>$dates))
+            ->queryAll();
+        $debts = 0;
+        $avans = 0;
+        $summ = 0;
+
+        $model = Yii::app()->db->CreateCommand()
+            ->select('t.expense_id')
+            ->from('expense t')
+            ->where(
+                'date(t.order_date) = :dates AND t.kind = :kind AND t.status != :status AND t.debt != :debt AND t.prepaid != :prepaid', array(
+                    ':dates' => $dates,
+                    ':kind'  => 0,
+                    ':status'=> 1,
+                    ':debt' => 1,
+                    ':prepaid' => 1,
+                ))
+            ->queryAll();
+        $model2 = Yii::app()->db->CreateCommand()
+            ->select('t.expense_id')
+            ->from('expense t')
+            ->where(
+                'date(t.order_date) = :dates AND t.debtor_type = 1 AND t.kind = :kind AND t.status = :status AND t.debt = :debt AND t.prepaid = :prepaid', array(
+                    ':dates' => $dates,
+                    ':kind'  => 0,
+                    ':status'=> 0,
+                    ':debt' => 1,
+                    ':prepaid' => 0,
+                ))
+            ->queryAll();
+        if(!empty($model))
+            foreach ( $model as $value ) {
+                $temp = $this->getExpenseSum($value['expense_id']);
+                $summa = $summa + $temp;
+
             }
-            else{
+        if(!empty($model2))
+            foreach ( $model2 as $value ) {
+                $temp = $this->getExpenseSum($value['expense_id']);
+                $summa = $summa + $temp;
+
+            }
+
+        if(!empty($debt))
+            foreach ($debt as $value) {
+                $temp = $this->getExpenseSum($value->expense_id);
+                $debts = $temp;
+            }
+        if(!empty($av))
+            foreach ($av as $value) {
+                $temp = $value["expSum"];
+                $avans = $avans + $temp;
+            }
+        return $summa+$debts + $avans;
+    }
+
+
+    public function ExpSumCounter($dates){
+        $percent = Yii::app()->db->createCommand()
+            ->select()
+            ->from('settings')
+            ->where('setting_name = :val',array(':val'=>'percent'))
+            ->queryRow();
+        $employee = Employee::model()->findAll();
+        foreach ( $employee as $vals ) {
+            $curPercent = 0;
+             if($vals->check_percent == 1)
+                $curPercent = $percent['setting_value'];
+            else
                 $curPercent = 0;
-            }
 
             $model = Yii::app()->db->CreateCommand()
                 ->select('t.expense_id')
                 ->from('expense t')
                 ->where(
-                    'date(t.order_date) = :dates AND t.kind = :kind AND t.employee_id = :empId AND t.status != :status AND t.debt != :debt', array(
-                    ':dates' => $dates,
-                    ':kind'  => 0,
-                    ':empId' => $vals->employee_id,
-                    ':status'=> 1,
-                    ':debt' => 1
-                ))
+                    'date(t.order_date) = :dates AND t.kind = :kind AND t.employee_id = :empId', array(
+                        ':dates' => $dates,
+                        ':kind'  => 0,
+                        ':empId' => $vals->employee_id
+                    ))
                 ->queryAll();
-		    /*$model = Expense::model()->with()->findAll( 'date(t.order_date) = :dates AND t.kind = :kind AND t.employee_id = :empId AND t.status != :status AND t.debt != :debt', array(
-
-				    ':dates' => $dates,
-				    ':kind'  => 0,
-			        ':empId' => $vals->employee_id,
-                    ':status'=> 1,
-                    ':debt' => 1
-			    ) );*/
-		    if(!empty($model))
-			    foreach ( $model as $value ) {
-                    $summ = $summ + $this->getExpenseSum($value['expense_id'],$dates);
+            if(!empty($model))
+                foreach ( $model as $value ) {
+                    $temp = $this->getExpenseSumReal($value['expense_id'],$dates);
+                    $sum = number_format((($temp/100*$curPercent + $temp)/100),0,',','')*100;
+                    Yii::app()->db->createCommand()->update('expense',array('expSum'=>$sum),'expense_id = :id',array(':id'=>$value['expense_id']));
 
                 }
-            $tempSumm = ($summ/100*$curPercent + $summ);
-            $summaP = round($tempSumm/100)*100 + $summaP;
-            $summa = round(($summ + $summa)/100)*100;
-	    }
+        }
 
-        if(!empty($debt))
-            foreach ($debt as $value) {
-                $debts = $stuff->sumArray($debts,$this->getExpenseProcSum($value->expense_id,$dates));
-            }
-        return array(1=>($summaP+$debts[1]),2=>($summa+$debts[2]));
     }
 
     public function getExpenseProcSum($id,$dates){
@@ -408,6 +529,80 @@ class Expense extends CActiveRecord
         return count($model);
     }
 
+    public function getExpenseCostPrice($id,$dates){
+        $summ = 0;
+        $dish = new Dishes();
+        $stuff = new Halfstaff();
+        $prod = new Products();
+        $model = Yii::app()->db->createCommand()
+            ->select('ord.just_id, ord.order_id, ord.count')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->where('ex.expense_id = :id AND ord.type = :types AND ord.deleted != 1',array(':id'=>$id,':types'=>1))
+            ->queryAll();
+        $model2 = Yii::app()->db->createCommand()
+            ->select('ord.just_id, ord.order_id, ord.count')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->where('ex.expense_id = :id AND ord.type = :types AND ord.deleted != 1',array(':id'=>$id,':types'=>2))
+            ->queryAll();
+        $model3 = Yii::app()->db->createCommand()
+            ->select('ord.just_id, ord.order_id, ord.count')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->where('ex.expense_id = :id AND ord.type = :types AND ord.deleted != 1',array(':id'=>$id,':types'=>3))
+            ->queryAll();
+
+        foreach ($model as $val) {
+            $temp = $dish->getCostPrice($val['just_id'],$dates)*$val['count'];
+            $summ = $summ + $temp;
+            Yii::app()->db->createCommand()->update('orders',array('costPrice'=>$temp),'order_id = :id',array(':id'=>$val['order_id']));
+        }
+
+        foreach ($model2 as $val) {
+            $temp = $stuff->getCostPrice($val['just_id'],$dates)*$val['count'];
+            $summ = $summ + $temp;
+            Yii::app()->db->createCommand()->update('orders',array('costPrice'=>$temp),'order_id = :id',array(':id'=>$val['order_id']));
+        }
+
+        foreach ($model3 as $val) {
+            $temp = $prod->getCostPrice($val['just_id'],$dates)*$val['count'];
+            $summ = $summ + $temp;
+            Yii::app()->db->createCommand()->update('orders',array('costPrice'=>$temp),'order_id = :id',array(':id'=>$val['order_id']));
+        }
+        Yii::app()->db->createCommand()->update('expense',array('costPrice'=>$summ),'expense_id = :id',array(':id'=>$id));
+        return $summ;
+    }
+
+    public function getOffCostPrice($id,$dates){
+        $summ = 0;
+        $dish = new Dishes();
+        $stuff = new Halfstaff();
+        $prod = new Products();
+        $model2 = Yii::app()->db->createCommand()
+            ->select()
+            ->from('offList ol')
+            ->where('ol.off_id = :id AND ol.type = :types',array(':id'=>$id,':types'=>2))
+            ->queryAll();
+        $model3 = Yii::app()->db->createCommand()
+            ->select()
+            ->from('offList ol')
+            ->where('ol.off_id = :id AND ol.type = :types',array(':id'=>$id,':types'=>3))
+            ->queryAll();
+
+        foreach ($model2 as $val) {
+            $temp = $stuff->getCostPrice($val['prod_id'],$dates)*$val['count'];
+            $summ = $summ + $temp;
+            Yii::app()->db->createCommand()->update('offList',array('costPrice'=>$temp),'offList_id = :id',array(':id'=>$val['offList_id']));
+        }
+        foreach ($model3 as $val) {
+            $temp = $prod->getCostPrice($val['prod_id'],$dates)*$val['count'];
+            $summ = $summ + $temp;
+            Yii::app()->db->createCommand()->update('offList',array('costPrice'=>$temp),'offList_id = :id',array(':id'=>$val['offList_id']));
+        }
+        Yii::app()->db->createCommand()->update('off',array('costPrice'=>$summ),'off_id = :id',array(':id'=>$id));
+    }
+
     public function getStructExpenseSumm($dates){
         $summ = 0;
         $dish = new Dishes();
@@ -461,32 +656,76 @@ class Expense extends CActiveRecord
         return $summ;
     }
 
+    public function depIncome($depId,$from,$till){
+        $sum = 0;
+
+        $model = Yii::app()->db->createCommand()
+            ->select('sum(expSum) as expSum')
+            ->from('mDepBalance')
+            ->where('b_date BETWEEN :from AND :till AND department_id = :id', array(':from'=>$from,':till'=>$till,':id'=>$depId))
+            ->queryRow();
+
+        $sum = $sum + $model['expSum'];
+        return $sum == null?0:$sum;
+    }
+
     public function getDepIncome($depId,$from,$till){
+        $sum = 0;
+        $func = new Functions();
+        $timeShift = $func->getTime($from,$till);
+        $from = $timeShift[0];
+        $till = $timeShift[1];
+        //old summary script
         $model = Yii::app()->db->createCommand()
             ->select('sum((select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1)*ord.count) as sum')
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('dishes d','d.dish_id = ord.just_id')
-            ->where('date(ex.order_date) <= :till AND date(ex.order_date) >= :from AND ord.type = :types AND d.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>1,':depId'=>$depId))
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND d.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>1,':depId'=>$depId))
             ->queryRow();
         $model2 = Yii::app()->db->createCommand()
             ->select('sum((select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1)*ord.count) as sum')
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('halfstaff h','h.halfstuff_id = ord.just_id')
-            ->where('date(ex.order_date) <= :till AND date(ex.order_date) >= :from AND ord.type = :types AND h.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>2,':depId'=>$depId))
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND h.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>2,':depId'=>$depId))
             ->queryRow();
         $model3 = Yii::app()->db->createCommand()
             ->select('sum((select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1)*ord.count) as sum')
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
             ->join('products p','p.product_id = ord.just_id')
-            ->where('date(ex.order_date) <= :till AND date(ex.order_date) >= :from AND ord.type = :types AND p.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>3,':depId'=>$depId))
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND p.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>3,':depId'=>$depId))
             ->queryRow();
 
         $sum = $model['sum']+$model2['sum']+$model3['sum'];
 
         return $sum == null?0:$sum;
+    }
+
+    public function depCost($depId,$fromDate,$tillDate){
+        $timeStpfrom = strtotime($fromDate);
+        $timeStptill = strtotime($tillDate);
+        $cnt = ($timeStptill-$timeStpfrom)/86400;
+
+        $function = new Functions();
+        $from = $fromDate;
+        $till = $fromDate;
+        $summs = 0;
+        for($i = 0; $i <= $cnt; $i++) {
+        //newer summaryscript
+            $model = Yii::app()->db->createCommand()
+            ->select('sum(costPrice) as costPrice')
+            ->from('mDepBalance')
+            ->where('b_date BETWEEN :from AND :till AND department_id = :id', array(':from'=>$from,':till'=>$till,':id'=>$depId))
+            ->queryRow();
+
+            $summs = $summs + $model['costPrice'];
+
+            $from = date('Y-m-d',strtotime($from)+86400);
+            $till = date('Y-m-d',strtotime($till)+86400);
+        }
+        return $summs;
     }
 
     public function getDepCost($depId,$fromDate,$tillDate){
@@ -498,24 +737,28 @@ class Expense extends CActiveRecord
         $from = $fromDate;
         $till = $fromDate;
         $summs = 0;
-        $dish = new Dishes();
-        $stuff = new Halfstaff();
-        $prod = new Products();
+//        $dish = new Dishes();
+//        $stuff = new Halfstaff();
+//        $prod = new Products();
         for($i = 0; $i <= $cnt; $i++) {
             $summ = 0;
 
-            $temp = $this->getDishProd($depId,$till,$from);
-            foreach ($temp as $key => $val) {
-                $summ = $summ + $prod->getCostPrice($key,$from)*$val;
-            }
+            //new summary script
+                $summs = $summs + $this->getDepCostPrice($depId,$till,$from);
 
-            $temp2 = $this->getDishStuff($depId,$till,$from);
-            foreach ($temp2 as $key => $val) {
-                $summ = $summ + $stuff->getCostPrice($key,$from)*$val;
-            }
+            //old summary script
+//            $temp = $this->getDishProd($depId,$till,$from);
+//            foreach ($temp as $key => $val) {
+//                $summ = $summ + $prod->getCostPrice($key,$from)*$val;
+//            }
+//
+//            $temp2 = $this->getDishStuff($depId,$till,$from);
+//            foreach ($temp2 as $key => $val) {
+//                $summ = $summ + $stuff->getCostPrice($key,$from)*$val;
+//            }
             $from = date('Y-m-d',strtotime($from)+86400);
             $till = date('Y-m-d',strtotime($till)+86400);
-            $summs = $summs + $summ;
+//            $summs = $summs + $summ;
         }
         return $summs;
     }
@@ -528,9 +771,6 @@ class Expense extends CActiveRecord
         $prod = 0;
 
         $depIn = $function->depMoveIn($depId,$till,$from);
-        echo "<pre>";
-        print_r($depIn);
-        echo "</pre>";
 
         $depOut = $function->depMoveOut($depId,$till,$from);
 
@@ -640,4 +880,109 @@ class Expense extends CActiveRecord
         $perSumm['perDebt'] = $perSumm['perDebt'] + $empPersum;
 				return $perSumm;
     }
+
+    public function getEmpCost($empId,$from,$to){
+        $model = Yii::app()->db->createCommand()
+            ->select("sum(t.costPrice) as summ")
+            ->from("expense t")
+            ->where('t.debtor_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND t.prepaid != 1',array(':id'=>$empId,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1))
+            ->queryRow();
+        return (!empty($model["summ"])) ? $model["summ"] : 0;
+    }
+
+    public function addExpenseList($prodId,$type,$date,$cnt,$dep = 0){
+        if($type == 1){
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from("dishes")
+                ->where("dish_id = :id",array(":id"=>$prodId))
+                ->queryRow();
+            $prod = Yii::app()->db->createCommand()
+                ->select()
+                ->from("dish_structure")
+                ->where("dish_id = :id",array(":id"=>$prodId))
+                ->queryAll();
+            $depId = 0;
+            if($dep == 0)
+                $depId = $model["department_id"];
+            else
+                $depId = $dep;
+            foreach ($prod as $item) {
+                $this->addProd($item["prod_id"],1,$date,$depId,($cnt*$item["amount"])/$model["count"]);
+            }
+            $stuff = Yii::app()->db->createCommand()
+                ->select()
+                ->from("dish_structure2")
+                ->where("dish_id = :id",array(":id"=>$prodId))
+                ->queryAll();
+
+            foreach ($stuff as $item) {
+                $this->addProd($item["halfstuff_id"],2,$date,$model["department_id"],($cnt*$item["amount"])/$model["count"]);
+            }
+        }
+        else if($type == 2){
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from("halfstaff")
+                ->where("halfstuff_id = :id",array(":id"=>$prodId))
+                ->queryRow();
+            $depId = 0;
+            if($dep == 0)
+                $depId = $model["department_id"];
+            else
+                $depId = $dep;
+            $this->addProd($prodId,2,$date,$depId,$cnt);
+
+        }
+        else if($type == 3){
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from("products")
+                ->where("product_id = :id",array(":id"=>$prodId))
+                ->queryRow();
+            $depId = 0;
+            if($dep == 0)
+                $depId = $model["department_id"];
+            else
+                $depId = $dep;
+            $this->addProd($prodId,1,$date,$depId,$cnt);
+        }
+    }
+
+    public function addProd($prodId,$type,$date,$depId,$cnt){
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from("expense_list")
+            ->where("prod_id = :id AND department_id = :depId AND expense_date = :exDate AND prod_type = :types",
+                array(
+                    ":id"=>$prodId,
+                    ":types"=>$type,
+                    ":depId"=>$depId,
+                    ":exDate"=>$date
+                )
+            )
+            ->queryRow();
+        if(!empty($model)){
+            Yii::app()->db->createCommand()->update("expense_list",array(
+                "cnt" => $model["cnt"] + number_format($cnt,2,".","")
+            ),"prod_id = :id AND department_id = :depId AND expense_date = :exDate AND prod_type = :types",
+                array(
+                    ":id"=>$prodId,
+                    ":types"=>$type,
+                    ":depId"=>$depId,
+                    ":exDate"=>$date
+                ));
+        }
+        else{
+            Yii::app()->db->createCommand()->insert("expense_list",array(
+                "cnt" => number_format($cnt,2,".",""),
+                "prod_id" => $prodId,
+                "prod_type"=>$type,
+                "department_id"=>$depId,
+                "expense_date"=>$date
+            ));
+        }
+    }
+
+
 }

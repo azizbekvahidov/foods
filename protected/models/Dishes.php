@@ -161,23 +161,34 @@ class Dishes extends CActiveRecord
     public function getDishProd($depId){
         $prod_id['prod']  = '';
         $prod_id['stuff']  = '';
-        $model = Dishes::model()->with('stuff','products')->findAll('t.department_id = :depId',array(':depId'=>$depId));
+//        $model = Dishes::model()->with('stuff','products')->findAll('t.department_id = :depId',array(':depId'=>$depId));
+        $modelStuff = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("dishes d")
+            ->join("dish_structure2 ds","ds.dish_id = d.dish_id")
+            ->where('d.department_id = :depId',array(':depId'=>$depId))
+            ->queryAll();
 
-        foreach ($model as $value) {
-            foreach ($value->getRelated('stuff') as $val) {
+//        foreach ($model as $value) {
+            foreach ($modelStuff as $val) {
                 $stuff = new Halfstaff();
-                $prod_id['stuff'] .= $val->halfstuff_id.":";
-                $temp = $stuff->getProdId($val->halfstuff_id);
+                $prod_id['stuff'] .= $val["halfstuff_id"].":";
+                $temp = $stuff->getProdId($val["halfstuff_id"]);
                 $prod_id['stuff'] .= $temp['stuff'];
                 $prod_id['prod'] .= $temp['prod'];
 
             }
-
-            foreach ($value->getRelated('products') as $val) {
-                $prod_id['prod'] .= $val->product_id.":";
+        $model = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("dishes d")
+            ->join("dish_structure ds","ds.dish_id = d.dish_id")
+            ->where('d.department_id = :depId',array(':depId'=>$depId))
+            ->queryAll();
+            foreach ($model as $val) {
+                $prod_id['prod'] .= $val["product_id"].":";
             }
 
-        }
+//        }
 
         return $prod_id;
     }

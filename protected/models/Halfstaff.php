@@ -212,17 +212,24 @@ class Halfstaff extends CActiveRecord
 
     public function getStuffName($depId){
         //.podstuff.podstuffStruct.Struct
-        $models = Dishes::model()->with('stuff')->findAll('t.department_id = :depId',array(':depId'=>$depId));
+        $models = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("dishes d")
+            ->join("dish_structure2 ds","ds.dish_id = d.dish_id")
+            ->where('d.department_id = :depId',array(':depId'=>$depId))
+            ->queryAll();
         $stuff = '';
         if(!empty($models))
             foreach($models as $values){
-                foreach($values->getRelated('stuff') as $value){
-                    $stuff .= $this->getStuffId($value->halfstuff_id);
-                }
+                    $stuff .= $this->getStuffId($values["halfstuff_id"]);
             }
-        $model = Halfstaff::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
+        $model = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("halfstaff h")
+            ->where('h.department_id = :depId',array(':depId'=>$depId))
+            ->queryAll();
         foreach ($model as $value) {
-            $stuff .= $this->getStuffId($value->halfstuff_id);
+            $stuff .= $this->getStuffId($value["halfstuff_id"]);
         }
         $temp = explode(':',$stuff);
         $result = array();
@@ -235,17 +242,26 @@ class Halfstaff extends CActiveRecord
         return $result;
     }
     public function getStuffProdName($depId){
-        $models = Dishes::model()->with('stuff')->findAll('t.department_id = :depId',array(':depId'=>$depId));
+        $models = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("dishes d")
+            ->join("dish_structure2 ds","ds.dish_id = d.dish_id")
+            ->where('d.department_id = :depId',array(':depId'=>$depId))
+            ->queryAll();
+//        $models = Dishes::model()->with('stuff')->findAll('t.department_id = :depId',array(':depId'=>$depId));
         $stuff = '';
         if(!empty($models))
             foreach($models as $values){
-                foreach($values->getRelated('stuff') as $value){
-                    $stuff .= $this->getProdId($value->halfstuff_id);
-                }
+                    $stuff .= $this->getProdId($values["halfstuff_id"]);
             }
-        $model = Halfstaff::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
+        $model = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("halfstaff h")
+            ->where('h.department_id = :depId',array(':depId'=>$depId))
+            ->queryAll();
+//        $model = Halfstaff::model()->findAll('t.department_id = :depId',array(':depId'=>$depId));
         foreach ($model as $value) {
-            $stuff .= $this->getProdId($value->halfstuff_id);
+            $stuff .= $this->getProdId($value["halfstuff_id"]);
         }
         
         $temp = explode(':',$stuff);

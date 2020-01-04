@@ -54,11 +54,27 @@
     });
 </script>
 <div class="form-actions ">
+
     <?php $this->widget('bootstrap.widgets.TbButton', array(
-        'buttonType'=>'submit',
+        'buttonType'=>'button',
+        'id'=>'submitBtn',
         'type'=>'primary',
         'label'=>$model->isNewRecord ? 'Добавить' : 'Сохранить',
     )); ?>
 </div>
+<script>
+
+    $(document).on('click','#submitBtn', function(){
+        var data = $("#dep-realize-form").serialize();
+        $.ajax({
+            type: "POST",
+            url: "<?php echo Yii::app()->createUrl('inexpense/move'); ?>",
+            data: data,
+            success: function(data){
+                $('#data').html("");
+            }
+        });
+    });
+</script>
 
 <?php $this->endWidget(); ?>

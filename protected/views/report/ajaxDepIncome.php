@@ -45,20 +45,22 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0;$startCount1 = 0; $startCoun
             <th>Выручка</th>
             <th>% от план.</th>
             <th>% от факт.</th>
-            <th>наценка план</th>
+            <th>% от выручки</th>
+            <!--<th>наценка план</th>-->
             <th>наценка факт</th>
             <th>отклон (+,-)</th>
+            <th>пер/эк</th>
             <!-- <th>тренд ср.стат.</th>-->
         </tr>
         </thead>
         <tbody>
         <?foreach ($model as $val) {
             //$beforeDates = date('Y-m-d',strtotime($dates)-86400);
-            $costPrice = $expense->getDepCost($val['department_id'],$from,$till);
+            $costPrice = $expense->depCost($val['department_id'],$from,$till);
             $realized = $depRealize->getDepRealizesSumm($from,$till,$val['department_id']);
             $inRealized = $depRealize->getDepInRealizesSumm($from,$till,$val['department_id']);
             $inexp = $depRealize->getDepInExp($from,$till,$val['department_id']);
-            $price = $expense->getDepIncome($val['department_id'],$from,$till);
+            $price = $expense->depIncome($val['department_id'],$from,$till);
             $tempBalance = $balance->getDepBalanceSumm($from,$till,$val['department_id']);
             //$beforeTempBalance = $balance->getDepBalanceSumm($beforeDates,$val['department_id']);
             //$beforeCostPrice = $expense->getDepCost($val['department_id'],$beforeDates);
@@ -105,9 +107,11 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0;$startCount1 = 0; $startCoun
                     <td>0</td>
                     <td>0</td>
                 <?}?>
-                <td><?=number_format($factCostPrice/2,0,',',' ')?></td>
+                <td><?=number_format(($price != 0)?($price/$sumAll["summ"])*100:0 ,2,',',' ')?></td>
+                <!--<td><?=number_format($factCostPrice/2,0,',',' ')?></td>-->
                 <td><?=number_format($price-$factCostPrice,0,',',' ')?></td>
-                <td><?=number_format(($price-$factCostPrice)-$factCostPrice/2,0,',',' ')?></td>
+                <td><?=number_format($tempBalance[1]-$tempBalance[2],0,',',' ')//($price-$factCostPrice)-$factCostPrice/2,0,',',' ')?></td>
+                <td><?=(number_format($factCostPrice-$costPrice,0,',',' ') <= 0) ? 0 : number_format($factCostPrice-$costPrice,0,',',' ')?></td>
                 <!--<td>
                 <?//if(($price-$costPrice)-$costPrice/2 > ($beforePrice-$beforeCostPrice)-$beforeCostPrice/2){?>
                     <span class="green"><i class="fa fa-caret-up"></i></span>
@@ -117,7 +121,6 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0;$startCount1 = 0; $startCoun
             </td>-->
             </tr>
             <?$cnt++;}
-
         $expRealize = $balance->getExpBalance($from,$till);
         $sumCostPrice = $sumCostPrice + $expRealize;
         $sumRealized = $sumRealized + $expRealize;?>
@@ -129,6 +132,7 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0;$startCount1 = 0; $startCoun
             <td></td>
             <td></td>
             <td><?=number_format($expRealize,0,',',' ')?></td>
+            <td></td>
             <td></td>
             <td></td>
             <td></td>
@@ -153,15 +157,18 @@ $sumRealized = 0; $sumInRealized = 0; $sumInExp = 0;$startCount1 = 0; $startCoun
             <th><?=number_format($endCount,0,',',' ')?></th>
             <th><?=number_format($curEndCount,0,',',' ')?></th>
             <th><?=number_format($sumPrice,0,',',' ')?></th>
-            <th><?=number_format($sumPrice*100/($sumCostPrice),0,',',' ')?></th>
+            <th><?=number_format($sumPrice*100/(($sumCostPrice == 0) ? 1 : $sumCostPrice),0,',',' ')?></th>
             <th><?=number_format($sumPrice*100/($startCount1+$sumRealized-$curEndCount),0,',',' ')?></th>
-            <th><?=number_format($sumFaktCost/2,0,',',' ')?></th>
+            <th><?=number_format(100,0,',',' ')?></th>
+            <!--<th><?=number_format($sumFaktCost/2,0,',',' ')?></th>-->
             <th><?=number_format($sumPrice-$sumFaktCost,0,',',' ')?></th>
-            <th><?=number_format(($sumPrice-$sumFaktCost)-$sumFaktCost/2,0,',',' ')?></th>
+            <th><?=number_format($endCount-$curEndCount,0,',',' ')//($sumPrice-$sumFaktCost)-$sumFaktCost/2,0,',',' ')?></th>
+            <th><?=(number_format(($startCount1+$sumRealized-$curEndCount)-$sumCostPrice,0,',',' ') <= 0) ? 0 : number_format(($startCount1+$sumRealized-$curEndCount)-$sumCostPrice,0,',',' ')?></th>
             <!--<th></th>-->
         </tr>
         </tfoot>
     </table>
+<?=$startCount1?>
     <script>
         $(document).ready(function(){
             $("#dataTable a.view").click(function(){

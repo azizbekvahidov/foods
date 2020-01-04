@@ -73,7 +73,7 @@ if(!isset($_GET['asModal'])){
                     <td><?=$count?></td>
                     <td><?=$val->getRelated('halfstuff')->name?></td>
                     <td><?=$val->count?></td>
-                    <td><?=number_format($val->getRelated('halfstuff')->price,0,'.',',')?></td>
+                    <td><?=number_format($price,0,'.',',')?></td>
                     <td><?=number_format($val->count*$price,0,'.',','); $summ = $summ + $val->count*$price?></td>
                 </tr>
                 <? $count++; }?>

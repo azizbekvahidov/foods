@@ -31,7 +31,7 @@ class Employee extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('name, password,login', 'length', 'max'=>100),
-            array('check_percent, role, depId', 'numerical', 'integerOnly'=>true),
+            array('check_percent, role, depId, salary', 'numerical', 'integerOnly'=>true),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
 			array('employee_id, name, password, depId', 'safe', 'on'=>'search'),
@@ -61,7 +61,8 @@ class Employee extends CActiveRecord
             'login' => 'Логин',
             'check_percent' => 'Учитывать процент',
             'role' => 'Роль',
-            'depId' => 'Отдел'
+            'depId' => 'Отдел',
+            'salary' => 'Зарплата'
 		);
 	}
 
@@ -115,4 +116,5 @@ class Employee extends CActiveRecord
         ->queryAll();
         return $model;
     }
+
 }

@@ -11,8 +11,12 @@
 
 	<?php echo $form->errorSummary($model); ?>
 
+<div class="form-group">
 <?php echo $form->textFieldRow($model,'name',array('class'=>'span5')); ?>
+</div>
+<div class="form-group">
 <?=$form->dropDownList($model,'point_id',$point,array('class'=>'span5','empty'=>'Выберите точку'))?>
+</div>
 <div class="form-group">
 	<?
 	$this->widget('ext.SMiniColors.SActiveColorPicker', array(
@@ -24,6 +28,10 @@
 	));
 	?>
 </div>
+<div class="form-group">
+    <?php echo $form->textFieldRow($model,'printer',array('class'=>'span5')); ?>
+</div>
+
 
 <div class="form-actions">
 	<?php $this->widget('bootstrap.widgets.TbButton', array(

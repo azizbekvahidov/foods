@@ -27,7 +27,7 @@
 
             <td><?=number_format($temp/100*$curPercent + $temp,0,'.',','); $summaP = $summaP + $temp/100*$curPercent + $temp?></td>
             <td>
-                <?=CHtml::link('<i class="fa fa-pencil fa-fw"></i>',array('expense/update?id='.$value->expense_id),array('id'=>'update','target'=>'blank'))?>
+                <?=CHtml::link('Отказ',array('/orders/orderRefuse?id='.$value->expense_id),array('id'=>'update','target'=>'blank'))?>
             </td>
         </tr>
         <? $count++; } ?>

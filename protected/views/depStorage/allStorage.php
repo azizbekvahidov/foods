@@ -2,7 +2,7 @@
     <?//=CHtml::link('Просмотреть остатки',array(),array('class'=>'btn btn-default'))?>
 </div>
 
-<? $function = new Functions(); $count = 1; $prod = new Products(); $test = 0; $stuff = new Halfstaff(); $summEnd = 0;
+<? $function = new Functions(); $count = 1; $product = new Products(); $test = 0; $stuff = new Halfstaff(); $summEnd = 0;
 $summ = 0; $sumStart = 0; $sumIn = 0; $sumInDep = 0; $sumOutDep = 0; $sumToStuff = 0; $sumOut = 0; $summFact = 0;?>
 
 <table class=" table table-bordered table-hover" >
@@ -22,38 +22,37 @@ $summ = 0; $sumStart = 0; $sumIn = 0; $sumInDep = 0; $sumOutDep = 0; $sumToStuff
             <th>Сумма</th>
         </tr>
     <tbody>
-
-    <?  if(!empty($model)){?>
+    <?  if(!empty($prod["start"])){ ?>
         <tr>
             <th colspan="10">Продукты</th>
         </tr>
-    <? foreach($model as $value){?>
-        <? if($value->startCount != 0 || $inProduct[$value->prod_id] != 0 || $outProduct[$value->prod_id] != 0 || $outStuffProd[$value->prod_id] != 0 || $depIn[$value->prod_id] != 0 || $depOut[$value->prod_id] != 0 || $value->endCount !=0 || $value->CurEndCount !=0){?>
-                <? $factOutProd = $value->startCount + $inProduct[$value->prod_id] + $depIn[$value->prod_id] - $depOut[$value->prod_id] - $value->CurEndCount?>
+    <? foreach($prod["start"] as $key => $value){?>
+        <? if($value["cnt"] != 0 || $inProduct[$key] != 0 || $outProduct[$key] != 0 || $outStuffProd[$key] != 0 || $depIn[$key] != 0 || $depOut[$key] != 0 || $prod["end"][$key]["cnt"] !=0 || $prod["curEnd"][$key]["cnt"] !=0 || $value['cnt'] != ""){?>
+                <? $factOutProd = $value["cnt"]+ $inProduct[$key] + $depIn[$key] - $depOut[$key] - $prod["curEnd"][$key]["cnt"]?>
         <tr>
             <td><?=$count?></td>
-            <td><?=$value->getRelated('products')->name?></td>
-            <td><?=number_format( $value->startCount,2,',','')?></td>
-            <td><?=number_format( $inProduct[$value->prod_id],2,',','')?></td>
-            <td><?=number_format( $depIn[$value->prod_id],2,',','')?></td>
-            <td><?=number_format( $depOut[$value->prod_id],2,',','')?></td>
-            <td><?=number_format( $outProduct[$value->prod_id],2,',','')?></td>
+            <td><?=$value["name"]?></td>
+            <td><?=number_format( $value["cnt"],2,',','')?></td>
+            <td><?=number_format( $inProduct[$key],2,',','')?></td>
+            <td><?=number_format( $depIn[$key],2,',','')?></td>
+            <td><?=number_format( $depOut[$key],2,',','')?></td>
+            <td><?=number_format( $outProduct[$key],2,',','')?></td>
             <td><?=number_format( $factOutProd,2,',','')?></td>
-            <td><?=number_format( $outStuffProd[$value->prod_id],2,',','')?></td>
-            <td><?=number_format( $value->endCount,2,',','')?></td>
-            <td><?=number_format( $value->CurEndCount,2,',','')?></td>
-            <td><?=number_format( $value->endCount-$value->CurEndCount,2,',','')?></td>
-            <td><?=number_format( ($value->endCount-$value->CurEndCount)*$prod->getCostPrice($value->prod_id,$value->b_date),0,',','');
-                $summ = $summ + $value->endCount*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $test = $test +($value->endCount-$value->CurEndCount)*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $summEnd = $summEnd + $value->CurEndCount*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $summFact = $summFact + $factOutProd*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $sumIn = $sumIn + $inProduct[$value->prod_id]*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $sumInDep = $sumInDep + $depIn[$value->prod_id]*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $sumOutDep = $sumOutDep + $depOut[$value->prod_id]*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $sumOut = $sumOut + $outProduct[$value->prod_id]*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $sumToStuff = $sumToStuff + $outStuffProd[$value->prod_id]*$prod->getCostPrice($value->prod_id,$value->b_date);
-                $sumStart = $sumStart + $value->startCount*$prod->getCostPrice($value->prod_id,date('Y-m-d',strtotime($value->b_date)-86400))?></td>
+            <td><?=number_format( $outStuffProd[$key],2,',','')?></td>
+            <td><?=number_format( $prod["end"][$key]["cnt"],2,',','')?></td>
+            <td><?=number_format( $prod["curEnd"][$key]["cnt"],2,',','')?></td>
+            <td><?=number_format( $prod["end"][$key]["cnt"]-$prod["curEnd"][$key]["cnt"],2,',','')?></td>
+            <td><?=number_format( ($prod["end"][$key]["cnt"]-$prod["curEnd"][$key]["cnt"])*$product->getCostPrice($key,$prod["end"][$key]["date"]),0,',','');
+                $summ = $summ + $prod["end"][$key]["cnt"]*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $test = $test +($prod["end"][$key]["cnt"]-$prod["curEnd"][$key]["cnt"])*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $summEnd = $summEnd + $prod["curEnd"][$key]["cnt"]*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $summFact = $summFact + $factOutProd*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $sumIn = $sumIn + $inProduct[$key]*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $sumInDep = $sumInDep + $depIn[$key]*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $sumOutDep = $sumOutDep + $depOut[$key]*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $sumOut = $sumOut + $outProduct[$key]*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $sumToStuff = $sumToStuff + $outStuffProd[$key]*$product->getCostPrice($key,$prod["end"][$key]["date"]);
+                $sumStart = $sumStart + $value["cnt"]*$product->getCostPrice($key,date('Y-m-d',strtotime($prod["end"][$key]["date"])-86400))?></td>
 
         </tr>
         <?$count++; }?>
@@ -80,38 +79,38 @@ $summ = 0; $sumStart = 0; $sumIn = 0; $sumInDep = 0; $sumOutDep = 0; $sumToStuff
         $sumStart1 = $sumStart;
         $test1 = $test?>
     </tr>
-    <?  if(!empty($curStuff)){?>
+
+    <?  if(!empty($stuffs["start"])){?>
         <tr>
-            <th colspan="10">Прлуфабрикаты </th>
+            <th colspan="10">Полуфабрикаты </th>
         </tr>
-    <?;foreach($curStuff as $value){ ?>
-            <? //if(number_format( $value->startCount,2) != 0 || number_format( $inProduct[$value->prod_id],2) != 0 || number_format( $outProduct[$value->prod_id],2) != 0){?>
-            <? if($value['startCount'] != 0 || $instuff[$value['prod_id']] != 0 || $outStuff[$value['prod_id']] != 0 || $depStuffIn[$value['prod_id']] != 0 || $depStuffOut[$value['prod_id']] != 0 || $value['endCount'] != 0 ){?>
-                <? $factOutStuff = $value['startCount'] + $instuff[$value['prod_id']] + $depStuffIn[$value['prod_id']] - $depStuffOut[$value['prod_id']] - $value['CurEndCount']?>
+    <?;foreach($stuffs["start"] as $key => $value){ ?>
+            <? if($value['cnt'] != 0 || $instuff[$key] != 0 || $outStuff[$key] != 0 || $depStuffIn[$key] != 0 || $depStuffOut[$key] != 0 || $stuffs["end"][$key]["cnt"] != 0 || $value['cnt'] != ""){?>
+                <? $factOutStuff = $value['cnt'] + $instuff[$key] + $depStuffIn[$key] - $depStuffOut[$key] - $stuffs["curEnd"][$key]["cnt"]?>
             <tr>
                 <td><?=$count?></td>
                 <td><?=$value['name']?></td>
-                <td><?=number_format( $value['startCount'],2,',','')?></td>
-                <td><?=number_format( $instuff[$value['prod_id']],2,',','')?></td>
-                <td><?=number_format( $depStuffIn[$value['prod_id']],2,',','')?></td>
-                <td><?=number_format( $depStuffOut[$value['prod_id']],2,',','')?></td>
-                <td><?=number_format( $outDishStuff[$value['prod_id']],2,',','')?></td>
+                <td><?=number_format( $value["cnt"],2,',','')?></td>
+                <td><?=number_format( $instuff[$key],2,',','')?></td>
+                <td><?=number_format( $depStuffIn[$key],2,',','')?></td>
+                <td><?=number_format( $depStuffOut[$key],2,',','')?></td>
+                <td><?=number_format( $outDishStuff[$key],2,',','')?></td>
                 <td><?=number_format( $factOutStuff,2,',','')?></td>
-                <td><?=number_format( $outStuff[$value['prod_id']],2,',','')?></td>
-                <td><?=number_format( $value['endCount'],2,',','')?></td>
-                <td><?=number_format( $value['CurEndCount'],2,',','')?></td>
-                <td><?=number_format( $value['endCount']-$value['CurEndCount'],2,',','')?></td>
-                <td><?=number_format( ($value['endCount']-$value['CurEndCount'])*$stuff->getCostPrice($value['prod_id'],$value['b_date']),0,',','');
-                    $summ = $summ + $value['endCount']*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    $summEnd = $summEnd + $value['CurEndCount']*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    $summFact = $summFact + $factOutStuff*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    $sumIn = $sumIn + ($instuff[$value['prod_id']])*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    $sumInDep = $sumInDep + $depStuffIn[$value['prod_id']]*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    $sumOutDep = $sumOutDep + $depStuffOut[$value['prod_id']]*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    $sumOut = $sumOut + $outDishStuff[$value['prod_id']]*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    $sumToStuff = $sumToStuff + $outStuff[$value['prod_id']]*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
-                    $sumStart = $sumStart + $value['startCount']*$stuff->getCostPrice($value['prod_id'],date('Y-m-d',strtotime($value['b_date'])-86400));
-                    $test = $test + ($value['endCount']-$value['CurEndCount'])*$stuff->getCostPrice($value['prod_id'],$value['b_date']);
+                <td><?=number_format( $outStuff[$key],2,',','')?></td>
+                <td><?=number_format( $stuffs["end"][$key]["cnt"],2,',','')?></td>
+                <td><?=number_format( $stuffs["curEnd"][$key]["cnt"],2,',','')?></td>
+                <td><?=number_format( $stuffs["end"][$key]["cnt"]-$stuffs["curEnd"][$key]["cnt"],2,',','')?></td>
+                <td><?=number_format( ($stuffs["end"][$key]["cnt"]-$stuffs["curEnd"][$key]["cnt"])*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]),0,',','');
+                    $summ = $summ + $stuffs["end"][$key]["cnt"]*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
+                    $summEnd = $summEnd + $stuffs["curEnd"][$key]["cnt"]*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
+                    $summFact = $summFact + $factOutStuff*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
+                    $sumIn = $sumIn + ($instuff[$key])*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
+                    $sumInDep = $sumInDep + $depStuffIn[$key]*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
+                    $sumOutDep = $sumOutDep + $depStuffOut[$key]*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
+                    $sumOut = $sumOut + $outDishStuff[$key]*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
+                    $sumToStuff = $sumToStuff + $outStuff[$key]*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
+                    $sumStart = $sumStart + $value['cnt']*$stuff->getCostPrice($key,date('Y-m-d',strtotime($stuffs["end"][$key]["date"])-86400));
+                    $test = $test + ($stuffs["end"][$key]["cnt"]-$stuffs["curEnd"][$key]["cnt"])*$stuff->getCostPrice($key,$stuffs["end"][$key]["date"]);
                     ?></td>
             </tr>
         <?$count++; }?>

@@ -8,3 +8,4 @@ protected/runtime/*
 protected/data/*.db
 themes/classic/views/
 protected/config/database.php
+.idea/*

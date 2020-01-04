@@ -1,6 +1,6 @@
 <?php
 
-class OrdersController extends Controller
+class OrdersController extends SetupController
 {
 	
 	
@@ -13,15 +13,15 @@ class OrdersController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
-						
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-						
-		);
-	}
+
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 	
 		/**
 	 * Specifies the access control rules.
@@ -36,7 +36,7 @@ class OrdersController extends Controller
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('create','update','admin','delete','export','import','editable','toggle',),
+                'actions'=>array('PrintCheck','create','update','admin','delete','export','import','editable','toggle','orderRefuse','refuse','RemoveFromOrder','printCheck'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users
@@ -395,5 +395,167 @@ class OrdersController extends Controller
     	);
 	}
 
-	
+    public function actionOrderRefuse($id){
+        $expId = $id;
+        $this->render("orderRefuse",array(
+            'expId'=>$expId
+        ));
+    }
+
+    public function actionRefuse(){
+        $res = array();
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('expense ex')
+            ->where('ex.expense_id = :id',array(':id'=>$_POST['id']))
+            ->order('ex.order_date')
+            ->queryRow();
+        $order = Yii::app()->db->createCommand()
+            ->select('ord.just_id,ord.count,d.name,ord.type,ord.order_id')
+            ->from('orders ord')
+            ->join('dishes d','d.dish_id = ord.just_id')
+            ->where('ord.expense_id = :id AND ord.type = :types AND ord.deleted = 0',array(':id'=>$model['expense_id'],':types'=>1))
+            ->queryAll();
+        $order2 = Yii::app()->db->createCommand()
+            ->select('ord.just_id,ord.count,h.name,ord.type,ord.order_id')
+            ->from('orders ord')
+            ->join('halfstaff h','h.halfstuff_id = ord.just_id')
+            ->where('ord.expense_id = :id AND ord.type = :types AND ord.deleted = 0',array(':id'=>$model['expense_id'],':types'=>2))
+            ->queryAll();
+        $order3 = Yii::app()->db->createCommand()
+            ->select('ord.just_id,ord.count,p.name,ord.type,ord.order_id')
+            ->from('orders ord')
+            ->join('products p','p.product_id = ord.just_id')
+            ->where('ord.expense_id = :id AND ord.type = :types AND ord.deleted = 0',array(':id'=>$model['expense_id'],':types'=>3))
+            ->queryAll();
+
+        $this->renderPartial('refuse',array(
+            'order'=>$order,
+            'order2'=>$order2,
+            'order3'=>$order3,
+            'model'=>$model,
+            'dates'=>$dates
+        ));
+    }
+
+
+    public function actionRemoveFromOrder(){
+        $expId = intval($_POST['expenseId']);
+        $types = 0;
+        $refuseTime = date("Y-m-d H:i:s");
+        $temp = explode('_',$_POST['id']);
+        $empId = 0;
+        if($temp[0] == 'dish')
+            $types = 1;
+        if($temp[0] == 'stuff')
+            $types = 2;
+        if($temp[0] == 'product')
+            $types = 3;
+        $count = floatval($_POST['count']);
+        if(isset($expId)){
+            if ($count >= 0) {
+                $model = Yii::app()->db->createCommand()
+                    ->select()
+                    ->from('orders o')
+                    ->join("expense ex","ex.expense_id = o.expense_id")
+                    ->where('o.expense_id = :id AND o.just_id = :just_id AND o.type = :types', array(':id' => $expId, ':just_id' => $temp[1], ':types' => $types))
+                    ->queryRow();
+                if (!empty($model)){
+                    Yii::app()->db->createCommand()->insert('orderRefuse',array(
+                        'order_id' => $model['order_id'],
+                        'count' => $model['count']-$count,
+                        'refuse_time' => $refuseTime
+                    ));
+                    if($count == 0){
+                        Yii::app()->db->createCommand()->update('orders', array(
+                            'deleted' => 1,
+                            'count' => $count
+                        ), 'order_id = :id', array(':id' => $model['order_id']));
+                    }
+                    else {
+                        Yii::app()->db->createCommand()->update('orders', array(
+
+                            'count' => $count
+                        ), 'order_id = :id', array(':id' => $model['order_id']));
+                    }
+                    $percent = new Percent();
+                    $emp = Yii::app()->db->CreateCommand()
+                        ->select()
+                        ->from("employee")
+                        ->where("employee_id = :id",array(":id"=>$model["employee_id"]))
+                        ->queryRow();
+                    echo "<pre>";
+                    print_r($model);
+                    echo "</pre>";
+                    if($emp["check_percent"] == 1) {
+                        if($model['banket'] == 0){
+                            $_POST['expSum']=number_format(($_POST['expSum'] + $_POST['expSum'] * $percent->getPercent(date("Y-m-d")) / 100) / 100, 0, ',', '') * 100;
+                        }
+                        else{
+                            echo "<pre>";
+                            print_r($_POST);
+                            echo "</pre>";
+                            $_POST['expSum']=number_format(($_POST['expSum'] + $_POST['expSum'] * Yii::app()->config->get("banket_percent") / 100) / 100, 0, ',', '') * 100;
+                        }
+                    }
+                    else{
+                        $_POST['expSum']=number_format(($_POST['expSum'] + $_POST['expSum'] * $percent->getPercent(date("Y-m-d")) / 100) / 100, 0, ',', '') * 100;
+                    }
+					Yii::app()->db->createCommand()->update('expense', array(
+
+                            'expSum' => $_POST["expSum"]
+                        ), 'expense_id = :id', array(':id' => $expId));
+					
+                }
+
+            }
+        }
+        $orders = Yii::app()->db->createCommand()
+            ->select()
+            ->from("expense ex")
+            ->join("orders o","o.expense_id = ex.expense_id")
+            ->where("ex.expense_id = :id and o.deleted != 1",array(":id"=>$expId))
+            ->queryAll();
+        $dishMsg = '*dish=>';
+        $stuffMsg = '*stuff=>';
+        $prodMsg = '*prod=>';
+        $dishMessage = '';
+        $stuffMessage = '';
+        $prodMessage = '';
+        $archive_message = '';
+        foreach ($orders as $key => $val) {
+            $empId = $val["employee_id"];
+            $count = floatval($val["count"]);
+
+            if($val["type"] == "1") {
+                $dishMessage .= $val["just_id"].":".$count.",";
+            }
+            if($val["type"] == "2") {
+                $stuffMessage .= $val["just_id"].":".$count.",";
+            }
+            if($val["type"] == "3") {
+                $prodMessage .= $val["just_id"].":".$count.",";
+            }
+
+
+
+        }
+        $archive_message .= ((!empty($dishMessage)) ? $dishMsg.$dishMessage : '').((!empty($stuffMessage)) ? $stuffMsg.$stuffMessage : '').((!empty($prodMessage)) ? $prodMsg.$prodMessage : '');
+
+        $archive = new Orders();
+        $archive->setArchive('update', $expId, $archive_message,$empId);
+    }
+
+    public function actionPrintCheck(){
+        $expId = $_POST["expId"];
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from("expense ex")
+            ->where("ex.expense_id = :id",array(":id"=>$expId))
+            ->queryRow();
+
+        $function = new Orders();
+        $function->PrintCheck($expId,'update',$_POST['id'],$model['employee_id'],$_POST['count'],$model['table']);
+
+    }
 }

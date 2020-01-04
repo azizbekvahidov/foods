@@ -58,6 +58,7 @@ $('.search-form form').submit(function(){
         <tr>
             <th></th>
             <th>Название</th>
+            <th>Принтер</th>
             <th></th>
         </tr>
     </thead>
@@ -66,6 +67,7 @@ $('.search-form form').submit(function(){
         <tr>
             <td><?=$count?></td>
             <td><?=$val->name?></td>
+            <td><?=$val->printer?></td>
             <td>
                 <?=CHtml::link('<i class="icon-pencil"></i>',array('update?id='.$val->department_id),array('class'=>'update'))?>
                 <?=CHtml::link('<i class="icon-trash"></i>',array('delete?id='.$val->department_id),array('class'=>'delete'))?>   

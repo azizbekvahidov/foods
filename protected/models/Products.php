@@ -55,7 +55,7 @@ class Products extends CActiveRecord
             'stuffStruct'=>array(self::HAS_MANY,'HalfstuffStructure','prod_id'),
             'realize'=>array(self::HAS_ONE,'Realize','prod_id'),
             //'groups'=>array(self::BELONGS_TO,'GroupProd','groupProd_id'),
-            'storageProd'=>array(self::HAS_ONE,'Storage','prod_id')
+            'storageProd'=>array(self::HAS_ONE,'Storage','prod_id'),
 		);
 	}
 

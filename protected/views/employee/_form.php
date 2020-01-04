@@ -19,6 +19,7 @@
 <?php echo $form->textFieldRow($model,'login',array('class'=>'span3','maxlength'=>100)); ?>
 <label for="Employee_password">Пароль</label>
 <?php echo CHtml::passwordField('Employee[password]','',array('class'=>'span3','maxlength'=>100))?>
+<?php echo $form->textFieldRow($model,'salary',array('class'=>'span3','maxlength'=>100)); ?><br/>
 <?php echo $form->dropDownListRow($model,'role',CHtml::listData(Roles::model()->findAll(),'role_id','role_name'),array('class'=>'span3','empty'=>'Выберите роль'))?>
 <span id="department">
 <?php echo $form->dropDownListRow($model,'depId',CHtml::listData(Department::model()->findAll(),'department_id','name'),array('class'=>'span3','empty'=>'Выберите отдел'))?>

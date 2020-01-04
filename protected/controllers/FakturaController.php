@@ -1,6 +1,6 @@
 <?php
 
-class FakturaController extends Controller
+class FakturaController extends SetupController
 {
 	
 	
@@ -13,14 +13,15 @@ class FakturaController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
-						
-			'accessControl', // perform access control for CRUD operations
-						
-		);
-	}
+
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 	
 		/**
 	 * Specifies the access control rules.
@@ -232,15 +233,26 @@ class FakturaController extends Controller
         $to = $_POST['to'];
         $provId = $_POST['provId'];
         $model = Yii::app()->db->createCommand()
-            ->select('m.name as mName,p.name as name,re.price as price,re.count as count')
+            ->select('m.name as mName,p.name as name,re.price as price,sum(re.count) as count')
             ->from('faktura fa')
             ->where('date(fa.realize_date) BETWEEN :from AND :to AND fa.provider_id = :provId',array('from'=>$from,':to'=>$to,':provId'=>$provId))
             ->join('realize re','re.faktura_id = fa.faktura_id')
             ->join('products p','p.product_id = re.prod_id')
             ->join('measurement m','m.measure_id = p.measure_id')
+            ->group("re.prod_id")
             ->queryAll();
+        $summ = Yii::app()->db->createCommand()
+            ->select('sum(re.price*re.count) as summ')
+            ->from('faktura fa')
+            ->where('date(fa.realize_date) BETWEEN :from AND :to AND fa.provider_id = :provId',array('from'=>$from,':to'=>$to,':provId'=>$provId))
+            ->join('realize re','re.faktura_id = fa.faktura_id')
+            ->join('products p','p.product_id = re.prod_id')
+            ->join('measurement m','m.measure_id = p.measure_id')
+            ->queryRow();
         $this->renderPartial('provProdList',array(
-            'model'=>$model
+            'model'=>$model,
+            'summ'=>$summ,
+            'allSumm'=>$_POST["allSumm"]
         ));
     }
 
@@ -344,35 +356,10 @@ class FakturaController extends Controller
             $List[$val['request_id']] = $val['req_date']." - ".$val['name'];
         }
         if(isset($_POST['request'])) {
-
+            $storage = new Storage();
             $expense = new Expense();
             $dates = date('Y-m-d H:i:s');
             $prodCount = array();
-            foreach ($_POST['debt']['summ'] as $key => $val) {
-                if(!empty($val)){
-                    Yii::app()->db->createCommand()->insert('credit',array(
-                        'credit_date'=>$dates,
-                        'summ'=>$val,
-                        'contractor_id'=>$_POST['debt']['contractor'][$key],
-                        'status'=>0,
-                        'comment'=>$_POST['debt']['comment'][$key],
-                        'user_id'=>Yii::app()->user->getId()
-                    ));
-                }
-            }
-            foreach ($_POST['cost']['summ'] as $key => $val) {
-                if(!empty($val)){
-                    Yii::app()->db->createCommand()->insert('costs',array(
-                        'cost_date'=>$dates,
-                        'summ'=>$val,
-                        'contractor_id'=>$_POST['cost']['contractor'][$key],
-                        'status'=>0,
-                        'comment'=>$_POST['cost']['comment'][$key],
-                        'user_id'=>Yii::app()->user->getId(),
-                        'employee_id'=>$_POST['cost']['empId'][$key]
-                    ));
-                }
-            }
 
             $provId = Yii::app()->db->createCommand()
                 ->select('provider_id')
@@ -391,12 +378,16 @@ class FakturaController extends Controller
                     foreach ($value as $key => $val) {
                         $prodCount[$key] = floatval($prodCount[$key]) + floatval($expense->changeToFloat($val['count']));
                         if ($val['count'] != 0) {
+                            $cnt = $expense->changeToFloat($val['count']);
                             Yii::app()->db->createCommand()->insert('dep_realize', array(
                                 'dep_faktura_id' => $lastDepId,
                                 'prod_id' => $key,
                                 'price' => $_POST['price'][$key],
-                                'count' => $expense->changeToFloat($val['count'])
+                                'count' => $cnt
                             ));
+
+                            $expense->addExpenseList($key, 3, $dates = date('Y-m-d', strtotime($dates)), $cnt*(-1),$keys);
+//                            $storage->addToStorageDep($key,$expense->changeToFloat($val['count']),1,$keys);
                         }
                     }
                 }
@@ -416,16 +407,18 @@ class FakturaController extends Controller
                     foreach ($value as $key => $val) {
                         $prodCount[$key] = floatval($prodCount[$key]) + floatval($expense->changeToFloat($val['count']));
                         if ($val['count'] != 0) {
+                            $cnt = $expense->changeToFloat($val['count']);
                             Yii::app()->db->createCommand()->insert('orders', array(
                                 'expense_id' => $lastExpId,
                                 'just_id' => $key,
                                 'type'=>3,
-                                'count' => $expense->changeToFloat($val['count'])
+                                'count' => $cnt
                             ));
+                            $expense->addExpenseList($key, 3, $dates = date('Y-m-d', strtotime($dates)), $cnt);
+//                            $storage->addToStorageDep($key,$expense->changeToFloat($val['count']),1,$keys);
                         }
                     }
                 }
-
             }
             Yii::app()->db->createCommand()->insert('faktura', array(
                 'realize_date' => $dates,
@@ -440,6 +433,8 @@ class FakturaController extends Controller
                     'price' => $_POST['price'][$key],
                     'count' => $count
                 ));
+//                $storage->addToStorage($key,$count);
+//                $storage->removeToStorage($key,$count);
 
             }
 

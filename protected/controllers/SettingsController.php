@@ -1,14 +1,14 @@
 <?
 
-class SettingsController extends Controller{
+class SettingsController extends SetupController{
     public $layout='//layouts/column1';
+
     public function filters()
     {
         return array(
-
-            'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
-
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
         );
     }
 
@@ -25,7 +25,7 @@ class SettingsController extends Controller{
                 'roles'=>array('2'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('changeBalance','ajaxChangeBalance','ajaxPrintCalculate','calculate','calculateList','prodPrice','refresh','MbalanceRefresh','percent','exportList','prodRelation','prodRelList','setPrice','setInfo'),
+                'actions'=>array('wifi','changeBalance','ajaxChangeBalance','ajaxPrintCalculate','calculate','calculateList','prodPrice','refresh','MbalanceRefresh','percent','exportList','prodRelation','prodRelList','setPrice','setInfo'),
                 'roles'=>array('3'),
             ),
             array('deny',  // deny all users
@@ -37,6 +37,16 @@ class SettingsController extends Controller{
     public function actionRefresh(){
         $department = Department::model()->findAll();
         $depBalance = new DepBalance();
+        $storage = new Storage();
+        $product = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('products p')
+            ->where('p.status != 1')
+            ->queryAll();
+
+        foreach ($product as $val) {
+            $storage->addToStorage($val["product_id"],0);
+        }
         foreach ($department as $val) {
             $depBalance->refreshBalance($val->department_id);
             /*$dish = Dishes::model()->findAll('t.department_id = :depId',array(':depId'=>$val->department_id));
@@ -175,13 +185,8 @@ class SettingsController extends Controller{
             $from = $_POST['from'];
             $to = $_POST['to'];
             $days = strtotime($to)-strtotime($from);
-            $newModel = Expense::model()->findAll(array('condition' => 'kind = 0', 'group' => 'date(order_date)'));
-            $count = 0;
             $expense = new Expense();
 
-            $summ = array();
-            $summP = array();
-            $dateList = array();
             for ($i = 0; $i < $days/(3600*24); $i++) {
 
                 $mBalance = MBalance::model()->find('t.b_date = :dates', array(':dates' => date('Y-m-d',strtotime($from)+(3600*24*$i))));
@@ -189,15 +194,13 @@ class SettingsController extends Controller{
                 $temp = $expense->getSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
 
                 if (!empty($mBalance)) {
-                    $mBalance->procProceeds = $temp[1];
-                    $mBalance->proceeds = $temp[2];
+                    $mBalance->proceeds = $temp;
                     $mBalance->cost = 0;
                     $mBalance->save();
                 } else {
                     $mBalance = new MBalance();
                     $mBalance->b_date = date('Y-m-d',strtotime($from)+(3600*24*$i));
-                    $mBalance->procProceeds = $temp[1];
-                    $mBalance->proceeds = $temp[2];
+                    $mBalance->proceeds = $temp;
                     $mBalance->cost = 0;
                     $mBalance->save();
                 }
@@ -210,31 +213,104 @@ class SettingsController extends Controller{
 
         ));
     }
-	public function actionPercent(){
+
+    public function actionCountDay(){
+        $dates = date('Y-m-d');
+        Yii::app()->db->createCommand()->delete('mDepBalance','b_date = :dates',array(':dates'=>$dates));
+        Yii::app()->db->createCommand()->delete('mbalance','b_date = :dates',array(':dates'=>$dates));
+        //$cnt = ($timeStptill-$timeStpfrom)/86400;
+        $expense = new Expense();
+        $expense = new Expense();
+        $costPrice = 0;
+        $prodModel = new Products();
+        $stuffs = new Halfstaff();
+        $dep = Department::model()->findAll();
+        foreach ($dep as $value) {
+            $cost = 0;
+            //$cost = $expense->getDepCost($value->department_id,$dates,$dates);
+            $exp = $expense->getDepIncome($value->department_id,$dates,$dates);
+            $prod = Yii::app()->db->createCommand()
+                ->select("sum(ex.cnt) as cnt,ex.prod_id,p.name,m.name as Mname")
+                ->from("expense_list ex")
+                ->join("products p","p.product_id = ex.prod_id")
+                ->join("measurement m","p.measure_id = m.measure_id")
+                ->where("ex.expense_date >= :from and ex.expense_date <= :to and ex.department_id = :depId and ex.prod_type = 1",array(":from"=>$dates,":to"=>$dates,":depId"=>$value->department_id))
+                ->group("ex.prod_id")
+                ->queryAll();
+            //$temp = $expense->getDishProd($depId,$dates,$dates);
+            $count = 0;
+            foreach ($prod as $key => $val) {
+                $cost = $cost + $prodModel->getCostPrice($val["prod_id"],$dates)*$val["cnt"];
+            }
+            $stuff = Yii::app()->db->createCommand()
+                ->select("sum(ex.cnt) as cnt,ex.prod_id,p.name,m.name as Mname")
+                ->from("expense_list ex")
+                ->join("halfstaff p","p.halfstuff_id = ex.prod_id")
+                ->join("measurement m","p.stuff_type = m.measure_id")
+                ->where("ex.expense_date >= :from and ex.expense_date <= :to and ex.department_id = :depId and ex.prod_type = 2",array(":from"=>$dates,":to"=>$dates,":depId"=>$value->department_id))
+                ->group("ex.prod_id")
+                ->queryAll();
+            //$temp2 = $expense->getDishStuff($depId,$dates,$dates);
+            $count = 0;
+            foreach ($stuff as $key => $val) {
+                $cost = $cost + $stuffs->getCostPrice($val["prod_id"],$dates)*$val["cnt"];
+            }
+            Yii::app()->db->createCommand()->insert('mDepBalance',
+                array(
+                    'b_date'=>$dates,
+                    'costPrice'=>$cost,
+                    'department_id'=>$value->department_id,
+                    'expSum'=>$exp
+                )
+            );
+            $costPrice = $costPrice + $cost;
+
+        }
+
+
+        $expSum = $expense->getSum($dates);
+        Yii::app()->db->createCommand()->insert('mbalance',
+            array(
+                'b_date'=>$dates,
+                'costPrice'=>$costPrice,
+                'proceeds'=>$expSum
+            )
+        );
+
+        $this->redirect('/');
+
+    }
+
+	public function actionSetting(){
 		$model = Percent::model()->find(array('order'=>'t.percent_date DESC'));
 
-		if($_POST['percent']){
-			$transaction = Yii::app()->db->beginTransaction();
+		if($_POST['setting']){
 			try{
 				$messageType='warning';
 				$message = "There are some errors ";
-				$model = new Percent();
-				$model->percent_date = date('Y-m-d H:i:s');
-				$model->percent = $_POST['percent'];
-				if($model->save()) {
-					$transaction->commit();
-					Yii::app()->user->setFlash( $messageType, $message );
-					$this->redirect( array( 'site/index' ) );
-				}
+				Yii::app()->config->set("name",$_POST["setting"]["name"]);
+                Yii::app()->config->set("printerLang",$_POST["setting"]["printerLang"]);
+                Yii::app()->config->set("waiterSalary",$_POST["setting"]["waiterSalary"]);
+                Yii::app()->config->set("printer_interface",$_POST["setting"]["printer_interface"]);
+                Yii::app()->config->set("banket",(isset($_POST["setting"]["banket"])) ? $_POST["setting"]["banket"] : "0");
+                Yii::app()->config->set("banket_percent",$_POST["setting"]["banket_percent"]);
+                Yii::app()->user->setFlash( $messageType, $message );
+                if($model->percent != $_POST["setting"]["percent"]){
+                    Yii::app()->config->set("percent",$_POST["setting"]["percent"]);
+                    $percent = new Percent();
+                    $percent->percent_date = date('Y-m-d');
+                    $percent->percent = $_POST["setting"]["percent"];
+                    $percent->save();
+                }
+                //$this->redirect( array( 'site/index' ) );
 			}
 			catch (Exception $e){
-				$transaction->rollBack();
 				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
 				//$this->refresh();
 			}
 		}
 
-		$this->render('percent',array(
+		$this->render('setting',array(
 			'model'=>$model,
 
 		));
@@ -372,11 +448,11 @@ class SettingsController extends Controller{
         if(!empty($dates)){
             if ($types == 0) {
                 $model = Yii::app()->db->createCommand()
-                    ->select('b.balance_id,b.CurEndCount,p.name as pName,m.name as mName,b.prod_id')
-                    ->from('balance b')
+                    ->select('b.storage_id,b.cnt,p.name as pName,m.name as mName,b.prod_id')
+                    ->from('storage b')
                     ->join('products p','p.product_id = b.prod_id')
                     ->join('measurement m','m.measure_id = p.measure_id')
-                    ->where('b.b_date = :dates AND prod_id = :id', array(':dates' => $dates, ':id' => $pId))
+                    ->where('b.prod_id = :id', array(':id' => $pId))
                     ->queryRow();
                 if(!empty($model) && empty($model['CurEndCount'])){
                    /* $temp = Yii::app()->db->createCommand()->update('balance',array(
@@ -390,27 +466,24 @@ class SettingsController extends Controller{
             else{
                 if($pType == 1) {
                     $model = Yii::app()->db->createCommand()
-                        ->select('b.dep_balance_id,b.CurEndCount,p.name as pName,m.name as mName,b.prod_id,b.type')
-                        ->from('dep_balance b')
+                        ->select('b.storage_dep_id,b.cnt,p.name as pName,m.name as mName,b.prod_id,b.prod_type')
+                        ->from('storage_dep b')
                         ->join('products p', 'p.product_id = b.prod_id')
                         ->join('measurement m','m.measure_id = p.measure_id')
-                        ->where('b.b_date = :dates AND b.prod_id = :id AND b.type = :types AND b.department_id =:depId', array(':dates' => $dates, ':id' => $pId, ':types' => $pType, ':depId' => $depId))
+                        ->where('b.prod_id = :id AND b.prod_type = :types AND b.department_id =:depId', array(':id' => $pId, ':types' => $pType, ':depId' => $depId))
                         ->queryRow();
                 }
                 if($pType == 2){
                     $model = Yii::app()->db->createCommand()
-                        ->select('b.dep_balance_id,b.CurEndCount,h.name as pName,m.name as mName,b.prod_id,b.type')
-                        ->from('dep_balance b')
+                        ->select('b.storage_dep_id,b.cnt,h.name as pName,m.name as mName,b.prod_id,b.prod_type')
+                        ->from('storage_dep b')
                         ->join('halfstaff h', 'h.halfstuff_id = b.prod_id')
                         ->join('measurement m','m.measure_id = h.stuff_type')
-                        ->where('b.b_date = :dates AND b.prod_id = :id AND b.type = :types AND b.department_id =:depId', array(':dates' => $dates, ':id' => $pId, ':types' => $pType, ':depId' => $depId))
+                        ->where('b.prod_id = :id AND b.prod_type = :types AND b.department_id =:depId', array(':id' => $pId, ':types' => $pType, ':depId' => $depId))
                         ->queryRow();
                 }
                 if(!empty($model) && empty($model['CurEndCount'])){
 
-                    /*$temp = Yii::app()->db->createCommand()->update('dep_balance',array(
-                        'CurEndCount'=>$pVal
-                    ),'dep_balance_id = :id',array(':id'=>$model['dep_balance_id']));*/
                     $model['CurEndCount'] = $pVal;
                     $return = $model;
                 }
@@ -436,6 +509,9 @@ class SettingsController extends Controller{
                                 Yii::app()->db->createCommand()->update('balance',array(
                                     'CurEndCount'=>$function->changeToFloat($value)
                                 ),'b_date = :dates AND prod_id = :id ',array(':dates'=>$dates,':id'=>$keys));
+                                Yii::app()->db->createCommand()->update('storage',array(
+                                    'cnt'=>$function->changeToFloat($value)
+                                ),'prod_id = :id ',array(':id'=>$keys));
                             }
                         }
                     }
@@ -450,6 +526,9 @@ class SettingsController extends Controller{
                                 Yii::app()->db->createCommand()->update('dep_balance',array(
                                     'CurEndCount'=>$function->changeToFloat($value)
                                 ),'b_date = :dates AND prod_id = :id AND type = :types AND department_id = :depId',array(':dates'=>$dates,':id'=>$keys,':types'=>$key,':depId'=>$depId));
+                                Yii::app()->db->createCommand()->update('storage_dep',array(
+                                    'cnt'=>$function->changeToFloat($value)
+                                ),'prod_id = :id AND prod_type = :types AND department_id = :depId',array(':id'=>$keys,':types'=>$key,':depId'=>$depId));
                             }
                         }
                         if($key == 2){
@@ -457,6 +536,9 @@ class SettingsController extends Controller{
                                 Yii::app()->db->createCommand()->update('dep_balance',array(
                                     'CurEndCount'=>$function->changeToFloat($value)
                                 ),'b_date = :dates AND prod_id = :id AND type = :types AND department_id = :depId',array(':dates'=>$dates,':id'=>$keys,':types'=>$key,':depId'=>$depId));
+                                Yii::app()->db->createCommand()->update('storage_dep',array(
+                                    'cnt'=>$function->changeToFloat($value)
+                                ),'prod_id = :id AND prod_type = :types AND department_id = :depId',array(':id'=>$keys,':types'=>$key,':depId'=>$depId));
                             }
                         }
                     }
@@ -624,7 +706,7 @@ class SettingsController extends Controller{
                 
             }
     }
-
+/*
     public function actionOverWriteDep($dates,$dep){
         $dayBefore = date('Y-m-d',strtotime($dates)-86400);
         if($dep != 0){
@@ -633,11 +715,11 @@ class SettingsController extends Controller{
                 ->from('dep_balance')
                 ->where('b_date = :id AND department_id = :depId',array(':id'=>$dayBefore,':depId'=>$dep))
                 ->queryAll();
-             
+
                 Yii::app()->db->createCommand()->update('dep_balance',array(
                         'startCount'=>0
                     ),'b_date = :dates AND department_id = :depId',array(':dates'=>$dates,':depId'=>$dep));
-    
+
             foreach($model as $val){
                 Yii::app()->db->createCommand()->update('dep_balance',array(
                         'startCount'=>$val['CurEndCount']
@@ -650,11 +732,11 @@ class SettingsController extends Controller{
                 ->from('dep_balance')
                 ->where('b_date = :id',array(':id'=>$dayBefore))
                 ->queryAll();
-             
+
                 Yii::app()->db->createCommand()->update('dep_balance',array(
                         'startCount'=>0
                     ),'b_date = :dates',array(':dates'=>$dates));
-    
+
             foreach($model as $val){
                 Yii::app()->db->createCommand()->update('dep_balance',array(
                         'startCount'=>$val['CurEndCount']
@@ -789,5 +871,169 @@ class SettingsController extends Controller{
             ));
         }
     }
+*/
+    public function actionCountExpSum(){
+        $expense = new Expense();
 
+        $from = '2017-01-19';
+        $to = '2017-01-31';
+        $days = strtotime($to)-strtotime($from);
+        for ($i = 0; $i <= $days/(3600*24); $i++) {
+
+            $expense->ExpSumCounter(date('Y-m-d',strtotime($from)+(3600*24*$i)));
+
+        }
+    }
+
+    public function actionCountDepFakturaSum(){
+        $faktura = new Faktura();
+
+        $from = '2017-02-01';
+        $to = '2017-02-06';
+        $days = strtotime($to)-strtotime($from);
+        for ($i = 0; $i <= $days/(3600*24); $i++) {
+
+            $faktura->getDepFakturaSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
+
+        }
+    }
+
+    public function actionCountFakturaSum(){
+        $faktura = new Faktura();
+
+        $from = '2017-01-01';
+        $to = '2017-02-06';
+        $days = strtotime($to)-strtotime($from);
+        for ($i = 0; $i <= $days/(3600*24); $i++) {
+
+            $faktura->getFakturaSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
+
+        }
+    }
+
+    public function actionCountInexpenseSum(){
+        $faktura = new Faktura();
+
+        $from = '2017-02-01';
+        $to = '2017-02-06';
+        $days = strtotime($to)-strtotime($from);
+        for ($i = 0; $i <= $days/(3600*24); $i++) {
+
+            $faktura->getDepInexpenseSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
+
+        }
+    }
+
+    public function actionCountCostPrice(){$start = microtime(true);
+        $expense = new Expense();
+        $from = '2017-02-07';
+        $to = '2017-02-07';
+        $days = strtotime($to)-strtotime($from);
+        for ($i = 0; $i <= $days/(3600*24); $i++) {
+            $dates = date('Y-m-d',strtotime($from)+(3600*24*$i));
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from("expense ex")
+                ->where("date(ex.order_date) = :dates",array(':dates'=>$dates))
+                ->queryAll();
+            foreach ($model as $val) {
+                $expense->getExpenseCostPrice($val['expense_id'],$dates);
+            }
+
+//            $faktura->getDepInexpenseSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
+
+
+        }
+        $time = microtime(true) - $start;
+        printf('Скрипт выполнялся %.4F сек.', $time);
+    }
+
+    public function actionOffCostPrice(){
+        $start = microtime(true);
+        $expense = new Expense();
+        $from = '2017-04-01';
+        $to = '2017-04-20';
+        $days = strtotime($to)-strtotime($from);
+        for ($i = 0; $i <= $days/(3600*24); $i++) {
+            $dates = date('Y-m-d',strtotime($from)+(3600*24*$i));
+            $model = Yii::app()->db->createCommand()
+                ->select()
+                ->from("off o")
+                ->where("date(o.off_date) = :dates",array(':dates'=>$dates))
+                ->queryAll();
+            foreach ($model as $val) {
+                $expense->getOffCostPrice($val['off_id'],$dates);
+            }
+
+//            $faktura->getDepInexpenseSum(date('Y-m-d',strtotime($from)+(3600*24*$i)));
+
+
+        }
+        $time = microtime(true) - $start;
+        printf('Скрипт выполнялся %.4F сек.', $time);
+    }
+
+    public function actionWifi(){
+
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from("settings")
+            ->where("setting_name = 'wifi'")
+            ->queryRow();
+
+        if($_POST['wifi']){
+            $transaction = Yii::app()->db->beginTransaction();
+            try{
+                $messageType='warning';
+                $message = "There are some errors ";
+                Yii::app()->db->createCommand()->update("settings",array(
+                    "setting_value"=>$_POST["wifi"]
+                    ),"setting_id = :id",array(":id"=>$model["setting_id"]));
+                    $transaction->commit();
+                    $this->redirect( array( 'site/index' ) );
+            }
+            catch (Exception $e){
+                $transaction->rollBack();
+                Yii::app()->user->setFlash('error', "{$e->getMessage()}");
+                //$this->refresh();
+            }
+        }
+
+        $this->render('wifi',array(
+            'model'=>$model,
+
+        ));
+    }
+
+    public function actionCopyToStorage(){
+      $func = new Storage();
+        $dates = '2018-09-03';
+        $storage = Yii::app()->db->createCommand()
+            ->select()
+            ->from("balance")
+            ->where("b_date = :dates",array(":dates"=>$dates))
+            ->queryAll();
+
+        foreach ($storage as $val) {
+           $func->addToStorage($val["prod_id"],$val["CurEndCount"]);
+        }
+
+        $depstorage = Yii::app()->db->createCommand()
+            ->select()
+            ->from("dep_balance")
+            ->where("b_date = :dates",array(":dates"=>$dates))
+            ->queryAll();
+
+        foreach ($depstorage as $val) {
+            $func->addToStorageDep($val["prodId"],$val["CurEndCount"],$val["type"],$val["departmen_id"]);
+            /*
+            Yii::app()->db->createCommand()->insert("storage_dep",array(
+                'prod_id'=>$val["prod_id"],
+                'cnt'=>$val["CurEndCount"],
+                'department_id'=>$val["department_id"],
+                'prod_type'=>$val["type"],
+            ));*/
+        }
+
+    }
 }

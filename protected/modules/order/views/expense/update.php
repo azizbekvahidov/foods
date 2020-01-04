@@ -248,9 +248,11 @@
             $.ajax({
                 type: "POST",
                 url: "<?php echo Yii::app()->createUrl('order/expense/update?id='.$expense_id); ?>",
-                data: data
+                data: data,
+                success: function(){
+                    //window.close();
+                }
             });
-            window.close()
 
 
     });

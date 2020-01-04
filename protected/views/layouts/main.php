@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
 	<meta name="language" content="en"/>
-    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<!-- blueprint CSS framework -->
 	<!--<link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/screen.css" media="screen, projection">-->
@@ -21,7 +21,7 @@
     <link href="<?php echo Yii::app()->request->baseUrl; ?>/css/datatables.min.css" rel="stylesheet">
     <link href="<?php echo Yii::app()->request->baseUrl; ?>/css/chosen.css" rel="stylesheet">
 
-	<title><?php echo CHtml::encode($this->pageTitle); ?></title>
+	<title><?=Yii::app()->config->get("name")?></title>
   <script src="<?php echo Yii::app()->request->baseUrl; ?>/js/chosen.jquery.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/helping.css"/>
     <link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/bootstrap3.css"/>
@@ -58,7 +58,8 @@
                             array('label'=>'Все заказы', 'url'=>array('expense/index')),
                             array('label'=>'Заказы по официантам', 'url'=>array('expense/empExpense')),
                             array('label'=>'Выручка по датам', 'url'=>array('/expense/taken')),
-                            array('label'=>'Заказы официантов', 'url'=>array('expense/empOrder')),
+                            //array('label'=>'Заказы официантов', 'url'=>array('expense/empOrder')),
+                            //array('label'=>'Авансы','url'=>array('expense/avans')),
                             array('label'=>'Должники','url'=>array('expense/debtList')),
                             array('label'=>'Оплаченные долги','url'=>array('expense/paidDebt')),
                             array('label'=>'Мониторинг','url'=>array('monitoring/index')),
@@ -68,10 +69,11 @@
                 <li>
                     <?=CHtml::link('<i class="fa fa-list-alt fa-fw"></i> Расход',array('/costs/create'),array('target'=>'_blank'));?>
                 </li>
-                <?if($roles == 2){?>
-                    <li>
-                        <?=CHtml::link('<i class="fa fa-list-alt fa-fw"></i> Добавить заказ',array('/order'),array('target'=>'_blank'));?>
+                <li>
+                        <?=CHtml::link('<i class="fa fa-list-alt fa-fw"></i> Добавить заказ',array('/getorder'),array('target'=>'_blank'));?>
                     </li>
+                <?if($roles == 2){?>
+                    
                     <li>
                         <?=CHtml::link('<i class="fa fa-list-alt fa-fw"></i> Расходы',array('/costs/crate'),array('target'=>'_blank'));?>
                     </li>
@@ -142,14 +144,14 @@
                             array('label'=>'Реализованные блюда по отделам','url'=>'/report/depDish'),
                             array('label'=>'Мониторинг доходности блюд','url'=>'/report/dishIncome'),
                             array('label'=>'Мониторинг установленной наценки', 'url'=>array('report/settedMargin')),
-                            array('label'=>'Мониторинг доходности отделов', 'url'=>array('report/depIncome')),
-                            array('label'=>'Время приготовления заказов', 'url'=>array('report/readyTime')),
+//                            array('label'=>'Мониторинг доходности отделов', 'url'=>array('report/depIncome')),
+//                            array('label'=>'Время приготовления заказов', 'url'=>array('report/readyTime')),
                             array('label'=>'Мониторинг пробитых заказов', 'url'=>array('report/empExpense')),
-                            array('label'=>'Все показатели склада','url'=>array('storage/allIn')),
+//                            array('label'=>'Все показатели склада','url'=>array('storage/allIn')),
                             array('label'=>'Все показатели отделов','url'=>array('depStorage/allIn')),
                             array('label'=>'Наценки', 'url'=>array('dishes/checkMargin')),
-                            array('label'=>'Расходы денег', 'url'=>array('report/infoReport')),
-                            array('label'=>'Обмен продуктов', 'url'=>array('report/exchange')),
+//                            array('label'=>'Расходы денег', 'url'=>array('report/infoReport')),
+//                            array('label'=>'Обмен продуктов', 'url'=>array('report/exchange')),
                         ),
                     )); ?>
                 <li class="dropdown">
@@ -159,15 +161,15 @@
                     <ul class="dropdown-menu dropdown-user" id="yw1">
                         <li><?=CHtml::link('<i class="fa fa-plus-square"></i> Заявка на приход',array('faktura/request'));?></a></li>
                         <li><?=CHtml::link('<i class="fa fa-plus-square"></i> Приход по заявке',array('faktura/setRequest'));?></a></li>
-                        <li><?=CHtml::link('<i class="fa fa-plus-square"></i> Приход продуктов на склад',array('realize/create'));?></a></li>
-                        <li><?=CHtml::link('<i class="fa fa-arrows-h"></i> Перемещение продуктов со склада',array('depRealize/create'));?></a></li>
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-plus-square"></i> Приход продуктов на склад',array('realize/create'));?><!--</a></li>-->
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-arrows-h"></i> Перемещение продуктов со склада',array('depRealize/create'));?><!--</a></li>-->
                         <li><?=CHtml::link('<i class="fa fa-arrows-h"></i> Перемещение продуктов между отделами',array('depRealize/move'));?></a></li>
                         <li><?=CHtml::link('<i class="fa fa-arrows-h"></i> Перемещение полуфабрикатов между отделами',array('inexpense/move'));?></a></li>
                         <li><?=CHtml::link('<i class="fa fa-plus-square"></i> Приход заготовок на точку',array('inexpense/create'));?></a></li>
                         <li><?=CHtml::link('<i class="fa fa-plus-square"></i> Списание продуктов и загатовок',array('off/create'));?></a></li>
-                        <li><?=CHtml::link('<i class="fa fa-minus-square"></i> Внутренний расход',array('expense/kindCreate'));?></li>
-												<li><?=CHtml::link('<i class="fa fa-minus-square"></i> Обмен продуктов',array('exchange/create'));?></li>
-                        <li><?=CHtml::link('<i class="fa fa-minus-square"></i> Возврат в склад',array('depRealize/backStorage'));?></li>
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-minus-square"></i> Внутренний расход',array('expense/kindCreate'));?><!--</li>-->
+<!--												<li>--><?//=CHtml::link('<i class="fa fa-minus-square"></i> Обмен продуктов',array('exchange/create'));?><!--</li>-->
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-minus-square"></i> Возврат в склад',array('depRealize/backStorage'));?><!--</li>-->
 
                     </ul>
                 </li>
@@ -194,6 +196,7 @@
                             array('label'=>'Контрагент','url'=>array('/contractor/admin')),
                             array('label'=>'Сотрудники', 'url'=>array('/employee/admin')),
                             array('label'=>'Поставщики', 'url'=>array('/provider/admin')),
+                            array('label'=>'Столы', 'url'=>array('/tables/admin')),
 
                         ),
                     )); ?>
@@ -205,13 +208,13 @@
                     <ul class="dropdown-menu dropdown-user" id="yw1">
                         <li><?=Chtml::link('<i class="fa fa-file"></i> Остатки на конец дня',array('settings/setBalance'))?></li>
                         <li><?=Chtml::link('<i class="fa fa-file"></i> Изменять остатки',array('settings/changeBalance'))?></li>
-                        <li><?=Chtml::link('<i class="fa fa-file"></i> Выручка и Приход',array('settings/setInfo'))?></li>
-                        <li><?=CHtml::link('<i class="fa fa-refresh"></i> Обновить структуру остатков',array('settings/refresh'));?></a></li>
-                        <li><?=CHtml::link('<i class="fa fa-refresh"></i> Удалить дубликаты остатков',array('settings/refresh'));?></a></li>
-                        <li><?=CHtml::link('<i class="fa fa-refresh"></i> Обновить вуручку',array('settings/mbalancerefresh'));?></a></li>
-	                    <li><?=CHtml::link('<i class="fa fa-cog"></i> Процент на заказы',array('settings/percent'))?></li>
-                        <li><?=CHtml::link('<i class="fa fa-cog"></i> Цены на продукты',array('settings/prodPrice'))?></li>
-                        <li><?=CHtml::link('<i class="fa fa-file"></i> Архивировать базу',array('settings/dumbDb'))?></li>
+<!--                        <li>--><?//=Chtml::link('<i class="fa fa-file"></i> Выручка и Приход',array('settings/setInfo'))?><!--</li>-->
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-refresh"></i> Обновить структуру остатков',array('settings/refresh'));?><!--</a></li>-->
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-refresh"></i> Удалить дубликаты остатков',array('settings/refresh'));?><!--</a></li>-->
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-refresh"></i> Обновить вуручку',array('settings/mbalancerefresh'));?><!--</a></li>-->
+	                    <li><?=CHtml::link('<i class="fa fa-cog"></i> Настройки',array('settings/setting'))?></li>
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-cog"></i> Цены на продукты',array('settings/prodPrice'))?><!--</li>-->
+<!--                        <li>--><?//=CHtml::link('<i class="fa fa-file"></i> Архивировать базу',array('settings/dumbDb'))?><!--</li>-->
                         <li><?=Chtml::link('<i class="fa fa-file"></i> Получить список',array('settings/exportList'))?></li>
                         <li><?=Chtml::link('<i class="fa fa-file"></i> Список калькуляций',array('settings/calculate'))?></li>
                         <li><?=Chtml::link('<i class="fa fa-file"></i> Использование продукта',array('settings/prodRelation'))?></li>

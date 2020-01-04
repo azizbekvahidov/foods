@@ -28,7 +28,7 @@ class MBalance extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('procProceeds, proceeds, cost', 'numerical'),
+			array('procProceeds, proceeds, costPrice', 'numerical'),
 			array('b_date', 'safe'),
 			/*
 			//Example username
@@ -39,7 +39,7 @@ class MBalance extends CActiveRecord
           	*/
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('mBalance, b_date, procProceeds, proceeds, cost', 'safe', 'on'=>'search'),
+			array('mBalance, b_date, procProceeds, proceeds, costPrice', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -64,7 +64,7 @@ class MBalance extends CActiveRecord
 			'b_date' => 'B Date',
 			'procProceeds' => 'Proc Proceeds',
 			'proceeds' => 'Proceeds',
-			'cost' => 'Cost',
+			'costPrice' => 'CostPrice',
 		);
 	}
 
@@ -90,7 +90,7 @@ class MBalance extends CActiveRecord
 		$criteria->compare('b_date',$this->b_date,true);
 		$criteria->compare('procProceeds',$this->procProceeds);
 		$criteria->compare('proceeds',$this->proceeds);
-		$criteria->compare('cost',$this->cost);
+		$criteria->compare('costPrice',$this->cost);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

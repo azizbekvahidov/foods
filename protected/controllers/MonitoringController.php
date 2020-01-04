@@ -1,6 +1,6 @@
 <?php
 
-class MonitoringController extends Controller
+class MonitoringController extends SetupController
 {
 
 
@@ -14,13 +14,13 @@ class MonitoringController extends Controller
     /**
      * @return array action filters
      */
+
     public function filters()
     {
         return array(
-
-            'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
-
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
         );
     }
 
@@ -64,10 +64,12 @@ class MonitoringController extends Controller
     public function actionRefreshTable(){
         $dates = date('Y-m-d');
         $model = Yii::app()->db->createCommand()
-            ->select('')
+            ->select('emp.name,ex.order_date,ex.expense_id,ex.expSum,t.name as Tname, ex.discount')
             ->from('expense ex')
             ->join('employee emp','emp.employee_id = ex.employee_id')
-            ->where('date(ex.order_date) = :dates AND ex.status = :status AND ex.debt = :debt',array(':dates'=>$dates,':status'=>1,':debt'=>0))
+            ->join('tables t','t.table_num = ex.table')
+            ->where('ex.status = :status AND ex.debt = :debt',array(':status'=>1,':debt'=>0))
+            ->order("ex.table")
             ->queryAll();
         $this->renderPartial('cook',array(
             'model'=>$model,
@@ -81,13 +83,14 @@ class MonitoringController extends Controller
     public function actionPrintCheck($exp){
         $percent = 0;
         $expense = Yii::app()->db->createCommand()
-            ->select('')
+            ->select('emp.name,ex.order_date,ex.expense_id,ex.banket,t.name as Tname,emp.check_percent')
             ->from('expense ex')
             ->join('employee emp','emp.employee_id = ex.employee_id')
+            ->join('tables t','t.table_num = ex.table')
             ->where('ex.expense_id = :id ',array(':id'=>$exp))
             ->queryRow();
         if($expense['check_percent'] != 0){
-            $percent = 10;
+            $percent = Yii::app()->config->get("percent");
         }
         else{
             $percent = 1;
@@ -104,6 +107,7 @@ class MonitoringController extends Controller
             ->queryAll();*/
 
         $this->renderPartial('printCheck',array(
+            'check'=>$expense['check_percent'],
             'model'=>$model,
             'model2'=>$model2,
             'model3'=>$model3,
@@ -114,24 +118,37 @@ class MonitoringController extends Controller
 
     public function actionCloseExp(){
         $id = $_POST['id'];
+        $func = new Expense();
+        $func->getExpenseCostPrice($id,date('Y-m-d'));
+        $exp = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from('expense')
+            ->where('expense_id = :id',array(':id'=>$id))
+            ->queryRow();
 
         $model = Yii::app()->db->createCommand()->update('expense',array(
-            'status'=>0
+            'status'=>0,
+            'expSum'=>$exp["expSum"]-$exp["discount"]
         ),'expense_id = :id',array(':id'=>$id));
     }
 
     public function actionCloseDebt(){
+        $func = new Expense();
         $id = $_POST['id'];
         $text = $_POST['text'];
-        $empId = $_POST['empId'];
-        $cont = $_POST['cont'];
-
+        $payed = $_POST['payed'];
+        $func->getExpenseCostPrice($id,date('Y-m-d'));
+        $exp = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from('expense')
+            ->where('expense_id = :id',array(':id'=>$id))
+            ->queryRow();
         $model = Yii::app()->db->createCommand()->update('expense',array(
-            'status'=>0,
+            'status'=>1,
             'debt'=>1,
             'comment'=>$text,
-            'debtor_id'=>(!empty($cont))? $cont : $empId,
-            'debtor_type'=>(!empty($cont))? 1 : 0
+            'debtPayed' => $payed,
+            'expSum'=>$exp["expSum"]-$exp["discount"]
         ),'expense_id = :id',array(':id'=>$id));
     }
 
@@ -140,26 +157,62 @@ class MonitoringController extends Controller
             $id = $_POST['id'];
         }
         $summ = $_POST['term'];
-
-        $dates = Yii::app()->db->createCommand()
+        $exp = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from('expense')
+            ->where('expense_id = :id',array(':id'=>$id))
+            ->queryRow();
+     $dates = Yii::app()->db->createCommand()
             ->select('date(order_date) as dates')
             ->from('expense')
             ->where('expense_id = :id',array(':id'=>$id))
             ->queryRow();
-        if($summ == ''){
-            $func = new Expense();
-            $summ = $func->getExpenseSum($id,$dates['dates']);
-
-            $model = Yii::app()->db->createCommand()->update('expense',array(
-                'status'=>0,
-                'terminal'=>$summ
-            ),'expense_id = :id',array(':id'=>$id));
+        $func = new Expense();
+        if($exp["debt"] != 1) {
+            if ($summ == '') {
+                $summ = $func->getExpenseSum($id, $dates['dates']);
+                $model = Yii::app()->db->createCommand()->update('expense', array(
+                    'status' => 0,
+                    'terminal' => $summ,
+                    'expSum' => $exp["expSum"] - $exp["discount"]
+                ), 'expense_id = :id', array(':id' => $id));
+            } else {
+                $model = Yii::app()->db->createCommand()->update('expense', array(
+                    'status' => 0,
+                    'terminal' => $summ,
+                    'expSum' => $exp["expSum"] - $exp["discount"]
+                ), 'expense_id = :id', array(':id' => $id));
+            }
+            $func->getExpenseCostPrice($id, $dates['dates']);
         }
         else{
-            $model = Yii::app()->db->createCommand()->update('expense',array(
-                'status'=>0,
-                'terminal'=>$summ
-            ),'expense_id = :id',array(':id'=>$id));
+            if ($summ == '') {
+                $summ = $func->getExpenseSum($id, $dates['dates']);
+                $model = Yii::app()->db->createCommand()->update('expense', array(
+                    'status' => 0,
+                        'terminal' => $summ,
+                ), 'expense_id = :id', array(':id' => $id));
+            } else {
+                $model = Yii::app()->db->createCommand()->update('expense', array(
+                    'status' => 0,
+                    'terminal' => $summ,
+                ), 'expense_id = :id', array(':id' => $id));
+            }
+            $func->getExpenseCostPrice($id, $dates['dates']);
         }
+    }
+
+    public function actionSetDiscount(){
+        Yii::app()->db->createCommand()->update("expense",array(
+            "discount"=>$_POST["val"]
+        ),"expense_id = :id",array(":id"=>$_POST["id"]));
+        $model = Yii::app()->db->CreateCommand()
+            ->select("count(*) as cnt")
+            ->from("orders")
+            ->where("expense_id = :id",array(":id"=>$_POST["id"]))
+            ->queryRow();
+        Yii::app()->db->createCommand()->update("orders",array(
+            "discount"=>$_POST["val"]/$model["cnt"]
+        ),"expense_id = :id",array(":id"=>$_POST["id"]));
     }
 }

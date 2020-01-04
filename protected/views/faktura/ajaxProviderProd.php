@@ -13,6 +13,7 @@
             <th></th>
             <th>Наименование</th>
             <th>Сумма (<?=number_format($model2['summ'],0,',',' ')?> сум)</th>
+            <th>% от всей суммы прихода</th>
         </tr>
     </thead>
     <tbody>
@@ -21,9 +22,10 @@
             <td><?=$cnt?></td>
             <td><?=$val['name']?></td>
             <td><?=number_format($val['summ'],0,',',' ')?></td>
+            <th><?=number_format($val['summ']*100/$model2['summ'],2,',',' ')?>%</th>
         </tr>
         <tr class="tempTr">
-            <td colspan="3"></td>
+            <td colspan="4"></td>
         </tr>
     <?$cnt++;}?>
     </tbody>
@@ -36,7 +38,7 @@
                 $.ajax({
                     type: "POST",
                     url: "<?php echo Yii::app()->createUrl('faktura/provProdList'); ?>",
-                    data: 'provId='+provId+'&from=<?=$from?>&to=<?=$to?>',
+                    data: 'provId='+provId+'&allSumm=<?=$model2['summ']?>'+'&from=<?=$from?>&to=<?=$to?>',
                     success: function(data){
                         $('#'+provId).next('tr').children('td').html(data);
                     }

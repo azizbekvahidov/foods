@@ -6,10 +6,7 @@
             'name' => 'dates',
             'options' => array(
                 'language' => 'ru',
-                'viewMode'=>'month',
-                "startView"=> "months",
-                'format' => 'yyyy-mm',
-                "minViewMode"=> "months"
+                'format' => 'yyyy-mm-dd',
             )
         )
     );
@@ -30,7 +27,7 @@
             var depId = $('#department').val();
             $.ajax({
                 type: "POST",
-                url: "<?php echo Yii::app()->createUrl('depStorage/monthStorage'); ?>",
+                url: "<?php echo Yii::app()->createUrl('depStorage/allStorage'); ?>",
                 data: "dates="+dates+'&depId='+depId,
                 success: function(data){
                     $('#data').html(data);

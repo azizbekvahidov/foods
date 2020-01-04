@@ -1,17 +1,16 @@
 <?php
 
-class ExchangeController extends Controller
+class ExchangeController extends SetupController
 {
+
     public function filters()
     {
         return array(
-
-            'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
-
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
         );
     }
-
     /**
      * Specifies the access control rules.
      * This method is used by the 'accessControl' filter.
@@ -39,6 +38,7 @@ class ExchangeController extends Controller
         $product = CHtml::listData(Products::model()->findAll('status != 1'),'product_id','name');
         $contractor = CHtml::listData(Contractor::model()->findAll('status != 1'),'contractor_id','name');
         $func = new Functions();
+        $storage = new Storage();
         if(isset($_POST['exchangeType'])){
             $dates = $_POST['exchange_date'];
             $contractor_id = $_POST['contractor_id'];
@@ -59,6 +59,7 @@ class ExchangeController extends Controller
                         'count'=>$func->changeToFloat($prodCount[$key]),
                         'exchange_id'=>$lastId
                     ));
+                    $storage->addToStorage($val,$func->changeToFloat($prodCount[$key]));
                 }
             }
             else{
@@ -76,6 +77,7 @@ class ExchangeController extends Controller
                             'count' => $func->changeToFloat($val),
                             'exchange_id' => $lastId
                         ));
+                        $storage->removeToStorage($key,$func->changeToFloat($val));
                     }
                 }
 

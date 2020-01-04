@@ -51,7 +51,7 @@
 
 <div class="form-actions">
 	<?php $this->widget('bootstrap.widgets.TbButton', array(
-			'buttonType'=>'submit',
+			'buttonType'=>'button',
             'id'=>'submitBtn',
 			'type'=>'primary',
 			'label'=>$model->isNewRecord ? 'Добавить' : 'Сохранить',
@@ -61,6 +61,17 @@
     $('#submitBtn').attr('disabled','disabled');
     $(document).on("click", ".deleteRow", function() {
         $(this).parent().parent().remove();
+    });
+    $(document).on('click','#submitBtn', function(){
+        var data = $("#realize-form").serialize();
+        $.ajax({
+            type: "POST",
+            url: "<?php echo Yii::app()->createUrl('realize/create'); ?>",
+            data: data,
+            success: function(data){
+                $('#prodList tbody').html('<tr style="display: none;"></tr>');
+            }
+        });
     });
     $("#product").chosen({
                     no_results_text: "Oops, nothing found!",

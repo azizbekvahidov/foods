@@ -1,6 +1,6 @@
 <?php
 
-class DepartmentController extends Controller
+class DepartmentController extends SetupController
 {
 
 
@@ -13,16 +13,15 @@ class DepartmentController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
 
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-
-		);
-	}
-
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -72,7 +71,6 @@ class DepartmentController extends Controller
 	 */
 	public function actionCreate()
 	{
-
 		$model=new Department;
         $point = CHtml::listData(OrderPoint::model()->findAll(),'point_id','name');
 		// Uncomment the following line if AJAX validation is needed
@@ -170,7 +168,7 @@ class DepartmentController extends Controller
 				if($model->save()){
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
-					$this->redirect(array('admin'));
+					//$this->redirect(array('admin'));
 				}
 			}
 			catch (Exception $e){
@@ -180,8 +178,8 @@ class DepartmentController extends Controller
 			}
 
 			$model->attributes=$_POST['Department'];
-			if($model->save())
-				$this->redirect(array('admin'));
+
+				//$this->redirect(array('admin'));
 		}
 
 		$this->render('update',array(

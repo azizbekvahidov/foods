@@ -1,9 +1,17 @@
 <?
-class CounterController extends Controller{
+class CounterController extends SetupController{
  
     // no layouts here
     public $layout = '';
- 
+
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
     public function actionDishProd($depId,$dates)
     {   
         

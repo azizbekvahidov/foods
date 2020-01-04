@@ -153,6 +153,10 @@ class Inexpense extends CActiveRecord
     }
 
     public function getDepIn($depId,$dates,$fromDate){
+	    $func = new Functions();
+        $timeShift = $func->getTime($fromDate,$dates);
+        $fromDate = $timeShift[0];
+        $dates = $timeShift[1];
         $model = Yii::app()->db->createCommand()
             ->select('inor.stuff_id,inor.count')
             ->from('inexpense inex')
@@ -168,6 +172,10 @@ class Inexpense extends CActiveRecord
     }
 
     public function getDepOut($depId,$dates,$fromDate){
+        $func = new Functions();
+        $timeShift = $func->getTime($fromDate,$dates);
+        $fromDate = $timeShift[0];
+        $dates = $timeShift[1];
         $model = Yii::app()->db->createCommand()
             ->select('inor.stuff_id,inor.count')
             ->from('inexpense inex')

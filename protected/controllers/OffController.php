@@ -1,14 +1,14 @@
 <?php
 
-class OffController extends Controller
+class OffController extends SetupController
 {
+
     public function filters()
     {
         return array(
-
-            'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
-
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
         );
     }
 
@@ -39,9 +39,12 @@ class OffController extends Controller
     }
     
     public function actionSaveList(){
-        $function = new Functions();
         
         if(!empty($_POST)){
+            echo "<pre>";
+            print_r($_POST);
+            echo "</pre>";
+            $expense = new Expense();
             $dates = $_POST['from']." ".date('H:i:s');
             Yii::app()->db->createCommand()->insert('off',array(
                 'off_date'=>$dates,
@@ -52,12 +55,15 @@ class OffController extends Controller
             $offId = Yii::app()->db->getLastInsertID();
             if(isset($_POST['prod'])){
                 foreach($_POST['prod']['id'] as $key => $val){
+                    $cnt = $expense->changeToFloat($_POST['prod']['count'][$key]);
                     Yii::app()->db->createCommand()->insert('offList',array(
                         'off_id'=>$offId,
                         'prod_id'=>$val,
                         'type'=>3,
-                        'count'=>$function->changeToFloat($_POST['prod']['count'][$key])
+                        'count'=> $cnt
                     ));
+                    $expense->addExpenseList($val, 3, $dates = date('Y-m-d', strtotime($dates)), $cnt, $_POST['department']);
+//                    $storage->removeToStorageDep($val,$function->changeToFloat($_POST['prod']['count'][$key]),1,$_POST["department"]);
                 }
             }
             if(isset($_POST['stuff'])){
@@ -66,11 +72,14 @@ class OffController extends Controller
                         'off_id'=>$offId,
                         'prod_id'=>$val,
                         'type'=>2,
-                        'count'=>$function->changeToFloat($_POST['stuff']['count'][$key])
+                        'count'=>$expense->changeToFloat($_POST['stuff']['count'][$key])
                     ));
+                    $expense->addExpenseList($val, 2, $dates = date('Y-m-d', strtotime($dates)), $cnt, $_POST['department']);
+//                    $storage->removeToStorageDep($val,$function->changeToFloat($_POST['stuff']['count'][$key]),2,$_POST["department"]);
                 }
             }
-                    $this->redirect(array('site/index'));
+            $expense->getOffCostPrice($offId,$dates);
+            //$this->redirect(array('site/index'));
         }
     }
     

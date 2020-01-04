@@ -1,6 +1,6 @@
 <?php
 
-class InexpenseController extends Controller
+class InexpenseController extends SetupController
 {
 	
 	
@@ -13,16 +13,15 @@ class InexpenseController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
-						
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-						
-		);
-	}
-	
+
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -86,7 +85,7 @@ class InexpenseController extends Controller
         if($_POST['from'] == ''){
             $dates = date('Y:m:d H:i:s');
         }else{
-            $dates = $_POST['from'];
+            $dates = $_POST['from']." ".date("H:i:s");
         }
         $model=new Inexpense;
 
@@ -94,6 +93,7 @@ class InexpenseController extends Controller
         // $this->performAjaxValidation($model);
         if(isset($_POST['department']) && isset($_POST['departments']))
         {
+            $storage = new Storage();
             $transaction = Yii::app()->db->beginTransaction();
             try{
                 $messageType='warning';
@@ -111,6 +111,8 @@ class InexpenseController extends Controller
                             $realizeModel->stuff_id = $key;
                             $realizeModel->count = $this->changeToFloat($val);
                             if($realizeModel->save()){
+                                $storage->addToStorageDep($key,$this->changeToFloat($val),2,$_POST['department']);
+                                $storage->removeToStorageDep($key,$this->changeToFloat($val),2,$_POST['departments']);
                                 $messageType = 'success';
                                 $message = "<strong>Well done!</strong> You successfully create data ";
 
@@ -145,24 +147,34 @@ class InexpenseController extends Controller
         $stuff = array();
         $depId = $_POST['depId'];
         $depsId = $_POST['depsId'];
-
-        $model = DepBalance::model()->with('stuff')->findAll('t.department_id = :depId AND date(t.b_date) = :dates AND t.type = :type',array(':depId'=>$depsId,':dates'=>$dates,':type'=>2));
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from("storage_dep s")
+            ->join("halfstaff h","s.prod_id = h.halfstuff_id")
+            ->where('s.department_id = :depId AND s.prod_type = :type',array(':depId'=>$depsId,'type'=>2))
+            ->queryAll();
+        //$model = DepBalance::model()->with('stuff')->findAll('t.department_id = :depId AND date(t.b_date) = :dates AND t.type = :type',array(':depId'=>$depsId,':dates'=>$dates,':type'=>2));
 
         foreach ($model as $val) {
-            $stuff[$val->prod_id] = $stuff[$val->prod_id] + $val->startCount;
+            $stuff[$val["prod_id"]] = $stuff[$val["prod_id"]] + $val["cnt"];
         }
 
-
+/*
         $model2 = Inexpense::model()->with('inorder')->findAll('date(t.inexp_date) = :dates AND t.department_id = :depId AND t.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>$depsId,':fromDepId'=>0));
 
         foreach ($model2 as $value) {
             foreach ($value->getRelated('inorder') as $val) {
                 $stuff[$val->stuff_id] = $stuff[$val->stuff_id] + $val->count;
             }
-        }
-
-        $model3 = DepBalance::model()->with('stuff')->findAll('t.department_id = :depId AND date(t.b_date) = :dates AND t.type = :type',array(':depId'=>$depId,':dates'=>$dates,':type'=>2));
-        $model4 = Inexpense::model()->with('inorder')->findAll('date(t.inexp_date) = :dates AND t.department_id != :depId AND t.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>0,':fromDepId'=>$depsId));
+        }*/
+        $model3 = Yii::app()->db->createCommand()
+            ->select()
+            ->from("storage_dep s")
+            ->join("halfstaff h","s.prod_id = h.halfstuff_id")
+            ->where('s.department_id = :depId AND s.prod_type = :type',array(':depId'=>$depId,'type'=>2))
+            ->queryAll();
+        //$model3 = DepBalance::model()->with('stuff')->findAll('t.department_id = :depId AND date(t.b_date) = :dates AND t.type = :type',array(':depId'=>$depId,':dates'=>$dates,':type'=>2));
+        /*$model4 = Inexpense::model()->with('inorder')->findAll('date(t.inexp_date) = :dates AND t.department_id != :depId AND t.fromDepId = :fromDepId',array(':dates'=>$dates,':depId'=>0,':fromDepId'=>$depsId));
 
 
         foreach ($model4 as $value) {
@@ -170,7 +182,7 @@ class InexpenseController extends Controller
                 $stuff[$val->stuff_id] = $stuff[$val->stuff_id] - $val->count;
             }
 
-        }
+        }*/
 
 
         $this->renderPartial('stuffList',array(
@@ -261,6 +273,8 @@ class InexpenseController extends Controller
 		{
             $_POST['Inexpense']['type'] = 1;
             $_POST['Inexpense']['inexp_date'] = $dates;
+            $storage = new Storage();
+            $func = new Functions();
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
 				$messageType='warning';
@@ -277,28 +291,13 @@ class InexpenseController extends Controller
                                 $newModel->stuff_id = $value;
                                 $newModel->count = $this->changeToFloat($_POST['count'][$key]);
                                 $newModel->save();
+                                $func->OutStuffProd($_POST['Inexpense']['department_id'],$value,$this->changeToFloat($_POST['count'][$key]));
+                                $storage->addToStorageDep($value,$this->changeToFloat($_POST['count'][$key]),2,$_POST['Inexpense']['department_id']);
                             }
     				    }
                     }
 					$messageType = 'success';
 					$message = "<strong>Well done!</strong> You successfully create data ";
-					/*
-					$model2 = Inexpense::model()->findByPk($model->inexpense_id);						
-					if(!empty($uploadFile)) {
-						$extUploadFile = substr($uploadFile, strrpos($uploadFile, '.')+1);
-						if(!empty($uploadFile)) {
-							if($uploadFile->saveAs(Yii::app()->basePath.DIRECTORY_SEPARATOR.'files'.DIRECTORY_SEPARATOR.'inexpense'.DIRECTORY_SEPARATOR.$model2->inexpense_id.DIRECTORY_SEPARATOR.$model2->inexpense_id.'.'.$extUploadFile)){
-								$model2->filename=$model2->inexpense_id.'.'.$extUploadFile;
-								$model2->save();
-								$message .= 'and file uploded';
-							}
-							else{
-								$messageType = 'warning';
-								$message .= 'but file not uploded';
-							}
-						}						
-					}
-					*/
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
                     $this->redirect(array('create'));

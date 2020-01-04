@@ -12,6 +12,13 @@
     <script src="/js/jquery.printPage.js"></script>
 
 <script>
+    var timer;
+
+    function timers() {
+        timer = setInterval(function(){
+            refreshTable();
+        },3000);
+    }
     function refreshTable(){
         $.ajax({
             type: "POST",
@@ -24,10 +31,28 @@
     $(document).ready(function(){
         $(".btnPrint").printPage();
         refreshTable();
-       setInterval(function(){
-           refreshTable();
-       },3000);
+        timers();
 
+    });
+
+    $(document).on("focus",".discount", function () {
+        clearTimeout(timer);
+    });
+    $(document).on("focusout",".discount", function () {
+        timers();
+    });
+    $(document).on('keyup',".discount", function (e) {
+        if (e.keyCode == 13) {
+            $.ajax({
+                type: "POST",
+                url: "<?php echo Yii::app()->createUrl('monitoring/setDiscount'); ?>",
+                data: 'id='+$(this).attr("id")+"&val="+$(this).val(),
+                success: function(data){
+                    refreshTable();
+                }
+            });
+            timers();
+        }
     });
     $(document).on('click','.closeCheck',function(){
         var id = $(this).parent().children('a.expId').text();
@@ -44,23 +69,24 @@
 
     });
     $(document).on('click','.closeDebt',function(){
+        clearTimeout(timer);
         var id = $(this).parent().children('a.expId').text();
             $("#ModalHeader").html("Комментприй для долга");
-            $("#ModalBody input").val(id);
+            $("#ModalBody > input").val(id);
             $("#Modal").modal();
             return true;
     });
     $(document).on('click','#comment',function(){
-        var id =  $("#ModalBody input").val(),
+        var id =  $("#ModalBody > input").val(),
             text =  $("#ModalBody textarea").val(),
-            select = $("#ModalBody #employee").val(),
-            select2 = $("#ModalBody #contractor").val();
+            payed = $("#ModalBody > div > input").val();
         $.ajax({
             type: "POST",
             url: "<?php echo Yii::app()->createUrl('monitoring/closeDebt'); ?>",
-            data: 'id='+id+'&text='+text+'&empId='+select+'&cont='+select2,
+            data: 'id='+id+'&text='+text+'&payed='+payed,
             success: function(data){
                 $("#ModalBody textarea").val('');
+                $("#ModalBody input").val('');
                 refreshTable();
             }
         });
@@ -112,10 +138,13 @@
     </div>
 
     <div class="modal-body" id="ModalBody">
-        <input type="text" value="" style="display: none">
-        <textarea class=' form-control'  ></textarea>
-        <?=CHtml::dropDownList('employee','',CHtml::listData(Employee::model()->findAll('status != 1'),'employee_id','name'),array('empty'=>'выберите сотрудника'))?>
-        <?=CHtml::dropDownList('contractor','',CHtml::listData(Contractor::model()->findAll('status != 1'),'contractor_id','name'),array('empty'=>'выберите Контрагента'))?>
+        <input type="text" value="" style="display: none ">
+        <div class="form-group">
+            <textarea class=' form-control' placeholder="Комментарий к долгу"  ></textarea>
+        </div>
+        <div class="form-group">
+            <input type="number" class="form-control" placeholder="Оплаченная часть" />
+        </div>
     </div>
 
     <div class="modal-footer">

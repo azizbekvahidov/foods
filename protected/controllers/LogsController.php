@@ -1,12 +1,20 @@
 <?php
 
-class LogsController extends Controller
+class LogsController extends SetupController
 {
 	public function actionIndex()
 	{
 		$this->render('index');
 	}
-    
+
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
     public function Create()
     {
         $actions = "action";

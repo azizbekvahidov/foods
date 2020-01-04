@@ -1,6 +1,6 @@
 <?php
 
-class ProductsController extends Controller
+class ProductsController extends SetupController
 {
 
 
@@ -13,15 +13,15 @@ class ProductsController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
 
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-
-		);
-	}
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 
 		/**
 	 * Specifies the access control rules.
@@ -94,12 +94,21 @@ class ProductsController extends Controller
 	public function actionCreate()
 	{
 		$model=new Products;
+        $categoryList = array();
+        $category = Yii::app()->db->createCommand()
+            ->select()
+            ->from("category")
+            ->queryAll();
+        foreach ($category as $val) {
+            $categoryList[$val["category_id"]] = $val["name"];
+        }
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
 		if(isset($_POST['Products']))
 		{
+		    $storage = new Storage();
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
 				$messageType='warning';
@@ -107,8 +116,8 @@ class ProductsController extends Controller
 				$model->attributes=$_POST['Products'];
 				//$uploadFile=CUploadedFile::getInstance($model,'filename');
 				if($model->save()){
-				    $this->addProd($model->product_id);
                     $this->logs('create','products',$model->product_id,$model->name);
+                    $storage->addToStorage($model->product_id,0);
 					$messageType = 'success';
 					$message = "<strong>Поздравляю!</strong> Вы успешно добавили продукт ";
 
@@ -126,6 +135,7 @@ class ProductsController extends Controller
 
 		$this->render('create',array(
 			'model'=>$model,
+            'categoryList'=>$categoryList
 					));
 	}
 
@@ -166,12 +176,20 @@ class ProductsController extends Controller
 	{
 
 		$model=$this->loadModel($id);
-
+		$categoryList = array();
+        $category = Yii::app()->db->createCommand()
+            ->select()
+            ->from("category")
+            ->queryAll();
+        foreach ($category as $val) {
+            $categoryList[$val["category_id"]] = $val["name"];
+        }
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
 		if(isset($_POST['Products']))
 		{
+		    $storage = new Storage();
 			$messageType='warning';
 			$message = "There are some errors ";
 			$transaction = Yii::app()->db->beginTransaction();
@@ -182,6 +200,7 @@ class ProductsController extends Controller
 
 				if($model->save()){
                     $this->logs('update','products',$model->product_id,$model->name);
+                    $storage->addToStorage($model->product_id,0);
 					$transaction->commit();
 					Yii::app()->user->setFlash($messageType, $message);
 					$this->redirect(array('view','id'=>$model->product_id));
@@ -200,9 +219,10 @@ class ProductsController extends Controller
 
 		$this->render('update',array(
 			'model'=>$model,
-					));
+            'categoryList'=>$categoryList
+        ));
 
-			}
+    }
 
 	/**
 	 * Deletes a particular model.

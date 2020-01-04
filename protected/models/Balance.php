@@ -184,10 +184,11 @@ class Balance extends CActiveRecord
         $prod = new Products();
         $stuff = new Halfstaff();
         $startProd = Yii::app()->db->createCommand()
-            ->select('prod_id,startCount')
+            ->select('b.b_date,b.prod_id,b.CurEndCount')
             ->from('dep_balance b')
-            ->where('b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>$from,':depId'=>$depId,':types'=>1))
+            ->where('b.b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>date("Y-m-d",strtotime($from)-86400),':depId'=>$depId,':types'=>1))
             ->queryAll();
+
         /*$model = Yii::app()->db->createCommand()
             ->select('sum(SELECT * FROM faktura f
 JOIN realize r ON r.faktura_id = f.faktura_id
@@ -200,14 +201,14 @@ echo "<pre>";
 print_r($model);
 echo "</pre>";*/
         foreach ($startProd as $val) {
-            $summ[0] = $summ[0] + $val['startCount']*$prod->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($from)-86400));
-            $summ[4] = $summ[4] + $val['startCount']*$prod->getCostPrice($val['prod_id'],$from);
+            $summ[0] = $summ[0] + $val['CurEndCount']*$prod->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($from)-86400));
+            $summ[4] = $summ[4] + $val['CurEndCount']*$prod->getCostPrice($val['prod_id'],$from);
         }
 
         $endProd = Yii::app()->db->createCommand()
-            ->select('prod_id,endCount,CurEndCount')
+            ->select('b.prod_id,b.endCount,b.CurEndCount')
             ->from('dep_balance b')
-            ->where('b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>$till,':depId'=>$depId,':types'=>1))
+            ->where('b.b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>$till,':depId'=>$depId,':types'=>1))
             ->queryAll();
 
         foreach ($endProd as $val) {
@@ -216,20 +217,20 @@ echo "</pre>";*/
         }
 
         $startStuff = Yii::app()->db->createCommand()
-            ->select('prod_id,startCount')
+            ->select('b.prod_id,b.CurEndCount')
             ->from('dep_balance b')
-            ->where('b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>$from,':depId'=>$depId,':types'=>2))
+            ->where('b.b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>date("Y-m-d",strtotime($from)-86400),':depId'=>$depId,':types'=>2))
             ->queryAll();
 
         foreach ($startStuff as $val) {
-            $summ[0] = $summ[0] + $val['startCount']*$stuff->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($from)-86400));
-            $summ[4] = $summ[4] + $val['startCount']*$stuff->getCostPrice($val['prod_id'],$from);
+            $summ[0] = $summ[0] + $val['CurEndCount']*$stuff->getCostPrice($val['prod_id'],date('Y-m-d',strtotime($from)-86400));
+            $summ[4] = $summ[4] + $val['CurEndCount']*$stuff->getCostPrice($val['prod_id'],$from);
         }
 
         $endStuff = Yii::app()->db->createCommand()
-            ->select('prod_id,endCount,CurEndCount')
+            ->select('b.prod_id,b.endCount,b.CurEndCount')
             ->from('dep_balance b')
-            ->where('b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>$till,':depId'=>$depId,':types'=>2))
+            ->where('b.b_date = :dates AND b.department_id = :depId AND b.type = :types',array(':dates'=>$till,':depId'=>$depId,':types'=>2))
             ->queryAll();
 
         foreach ($endStuff as $val) {

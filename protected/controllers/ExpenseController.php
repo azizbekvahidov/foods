@@ -1,14 +1,14 @@
 <?php
 
-class ExpenseController extends Controller
+class ExpenseController extends SetupController
 {
+
     public function filters()
     {
         return array(
-
-            'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
-
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
         );
     }
 
@@ -21,7 +21,7 @@ class ExpenseController extends Controller
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('ajaxDeptList','taken','test','view','index','empExpense','empOrder','debtList','debtClose','paidDebt','lists','ajaxEmpExpense','orderList','empList','print'),
+                'actions'=>array('PrintReport','removeCost','RegSalary','salary','paidPrepaid','Avans','ajaxDeptList','taken','test','view','index','empExpense','empOrder','debtList','debtClose','debtCloseJust','paidDebt','lists','ajaxEmpExpense','orderList','empList','print'),
                 'roles'=>array('2'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -35,6 +35,7 @@ class ExpenseController extends Controller
     }
 
     public function actionTaken(){
+
         $dates = date('Y-m-d');
         $this->render('taken',array(
             'dates'=>$dates
@@ -43,98 +44,281 @@ class ExpenseController extends Controller
 
     public function actionTest(){
         if(isset($_POST['dates'])){
-            $from = $_POST['dates'];
-            $to = $_POST['dates'];
+            $to = date("Y-m-d H:i:s",strtotime(date("Y-m-d",strtotime($_POST['dates']))." 23:59:59") + 3600);
+            $from = date("Y-m-d H:i:s",strtotime($_POST['dates']) + 3600);
         }
         else{
-            $from = $_POST['from'];
-            $to = $_POST['to'];
+            $to = date("Y-m-d H:i:s",strtotime(date("Y-m-d",strtotime($_POST['to']))." 23:59:59") + 3600);
+            $from = date("Y-m-d H:i:s",strtotime($_POST['from']) + 3600);
         }
+
         $PERSENT = new Percent();
         $expense = new Expense();
         $model = Employee::model()->findAll();
+        $cost = Yii::app()->db->createCommand()
+            ->select()
+            ->from("costs")
+            ->where("cost_date BETWEEN :from AND :to",array(':from'=>$from,':to'=>$to))
+            ->queryAll();
+        $debt = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("expense t")
+            ->where(' t.order_date BETWEEN :from AND :to AND (t.status = 1 OR t.status = 0) AND t.debt = 1 AND t.kind != 1 AND t.prepaid != 1',array(':from'=>$from,':to'=>$to))
+->queryAll();
+        $paidDebt = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("debt d")
+            ->join('expense ex','d.expense_id = ex.expense_id')
+            ->where(' d.d_date BETWEEN :from AND :to ',array(':from'=>date("Y-m-d",strtotime($from)),':to'=>date("Y-m-d",strtotime($to))))
+            ->queryAll();
+        $empCnt = 0;
         foreach($model as $val){
             $empsum = 0;
             $empPersum = 0;
+            $clearSum = 0;
+            $term = 0;
             $percent = 0;
-            $newModel = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt != :debt AND t.kind != 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
+            $newModel = Yii::app()->db->createCommand()
+                ->select()
+                ->from("expense t")
+                ->where('t.employee_id = :id AND t.order_date BETWEEN :from AND :to AND t.status != :status AND t.debt != :debt AND t.kind != 1 AND t.prepaid != 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1))
+                ->queryAll();
+
+            $debtpaid = Yii::app()->db->createCommand()
+                ->select()
+                ->from("expense t")
+                ->where('t.employee_id = :id AND t.order_date BETWEEN :from AND :to AND  t.debt != :debt AND t.kind != 1 AND t.prepaid != 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':debt'=>0))
+                ->queryAll();
             //echo $val->employee_id."<br>";
             foreach($newModel as $vale){
                 if($val->check_percent == 1){
-                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
+                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale["order_date"])));
+                    $empCnt++;
                 }
-                $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
+                else{
+                    $percent = 0;
+                }
+                $temp = $vale["expSum"];
+                $clearSum = $clearSum + ($temp*100/(100+$percent));
                 $empsum = $empsum + $temp;
+                $term = $term + $vale["terminal"];
                 $empPersum = $empPersum + ($temp + $temp*$percent/100);
             }
+
+            foreach($debtpaid as $vale){
+                if($val->check_percent == 1){
+                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale["order_date"])));
+                    $empCnt++;
+                }
+                else{
+                    $percent = 0;
+                }
+                $temp = $vale["debtPayed"];
+                $clearSum = $clearSum + ($temp*100/(100+$percent));
+                $empsum = $empsum + $temp;
+                $term = $term + $vale["terminal"];
+                $empPersum = $empPersum + ($temp + $temp*$percent/100);
+            }
+            $sum["empId"][$val->name] = $val->employee_id;
             $sum['cost'][$val->name] = $empsum;
+            $sum["clearSum"][$val->name] = $clearSum;
+            $sum["check"][$val->name] = $val->check_percent;
+            $clearSumm = $clearSumm + $clearSum;
             $sumPer['cost'][$val->name] = $empPersum;
             $summ['cost'] = $summ['cost'] + $empsum;
+            $terminal['cost'][$val->name] = $term;
+            $terminalAll['cost'] = $terminalAll['cost'] + $term;
             $perSumm['cost'] = $perSumm['cost'] + $empPersum;
-            $empsum = 0;
-            $empPersum = 0;
-            $percent = 0;
-            $newModel2 = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id = 0',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
-            //echo $val->employee_id."<br>";
-            foreach($newModel2 as $vale){
-                if($val->check_percent == 1){
-                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
-                }
-                $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
-                $empsum = $empsum + $temp;
-                $empPersum = $empPersum + ($temp + $temp*$percent/100);
-            }
-            $sum['debt'][$val->name] = $empsum;
-            $sumPer['debt'][$val->name] = $empPersum;
-            $summ['debt'] = $summ['debt'] + $empsum;
-            $perSumm['debt'] = $perSumm['debt'] + $empPersum;
-
-            $empsum = 0;
-            $empPersum = 0;
-            $percent = 0;
-            $newModel3 = Expense::model()->findAll('t.employee_id = :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 0',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
-            //echo $val->employee_id."<br>";
-            foreach($newModel3 as $vale){
-                if($val->check_percent == 1){
-                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
-                }
-                $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
-                $empsum = $empsum + $temp;
-                $empPersum = $empPersum + ($temp + $temp*$percent/100);
-            }
-            $sum['empdebt'][$val->name] = $empsum;
-            $sumPer['empdebt'][$val->name] = $empPersum;
-            $summ['empdebt'] = $summ['empdebt'] + $empsum;
-            $perSumm['empdebt'] = $perSumm['empdebt'] + $empPersum;
 
 
-            $empsum = 0;
-            $empPersum = 0;
-            $percent = 0;
-            $newModel4 = Expense::model()->findAll('t.employee_id= :id AND date(t.order_date) BETWEEN :from AND :to AND t.status != :status AND t.debt = :debt AND t.kind != 1 AND debtor_id != 0 AND debtor_type = 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1));
-//echo "<pre>";
-//print_r($newModel4);
-//echo "</pre>";
-            //echo $val->employee_id."<br>";
-            foreach($newModel4 as $vale){
-                if($val->check_percent == 1){
-                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale->order_date)));
-                }
-                $temp = $expense->getExpenseSum($vale->expense_id,date('Y-m-d',strtotime($vale->order_date)));
-                $empsum = $empsum + $temp;
-                $empPersum = $empPersum + ($temp + $temp*$percent/100);
-            }
-            $sum['cont'][$val->name] = $empsum;
-            $sumPer['cont'][$val->name] = $empPersum;
-            $summ['cont'] = $summ['cont'] + $empsum;
-            $perSumm['cont'] = $perSumm['cont'] + $empPersum;
+            $department = Yii::app()->db->createCommand()
+                ->select('')
+                ->from('department')
+                ->queryAll();
+
         }
 
+        $avans = Yii::app()->db->createCommand()
+            ->select("sum(expSum) as summ")
+            ->from("prepaid")
+            ->where("prepDate BETWEEN :from AND :to ",array(":from"=>$from,":to"=>$to))
+            ->queryRow();
+
         $this->renderPartial('test',array(
+            'department'=>$department,
+            'from'=>$from,
+            'to'=>$to,
             'sum'=>$summ,
+            'debt' => $debt,
+            'paidDebt' => $paidDebt,
             'empSum'=>$sum,
             'sumPer'=>$perSumm,
+            'clearSumm'=>$clearSumm,
             'empPerSum'=>$sumPer,
+            'terminal'=>$terminal,
+            'terminalAll'=>$terminalAll,
+            'avans'=>$avans["summ"],
+            'empCnt' => $empCnt,
+            'cost' => $cost
+            
+        ));
+    }
+
+    public function actionPrintReport(){
+        if(isset($_GET['dates'])){
+            $to = date("Y-m-d H:i:s",strtotime(date("Y-m-d",strtotime($_GET['to']))." 23:59:59") + 3600);
+            $from = date("Y-m-d H:i:s",strtotime($_GET['from']) + 3600);
+        }
+        else{
+            $to = date("Y-m-d H:i:s",strtotime(date("Y-m-d",strtotime($_GET['to']))." 23:59:59") + 3600);
+            $from = date("Y-m-d H:i:s",strtotime($_GET['from']) + 3600);
+        }
+
+        $PERSENT = new Percent();
+        $expense = new Expense();
+        $model = Employee::model()->findAll();
+        $cost = Yii::app()->db->createCommand()
+            ->select()
+            ->from("costs")
+            ->where("cost_date BETWEEN :from AND :to",array(':from'=>$from,':to'=>$to))
+            ->queryAll();
+        $debt = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("expense t")
+            ->where(' t.order_date BETWEEN :from AND :to AND (t.status = 1 OR t.status = 0) AND t.debt = 1 AND t.kind != 1 AND t.prepaid != 1',array(':from'=>$from,':to'=>$to))
+->queryAll();
+        $paidDebt = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("debt d")
+            ->join('expense ex','d.expense_id = ex.expense_id')
+            ->where(' d.d_date BETWEEN :from AND :to ',array(':from'=>date("Y-m-d",strtotime($from)),':to'=>date("Y-m-d",strtotime($to))))
+            ->queryAll();
+        $empCnt = 0;
+        foreach($model as $val){
+            $empsum = 0;
+            $empPersum = 0;
+            $clearSum = 0;
+            $term = 0;
+            $percent = 0;
+            $newModel = Yii::app()->db->createCommand()
+                ->select()
+                ->from("expense t")
+                ->where('t.employee_id = :id AND t.order_date BETWEEN :from AND :to AND t.status != :status AND t.debt != :debt AND t.kind != 1 AND t.prepaid != 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':status'=>1,':debt'=>1))
+                ->queryAll();
+            $debtpaid = Yii::app()->db->createCommand()
+                ->select()
+                ->from("expense t")
+                ->where('t.employee_id = :id AND t.order_date BETWEEN :from AND :to AND  t.debt != :debt AND t.kind != 1 AND t.prepaid != 1',array(':id'=>$val->employee_id,':from'=>$from,':to'=>$to,':debt'=>0))
+                ->queryAll();
+            //echo $val->employee_id."<br>";
+            foreach($newModel as $vale){
+                if($val->check_percent == 1){
+                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale["order_date"])));
+                    $empCnt++;
+                }
+                else{
+                    $percent = 0;
+                }
+                $temp = $vale["expSum"];
+                $clearSum = $clearSum + ($temp*100/(100+$percent));
+                $empsum = $empsum + $temp;
+                $term = $term + $vale["terminal"];
+                $empPersum = $empPersum + ($temp + $temp*$percent/100);
+            }
+
+            foreach($debtpaid as $vale){
+                if($val->check_percent == 1){
+                    $percent = $PERSENT->getPercent(date('Y-m-d',strtotime($vale["order_date"])));
+                    $empCnt++;
+                }
+                else{
+                    $percent = 0;
+                }
+                $temp = $vale["debtPayed"];
+                $clearSum = $clearSum + ($temp*100/(100+$percent));
+                $empsum = $empsum + $temp;
+                $term = $term + $vale["terminal"];
+                $empPersum = $empPersum + ($temp + $temp*$percent/100);
+            }
+            $sum["empId"][$val->name] = $val->employee_id;
+            $sum['cost'][$val->name] = $empsum;
+            $sum["clearSum"][$val->name] = $clearSum;
+            $sum["check"][$val->name] = $val->check_percent;
+            $clearSumm = $clearSumm + $clearSum;
+            $sumPer['cost'][$val->name] = $empPersum;
+            $summ['cost'] = $summ['cost'] + $empsum;
+            $terminal['cost'][$val->name] = $term;
+            $terminalAll['cost'] = $terminalAll['cost'] + $term;
+            $perSumm['cost'] = $perSumm['cost'] + $empPersum;
+
+
+            $department = Yii::app()->db->createCommand()
+                ->select('')
+                ->from('department')
+                ->queryAll();
+
+        }
+
+        $avans = Yii::app()->db->createCommand()
+            ->select("sum(expSum) as summ")
+            ->from("prepaid")
+            ->where("prepDate BETWEEN :from AND :to ",array(":from"=>$from,":to"=>$to))
+            ->queryRow();
+
+        $this->renderPartial('printReport',array(
+            'department'=>$department,
+            'from'=>$from,
+            'to'=>$to,
+            'sum'=>$summ,
+            'debt' => $debt,
+            'paidDebt' => $paidDebt,
+            'empSum'=>$sum,
+            'sumPer'=>$perSumm,
+            'clearSumm'=>$clearSumm,
+            'empPerSum'=>$sumPer,
+            'terminal'=>$terminal,
+            'terminalAll'=>$terminalAll,
+            'avans'=>$avans["summ"],
+            'empCnt' => $empCnt,
+            'cost' => $cost
+
+        ));
+    }
+
+    public function actionDetail($depId,$dates,$till){
+
+        $model = Yii::app()->db->createCommand()
+            ->select('sum(ord.count) as count,ord.just_id as prod_id,p.name as name,ex.mType,ord.type')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('products p','p.product_id = ord.just_id')
+            ->where('date(ex.order_date) = :dates AND ex.debtor_id = :DepId AND ord.type = :type AND ord.deleted != 1',
+                array(':dates'=>$dates,':DepId'=>$depId,':type'=>3))
+            ->group('ord.just_id')
+            ->queryAll();
+        $model2 = Yii::app()->db->createCommand()
+            ->select('sum(ord.count) as count,ord.just_id as prod_id,h.name as name,ex.mType,ord.type')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('halfstaff h','h.halfstuff_id = ord.just_id')
+            ->where('date(ex.order_date) = :dates AND ex.debtor = :DepId AND ord.type = :type AND ord.deleted != 1',
+                array(':dates'=>$dates,':DepId'=>$depId,':type'=>2))
+            ->group('ord.just_id')
+            ->queryAll();
+        $model3 = Yii::app()->db->createCommand()
+            ->select('sum(ord.count) as count,ord.just_id as prod_id,d.name as name,ex.mType,ord.type')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('dishes d','d.dish_id = ord.just_id')
+            ->where('date(ex.order_date) = :dates AND ex.debtor = :DepId AND ord.type = :type AND ord.deleted != 1',
+                array(':dates'=>$dates,':DepId'=>$depId,':type'=>1))
+            ->group('ord.just_id')
+            ->queryAll();
+        $this->renderPartial("/report/ajaxDetail",array(
+            'dates'=>$dates,
+            'model'=>$model,
+            'model2'=>$model2,
+            'model3'=>$model3,
         ));
     }
     
@@ -176,6 +360,37 @@ class ExpenseController extends Controller
         $this->render('empOrder',array(
             'employee'=>$employee,
         ));
+    }
+
+    public function actionSalary(){
+        $cook = Yii::app()->db->createCommand()
+            ->select()
+            ->from("employee")
+            ->where("role = 0")
+            ->queryAll();
+        $waiter = Yii::app()->db->createCommand()
+            ->select()
+            ->from("employee")
+            ->where("role = 1")
+            ->queryAll();
+
+        $this->render("salary",array(
+            'cook' => $cook,
+            'waiter' => $waiter
+        ));
+    }
+
+    public function actionRegSalary(){
+        Yii::app()->db->createCommand()->insert("costs",array(
+            'summ' => $_POST["sum"],
+            'comment' => "Зарплата ".$_POST["name"],
+            'user_id' => Yii::app()->user->getId(),
+            'cost_date' => date("Y-m-d H:i:s")
+        ));
+    }
+
+    public function actionRemoveCost(){
+        Yii::app()->db->createCommand()->delete("costs","cost_id = :id",array(":id"=>$_POST["id"]));
     }
 
     public function actionEmpList(){
@@ -303,7 +518,14 @@ class ExpenseController extends Controller
 
     public function actionTodayOrder(){
         $dates = $_GET['order_date'];
-        $model = Expense::model()->with('order')->findAll('date(t.order_date) = :dates AND t.kind = :kind',array(':dates'=>$dates,':kind'=>0));
+        $model = Yii::app()->db->createCommand()
+            ->select('emp.check_percent, emp.employee_id, ex.table ,emp.name,ex.order_date,ex.expense_id,ex.expSum,t.name as Tname')
+            ->from('expense ex')
+            ->join('employee emp','emp.employee_id = ex.employee_id')
+            ->leftjoin('tables t','t.table_num = ex.table')
+            ->where('date(ex.order_date) = :dates AND ex.kind = :kind',array(':dates'=>$dates,':kind'=>0))
+            ->queryAll();
+        //$model = Expense::model()->with('order')->findAll('date(t.order_date) = :dates AND t.kind = :kind',array(':dates'=>$dates,':kind'=>0));
 	    $percent = new Percent();
         $this->render('todayOrder',array(
             'newModel'=>$model,
@@ -400,6 +622,7 @@ class ExpenseController extends Controller
                 $model->kind = 1;
                 //$uploadFile=CUploadedFile::getInstance($model,'filename');
                 if($model->save()){
+                    $storage = new Storage();
                     $messageType = 'success';
                     $message = "<strong>Well done!</strong> You successfully create data ";
 
@@ -408,8 +631,9 @@ class ExpenseController extends Controller
                         $newModel->expense_id = $model->expense_id;
                         $newModel->just_id = $value;
                         $newModel->type = 3;
-                        $newModel->count = $_POST['product']['count'][$key];
+                        $newModel->count = $this->changeToFloat($_POST['product']['count'][$key]);
                         $newModel->save();
+                        $storage->removeToStorage($value,$this->changeToFloat($_POST['product']['count'][$key]));
                     }
 
                     $transaction->commit();
@@ -451,7 +675,12 @@ class ExpenseController extends Controller
         $from = $_POST['from'];
         $till = $_POST['till'];
 
-        $model = Expense::model()->with()->findAll('date(t.order_date) BETWEEN :from AND :till AND  t.debt = :debt',array(':debt'=>1,':from'=>$from,':till'=>$till));
+        $model = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("expense ex")
+            ->join("employee e",'e.employee_id = ex.employee_id')
+            ->where('date(ex.order_date) BETWEEN :from AND :till AND  ex.debt = :debt AND ex.status = 1',array(':debt'=>1,':from'=>$from,':till'=>$till))
+            ->queryAll();
         $this->renderPartial('ajaxDeptList',array(
             'model'=>$model,
         ));
@@ -462,30 +691,21 @@ class ExpenseController extends Controller
     {
         $exp = new Expense();
         
-        Expense::model()->updateByPk($id,array('debt'=>0));
-        
-            $dates = date('Y-m-d');
-            $debt = new Debt();
-            $debt->d_date = $dates;
-            $debt->expense_id = $id;
-            $debt->save();
-        /*if(Yii::app()->request->isPostRequest)
-        {
-            // we only allow deletion via POST request
-            $this->loadModel($id)->updateByPk($id,array('debt'=>0));
-            $dates = date('Y-m-d');
-            $debt = new Debt();
-            $debt->d_date = $dates;
-            $debt->expense_id = $id;
-            $debt->save();
+        Expense::model()->updateByPk($id,array('status'=>0));
 
-            // if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
-            if(!isset($_GET['ajax']))
-                $this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('debtList'));
-        }
-        else
-            throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');
-    */
+            $dates = date('Y-m-d');
+            $debt = new Debt();
+            $debt->d_date = $dates;
+            $debt->expense_id = $id;
+            $debt->save();
+    }
+
+    public function actionDebtCloseJust($id)
+    {
+        $exp = new Expense();
+
+        Expense::model()->updateByPk($id,array('status'=>0));
+
     }
 
     public function actionPaidDebt(){
@@ -507,6 +727,47 @@ class ExpenseController extends Controller
             'newModel'=>$model,
 	        'percent'=>$percent->getPercent($_POST['dates'])
         ));
+    }
+
+
+
+    public function actionAvans(){
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from("expense e")
+            ->where("e.prepaid = 1 AND date(order_date) = '2000-01-01'")
+            ->queryAll();
+
+        $this->render("avans",array(
+            "model"=>$model
+        ));
+    }
+
+    public function actionPaidPrepaid(){
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from("expense")
+            ->where("expense_id = :id",array(":id"=>$_POST["id"]))
+            ->queryRow();
+        if(intval($model["prepaidSum"] + $_POST["sum"]) == intval($model["expSum"])){
+            Yii::app()->db->createCommand()->update("expense",array(
+                'prepaidSum'=>$model["prepaidSum"] + $_POST["sum"],
+                'order_date'=>date("Y-m-d H:i:s")
+            ),"expense_id = :id",array(":id"=>$_POST["id"]));
+        }
+        else {
+            Yii::app()->db->createCommand()->update("expense", array(
+                'prepaidSum' => $model["prepaidSum"] + $_POST["sum"],
+            ), "expense_id = :id", array(":id" => $_POST["id"]));
+        }
+
+        Yii::app()->db->createCommand()->insert("prepaid",array(
+            'terminal'=>$_POST["prepStatus"],
+            'expSum'=>$_POST["sum"],
+            'expense_id'=>$_POST["id"],
+            'prepDate'=>date("Y-m-d H:i:s"),
+        ));
+
     }
     
 }

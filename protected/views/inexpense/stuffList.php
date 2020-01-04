@@ -10,11 +10,11 @@
     </thead>
     <tbody>
     <?  foreach($model as $val){?>
-        <?if($stuff[$val->prod_id] !=0){?>
-        <tr class="<?=$val->prod_id?>">
-            <td><?=$val->getRelated('stuff')->name?></td>
-            <td class="count"><?=number_format( $stuff[$val->prod_id],2)?></td>
-            <td><input type="text" class="depCount" name="products[<?=$val->prod_id?>]" /></td>
+        <?if($stuff[$val["prod_id"]] !=0){?>
+        <tr class="<?=$val["prod_id"]?>">
+            <td><?=$val["name"]?></td>
+            <td class="count"><?=number_format( $stuff[$val["prod_id"]],2)?></td>
+            <td><input type="text" class="depCount" name="products[<?=$val["prod_id"]?>]" /></td>
         </tr>
         <?}?>
     <? } ?>

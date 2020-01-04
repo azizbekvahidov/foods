@@ -9,10 +9,13 @@
 )); ?>
 
 	<?php echo $form->errorSummary($model); ?>
+<div class="form-group">
+    <?php echo $form->textFieldRow($model,'name',array('class'=>'span5','maxlength'=>100)); ?><br />
+</div>
 
-<?php echo $form->textFieldRow($model,'name',array('class'=>'span5','maxlength'=>100)); ?><br />
-
-<div ><?php echo $form->dropDownListRow($model,'measure_id',CHtml::listData(Measurement::model()->findAll(),'measure_id','name'),array('class'=>'span2')); ?></div>
+<div class="form-group" >
+    <?php echo $form->dropDownListRow($model,'measure_id',CHtml::listData(Measurement::model()->findAll(),'measure_id','name'),array('class'=>'span2')); ?>
+</div>
 
 
 <div class="form-actions span9">

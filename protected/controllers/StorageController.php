@@ -1,6 +1,6 @@
 <?php
 
-class StorageController extends Controller
+class StorageController extends SetupController
 {
 
 
@@ -12,16 +12,17 @@ class StorageController extends Controller
 	public $layout='//layouts/column1';
 		/**
 	 * @return array action filters
+	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
 
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-
-		);
-	}
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 
 		/**
 	 * Specifies the access control rules.
@@ -36,7 +37,7 @@ class StorageController extends Controller
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('beforeEndDepBalance','beforeEnd','monthStorage','update','admin','delete','export','import','editable','toggle','calendar', 'calendarEvents', 'today','start','end','allstorage','allIn','endDepBalance'),
+                'actions'=>array('startBalance','beforeEndDepBalance','beforeEnd','monthStorage','update','admin','delete','export','import','editable','toggle','calendar', 'calendarEvents', 'today','start','end','allstorage','allIn','endDepBalance'),
                 'roles'=>array('3'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -69,22 +70,6 @@ class StorageController extends Controller
         return $ss;
      }
 
-	public function actionView($id)
-	{
-
-		if(isset($_GET['asModal'])){
-			$this->renderPartial('view',array(
-				'model'=>$this->loadModel($id),
-			));
-		}
-		else{
-
-			$this->render('view',array(
-				'model'=>$this->loadModel($id),
-			));
-
-		}
-	}
 
     public function actionBeforeStart($sess,$dates){
 
@@ -115,11 +100,15 @@ class StorageController extends Controller
 
     public function actionStart($sess){
 
-        $coockie = Coockie::model()->find(array('order'=>'coockie_date DESC'));
-        $dates = date('Y-m-d');
+        $coockie = Yii::app()->db->createCommand()
+            ->select()
+            ->from("coockie")
+            ->order('coockie_date DESC')
+            ->queryRow();
+        $dates = date("Y-m-d",strtotime($coockie["coockie_date"])+86400);//date('Y-m-d');
         //if($coockie->coockie_end != null){
             $this->startDay($sess,$dates);
-            $this->redirect(Yii::app()->homeUrl);
+//            $this->redirect(Yii::app()->homeUrl);
         /*} else{
             $this->endDay($sess,$coockie->coockie_date);
             $this->startDay($sess,$dates);
@@ -153,55 +142,56 @@ class StorageController extends Controller
                 $newModel->b_date = date('Y-m-d',strtotime($model->b_date)+(3600*24*$i));
                 $newModel->proceeds = 0;
                 $newModel->procProceeds = 0;
-                $newModel->cost = 0;
+                $newModel->costPrice = 0;
                 $newModel->save();
             }
         }
     }
-    public function startDay($sess,$dates){
-            $this->Holiday($dates);
-            $prodModel = Products::model()->findAll();
-            //$department = Department::model()->findAll();
-            $max_date = Balance::model()->find(array('select'=>'MAX(b_date) as b_date'));
-            $curProd = Balance::model()->with('products')->findAll('date(t.b_date) = :dates',array(':dates'=>$max_date->b_date));
-            $max_date = DepBalance::model()->find(array('select'=>'MAX(b_date) as b_date'));
-            $curDepProd = DepBalance::model()->with('products')->findAll('date(t.b_date) = :dates',array(':dates'=>$max_date->b_date));
+    public function startDay($dates){
+         $coockie = Yii::app()->db->CreateCommand()
+             ->select()
+             ->from("coockie")
+             ->order("coockie_date desc")
+             ->queryRow();
+         $model = Yii::app()->db->CreateCommand()
+             ->select()
+             ->from("balance")
+             ->where("b_date = :dates",array(":dates" => $coockie["coockie_date"]))
+             ->queryAll();
+        foreach ($model as $item) {
+            Yii::app()->db->createCommand()->insert("balance",array(
+                'prod_id' => $item["prod_id"],
+                'b_date' => date('Y-m-d'),
+                'startCount' => $item["endCount"],
+                'endCount' => 0,
+                'CurEndCount' => 0,
+            ));
+         }
 
-            $transaction = Yii::app()->db->beginTransaction();
-            $coockieModel = Coockie::model()->find('date(t.coockie_date) = :dates',array(':dates'=>$dates));
-            if(empty($coockieModel)){
-                if(!empty($curProd)){
-                    foreach($prodModel as $key => $value){
-                        $model = new Balance;
-                        $model->b_date = $dates;
-                        $model->prod_id = $value->product_id;
-                        foreach($curProd as $val){
-                            if($val->prod_id == $value->product_id){
-                                $model->startCount = $val->CurEndCount;
-                            }
-                        }
-                        $model->save();
-                    }
-                }
-                if(!empty($curDepProd)){
-                    foreach($curDepProd as $val){
-                        $model = new DepBalance;
-                        $model->startCount = $val->CurEndCount;
-                        $model->department_id = $val->department_id;
-                        $model->b_date = $dates;
-                        $model->prod_id = $val->prod_id;
-                        $model->type = $val->type;
-                        $model->save();
-                    }
-                }
+         $depModel = Yii::app()->db->CreateCommand()
+             ->select()
+             ->from("dep_balance")
+             ->where("b_date = :dates",array(":dates" => $coockie["coockie_date"]))
+             ->queryAll();
+        foreach ($depModel as $item) {
+            Yii::app()->db->createCommand()->insert("dep_balance",array(
+                'prod_id' => $item["prod_id"],
+                'department_id' => $item["department_id"],
+                'b_date' => date('Y-m-d'),
+                'startCount' => $item["endCount"],
+                'endCount' => 0,
+                'CurEndCount' => 0,
+                'type' => $item["type"]
+            ));
+        }
 
 
-                $coockie = new Coockie;
-                $coockie->coockie_date = $dates;
-                $coockie->coockie_start = $sess;
-                $coockie->save();
-            }
-            $transaction->commit();
+        Yii::app()->db->createCommand()->insert("coockie", array(
+            "coockie_date"=>date('Y-m-d'),
+            "coockie_start"=>"coockie"
+        ));
+
+        $this->redirect(Yii::app()->homeUrl);
     }
 
     public function sumMBalance($dates,$fromDate){
@@ -241,7 +231,7 @@ class StorageController extends Controller
         $function = new Functions();
         $stuff = new Halfstaff();
         //Количественный расчет по отделам
-        $fromDate = date("Y-m-d",strtotime($dates)-86400);
+        $fromDate = $dates;
         $department = Yii::app()->db->createCommand()
             ->select('')
             ->from('department')
@@ -309,17 +299,152 @@ class StorageController extends Controller
                     'endCount'=>$endStuff[$value['prod_id']]
                 ),'prod_id = :prod_id AND department_id = :depId AND b_date = :dates AND type = :type',array(':prod_id'=>$value['prod_id'],':depId'=>$v['department_id'],':dates'=>$dates,':type'=>2));
             }
-
         }
-
         //конец
     }
 
+    public function getProduct($id){
+        $bl = Yii::app()->config->get("balance");
+         if($bl == "start"){
+         }
+    }
+
+    public function actionStartBalance(){
+        $dates = date('Y-m-d',strtotime(date('Y-m-d'))-86400);
+        $department = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('department')
+            ->queryAll();
+        $model = Yii::app()->db->CreateCommand()
+            ->select()
+            ->from("products")
+            ->where('status != 1')
+            ->queryAll();
+        foreach ($model as $item) {
+            Yii::app()->db->createCommand()->insert("balance",array(
+                'b_date' => $dates,
+                'prod_id' => $item["product_id"],
+                'endCount' => 0,
+                'startCount' => 0,
+            ));
+        }
+        $product = new Products();
+        $stuff = new Halfstaff();
+        foreach($department as $v) {
+            $id = $v["department_id"];
+            $prodList = $product->getProdName($id);
+            $prod = $stuff->getStuffProdName($id);
+            $stuffList = $stuff->getStuffName($id);
+
+            foreach ($prod+$prodList as $key => $item) {
+                Yii::app()->db->createCommand()->insert("dep_balance",array(
+                    'b_date' => $dates,
+                    'prod_id' => $key,
+                    'department_id' => $id,
+                    'endCount' => 0,
+                    'startCount' => 0,
+                    'type' => 1
+                ));
+            }
+
+            foreach ($stuffList as $key => $item) {
+                Yii::app()->db->createCommand()->insert("dep_balance",array(
+                    'b_date' => $dates,
+                    'prod_id' => $key,
+                    'department_id' => $id,
+                    'endCount' => 0,
+                    'startCount' => 0,
+                    'type' => 2
+                ));
+            }
+        }
+
+        Yii::app()->db->createCommand()->insert("coockie",array(
+            'coockie_date' => date('Y-m-d',strtotime(date('Y-m-d'))-86400),
+            'coockie_start' => 'coockie',
+            'coockie_end' => 'coockie'
+        ));
+
+
+    }
+
     public function endDay($sess,$dates){
+//        $this->Holiday($dates);
+        $maxDate = Yii::app()->db->createCommand()
+            ->select("")
+            ->from("coockie")
+            ->where("coockie_end is null")
+            ->order("coockie_date desc")
+            ->queryRow();
+        $expProd = Yii::app()->db->createCommand()
+            ->select()
+            ->from("expense_list")
+            ->where("expense_date = :date",array(":date"=>$maxDate["coockie_date"]))
+            ->queryAll();
+
+        foreach ($expProd as $item) {
+            $prod = Yii::app()->db->createCommand()
+                ->select()
+                ->from("dep_balance")
+                ->where("prod_id = :id and department_id = :depId and  `type` = :type and b_date = :dates",array(":id"=>$item["prod_id"],":depId"=>$item["department_id"],":type"=>$item["prod_type"],":dates"=>$maxDate["coockie_date"]))
+                ->queryRow();
+            if(!empty($prod))
+                Yii::app()->db->createCommand()->update("dep_balance",array(
+                    "endCount"=>$prod["cnt"]-$item["cnt"]
+                ),"prod_id = :id and department_id = :depId and  `type` = :type and b_date = :dates",array(":id"=>$item["prod_id"],":depId"=>$item["department_id"],":type"=>$item["prod_type"],":dates"=>$maxDate["coockie_date"]));
+            else
+                Yii::app()->db->createCommand()->insert("dep_balance",array(
+                    "prod_id"=>$item["prod_id"],
+                    "department_id"=>$item["department_id"],
+                    "type"=>$item["prod_type"],
+                    "b_date"=>$maxDate["coockie_date"],
+                    "startCount"=>0,
+                    "endCount"=>$item["cnt"]
+                ),"prod_id = :id and department_id = :depId and  prod_type = :type",array(":id"=>$item["prod_id"],":depId"=>$item["department_id"],":type"=>$item["prod_type"]));
+        }
+        Yii::app()->db->createCommand()->update("coockie",array(
+            "coockie_end"=>$sess
+        ),"coockie_id = :id",array(":id"=>$maxDate["coockie_id"]));
+           /* $storage=Yii::app()->db->createCommand()
+                ->select()
+                ->from("storage")
+                ->queryAll();
+            $storageDep=Yii::app()->db->createCommand()
+                ->select()
+                ->from("storage_dep")
+                ->queryAll();
+
+            foreach ($storage as $value) {
+                Yii::app()->db->createCommand()->insert("balance", array(
+                    "b_date"=>$maxDate["coockie_date"],
+                    "prod_id"=>$value["prod_id"],
+                    "endCount"=>$value["cnt"],
+                ));
+            }
+            foreach ($storageDep as $value) {
+                Yii::app()->db->createCommand()->insert("dep_balance", array(
+                    "b_date"=>$maxDate["coockie_date"],
+                    "prod_id"=>$value["prod_id"],
+                    "endCount"=>$value["cnt"],
+                    "department_id"=>$value["department_id"],
+                    "type"=>$value["prod_type"],
+                ));
+            }
+
+            if($dates != date("Y-m-d")) {
+                Yii::app()->db->createCommand()->insert("coockie", array(
+                    "coockie_date"=>$dates,
+                    "coockie_start"=>$sess
+                ));
+            }
 
 
-        $transaction = Yii::app()->db->beginTransaction();
-        $this->sumMBalance($dates,$dates);
+        $func = new Functions();
+        $timeShift = $func->getTime($dates,$dates);
+        $fromDate = $timeShift[0];
+        $dates = $timeShift[1];
+        //$transaction = Yii::app()->db->beginTransaction();
+//        $this->sumMBalance($dates,$dates);
 
         //данные основного склада
         $endStorageProducts = array();
@@ -329,17 +454,18 @@ class StorageController extends Controller
             ->select('')
             ->from('faktura f')
             ->join('realize re','re.faktura_id = f.faktura_id')
-            ->where('date(f.realize_date) BETWEEN :from AND :till',array(':till'=>$dates,':from'=>$dates))
+            ->where('f.realize_date BETWEEN :from AND :till',array(':till'=>$dates,':from'=>$fromDate))
             ->queryAll();
         foreach($fakturaProd as $val){
             $inProducts[$val['prod_id']] = $inProducts[$val['prod_id']] + $val['count'];
         }
         //Расход
+
         $Depfaktura = Yii::app()->db->createCommand()
             ->select('')
             ->from('dep_faktura df')
             ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
-            ->where('date(df.real_date) BETWEEN :from AND :till AND df.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$dates,'fromDepId'=>0))
+            ->where('df.real_date BETWEEN :from AND :till AND df.fromDepId = :fromDepId',array(':till'=>$dates,':from'=>$fromDate,'fromDepId'=>0))
             ->queryAll();
 
         foreach($Depfaktura as $val){
@@ -349,7 +475,7 @@ class StorageController extends Controller
             ->select('')
             ->from('dep_faktura df')
             ->join('dep_realize dr','dr.dep_faktura_id = df.dep_faktura_id')
-            ->where('date(df.real_date) BETWEEN :from AND :till AND df.fromDepId != :fromDepId AND df.department_id = 0',array(':till'=>$dates,':from'=>$dates,'fromDepId'=>0))
+            ->where('df.real_date BETWEEN :from AND :till AND df.fromDepId != :fromDepId AND df.department_id = 0',array(':till'=>$dates,':from'=>$fromDate,'fromDepId'=>0))
             ->queryAll();
 
         foreach($Depfaktura1 as $val){
@@ -360,7 +486,7 @@ class StorageController extends Controller
             ->select('')
             ->from('expense ex')
             ->join('orders ord','ord.expense_id = ex.expense_id')
-            ->where('date(ex.order_date) BETWEEN :from AND :till AND ex.kind = :kind',array(':kind'=>1,':till'=>$dates,':from'=>$dates))
+            ->where('ex.order_date BETWEEN :from AND :till AND ex.kind = :kind',array(':kind'=>1,':till'=>$dates,':from'=>$fromDate))
             ->queryAll();
         foreach ($expense as $val) {
             $inOutProducts[$val['just_id']] = $inOutProducts[$val['just_id']] + $val['count'];
@@ -370,7 +496,7 @@ class StorageController extends Controller
             ->select()
             ->from('exchange ex')
             ->join('exList el','el.exchange_id = ex.exchange_id')
-            ->where('date(ex.exchange_date) = :dates AND ex.recived = 0',array(':dates'=>$dates))
+            ->where('ex.exchange_date = :dates AND ex.recived = 0',array(':dates'=>$fromDate))
             ->queryAll();
         foreach ($exRec as $val) {
             $recive[$val['prod_id']] = $recive[$val['prod_id']] + $val['count'];
@@ -380,7 +506,7 @@ class StorageController extends Controller
             ->select()
             ->from('exchange ex')
             ->join('exList el','el.exchange_id = ex.exchange_id')
-            ->where('date(ex.exchange_date) = :dates AND ex.recived = 1',array(':dates'=>$dates))
+            ->where('ex.exchange_date = :dates AND ex.recived = 1',array(':dates'=>$fromDate))
             ->queryAll();
         foreach ($exSend as $val) {
             $send[$val['prod_id']] = $send[$val['prod_id']] + $val['count'];
@@ -388,22 +514,19 @@ class StorageController extends Controller
         $curProd = Yii::app()->db->createCommand()
             ->select('')
             ->from('balance b')
-            ->where('b.b_date = :dates',array(':dates'=>$dates))
+            ->where('b.b_date = :dates',array(':dates'=>$fromDate))
             ->queryAll();
         foreach($curProd as $value){
             $endStorageProducts[$value['prod_id']] = $endStorageProducts[$value['prod_id']] + $value['startCount']+$inProducts[$value['prod_id']]-$outProducts[$value['prod_id']] - $inOutProducts[$value['prod_id']]+$recive[$value['prod_id']]-$send[$value['prod_id']];
-            Yii::app()->db->createCommand()->update('balance',array(
-                'endCount'=>$endStorageProducts[$value['prod_id']]
-            ),'prod_id = :prod_id AND b_date = :dates',array(':prod_id'=>$value['prod_id'],':dates'=>$dates));
-        }
+            echo "<pre>";
+            print_r($endStorageProducts[$value['prod_id']]);
+            echo "</pre>";
+//            Yii::app()->db->createCommand()->update('balance',array(
+//                'endCount'=>$endStorageProducts[$value['prod_id']]
+//            ),'prod_id = :prod_id AND b_date = :dates',array(':prod_id'=>$value['prod_id'],':dates'=>$dates));
+        }*/
 
         //конец
-        $coockieModel = Coockie::model()->find('date(t.coockie_date) = :dates',array(':dates'=>$dates));
-        if(!empty($coockieModel)){
-            $coockieModel->coockie_end = $sess;
-            $coockieModel->save();
-        }
-        $transaction->commit();
     }
 
     public function actionAllIn(){
@@ -551,350 +674,6 @@ class StorageController extends Controller
         ));
     }
 
-	/**
-	 * Creates a new model.
-	 * If creation is successful, the browser will be redirected to the 'view' page.
-	 */
-
-	public function actionCreate()
-	{
-	    $products = Products::model()->with('measure')->findAll(array('order'=>'t.name'));
-		$curModel = Storage::model()->with('product.measure')->findAll(array('order'=>'product.name'));
-        //if(empty($curModel)){
-    		$model=new Storage;
-
-    		// Uncomment the following line if AJAX validation is needed
-    		// $this->performAjaxValidation($model);
-
-    		if(isset($_POST['Storage']))
-    		{
-                if(!empty($curModel)){
-                    $model->deleteAll();
-                }
-                if($_POST['Storage']['curDate'] == ''){
-                    $_POST['Storage']['curDate'] = date('Y-m-d');
-                }
-
-    			$transaction = Yii::app()->db->beginTransaction();
-    			try{
-    				$messageType='warning';
-    				$message = "There are some errors ";
-                    foreach($_POST['product_id'] as $key => $value){
-                        $tempModel = new Storage;
-                        $tempModel->curDate = $_POST['Storage']['curDate'];
-                        $tempModel->prod_id = $value;
-                        $tempModel->curCount = $this->changeToFloat($_POST['count'][$key]);
-                        $tempModel->price = $_POST['price'][$key];
-                        if($tempModel->save()){
-                            $messageType = 'success';
-    				        $message = "<strong>Well done!</strong> You successfully create data ";
-                        }
-                    }
-                    $transaction->commit();
-    				Yii::app()->user->setFlash($messageType, $message);
-    				$this->redirect(array('index'));
-    				//$model->attributes=$_POST['Storage'];
-    				//$uploadFile=CUploadedFile::getInstance($model,'filename');
-    				/*if($model->save()){
-    					$messageType = 'success';
-    					$message = "<strong>Well done!</strong> You successfully create data ";
-    					/*
-    					$model2 = Storage::model()->findByPk($model->storage_id);
-    					if(!empty($uploadFile)) {
-    						$extUploadFile = substr($uploadFile, strrpos($uploadFile, '.')+1);
-    						if(!empty($uploadFile)) {
-    							if($uploadFile->saveAs(Yii::app()->basePath.DIRECTORY_SEPARATOR.'files'.DIRECTORY_SEPARATOR.'storage'.DIRECTORY_SEPARATOR.$model2->storage_id.DIRECTORY_SEPARATOR.$model2->storage_id.'.'.$extUploadFile)){
-    								$model2->filename=$model2->storage_id.'.'.$extUploadFile;
-    								$model2->save();
-    								$message .= 'and file uploded';
-    							}
-    							else{
-    								$messageType = 'warning';
-    								$message .= 'but file not uploded';
-    							}
-    						}
-    					}
-
-    					$transaction->commit();
-    					Yii::app()->user->setFlash($messageType, $message);
-    					$this->redirect(array('view','id'=>$model->storage_id));
-    				}	*/
-    			}
-    			catch (Exception $e){
-    				$transaction->rollBack();
-    				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-    				//$this->refresh();
-    			}
-
-    		}
-
-    		$this->render('create',array(
-    			'model'=>$model,
-                'curModel'=>$curModel,
-                'products'=>$products,
-    					));
-         //} else{
-         //   $this->redirect(array('index'));
-         //}
-
-
-	}
-
-	/**
-	 * Updates a particular model.
-	 * If update is successful, the browser will be redirected to the 'view' page.
-	 * @param integer $id the ID of the model to be updated
-	 */
-	public function actionUpdate($id)
-	{
-
-		$model=$this->loadModel($id);
-
-		// Uncomment the following line if AJAX validation is needed
-		// $this->performAjaxValidation($model);
-
-		if(isset($_POST['Storage']))
-		{
-			$messageType='warning';
-			$message = "There are some errors ";
-			$transaction = Yii::app()->db->beginTransaction();
-			try{
-				$model->attributes=$_POST['Storage'];
-				$messageType = 'success';
-				$message = "<strong>Well done!</strong> You successfully update data ";
-
-				/*
-				$uploadFile=CUploadedFile::getInstance($model,'filename');
-				if(!empty($uploadFile)) {
-					$extUploadFile = substr($uploadFile, strrpos($uploadFile, '.')+1);
-					if(!empty($uploadFile)) {
-						if($uploadFile->saveAs(Yii::app()->basePath.DIRECTORY_SEPARATOR.'files'.DIRECTORY_SEPARATOR.'storage'.DIRECTORY_SEPARATOR.$model->storage_id.DIRECTORY_SEPARATOR.$model->storage_id.'.'.$extUploadFile)){
-							$model->filename=$model->storage_id.'.'.$extUploadFile;
-							$message .= 'and file uploded';
-						}
-						else{
-							$messageType = 'warning';
-							$message .= 'but file not uploded';
-						}
-					}
-				}
-				*/
-
-				if($model->save()){
-					$transaction->commit();
-					Yii::app()->user->setFlash($messageType, $message);
-					$this->redirect(array('view','id'=>$model->storage_id));
-				}
-			}
-			catch (Exception $e){
-				$transaction->rollBack();
-				Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-				// $this->refresh();
-			}
-
-			$model->attributes=$_POST['Storage'];
-			if($model->save())
-				$this->redirect(array('view','id'=>$model->storage_id));
-		}
-
-		$this->render('update',array(
-			'model'=>$model,
-					));
-
-			}
-
-	/**
-	 * Deletes a particular model.
-	 * If deletion is successful, the browser will be redirected to the 'admin' page.
-	 * @param integer $id the ID of the model to be deleted
-	 */
-	public function actionDelete($id)
-	{
-		if(Yii::app()->request->isPostRequest)
-		{
-			// we only allow deletion via POST request
-			$this->loadModel($id)->delete();
-
-			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
-			if(!isset($_GET['ajax']))
-				$this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('admin'));
-		}
-		else
-			throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');
-	}
-
-	/**
-	 * Lists all models.
-	 */
-	public function actionIndex()
-	{
-		/*
-		$dataProvider=new CActiveDataProvider('Storage');
-		$this->render('index',array(
-			'dataProvider'=>$dataProvider,
-		));
-		*/
-		$newModel = Storage::model()->with('product.measure')->findAll(array('order'=>'product.name'));
-
-		$model=new Storage('search');
-		$model->unsetAttributes();  // clear any default values
-		if(isset($_GET['Storage']))
-			$model->attributes=$_GET['Storage'];
-
-		$this->render('index',array(
-			'model'=>$model,
-            'newModel'=>$newModel,
-					));
-
-			}
-
-	/**
-	 * Manages all models.
-	 */
-	public function actionAdmin()
-	{
-		$newModel = Storage::model()->with('product')->findAll();
-		$model=new Storage('search');
-		$model->unsetAttributes();  // clear any default values
-		if(isset($_GET['Storage']))
-			$model->attributes=$_GET['Storage'];
-
-		$this->render('admin',array(
-			'model'=>$model,
-            'newModel'=>$newModel,
-					));
-
-			}
-
-	/**
-	 * Returns the data model based on the primary key given in the GET variable.
-	 * If the data model is not found, an HTTP exception will be raised.
-	 * @param integer $id the ID of the model to be loaded
-	 * @return Storage the loaded model
-	 * @throws CHttpException
-	 */
-	public function loadModel($id)
-	{
-		$model=Storage::model()->findByPk($id);
-		if($model===null)
-			throw new CHttpException(404,'The requested page does not exist.');
-		return $model;
-	}
-
-	/**
-	 * Performs the AJAX validation.
-	 * @param Storage $model the model to be validated
-	 */
-	protected function performAjaxValidation($model)
-	{
-		if(isset($_POST['ajax']) && $_POST['ajax']==='storage-form')
-		{
-			echo CActiveForm::validate($model);
-			Yii::app()->end();
-		}
-	}
-
-	public function actionExport()
-    {
-        $model=new Storage;
-		$model->unsetAttributes();  // clear any default values
-		if(isset($_POST['Storage']))
-			$model->attributes=$_POST['Storage'];
-
-		$exportType = $_POST['fileType'];
-        $this->widget('ext.heart.export.EHeartExport', array(
-            'title'=>'List of Storage',
-            'dataProvider' => $model->search(),
-            'filter'=>$model,
-            'grid_mode'=>'export',
-            'exportType'=>$exportType,
-            'columns' => array(
-
-					'storage_id',
-					'curDate',
-					'prod_id',
-					'curCount',
-	            ),
-        ));
-    }
-
-    /**
-	* Creates a new model.
-	* If creation is successful, the browser will be redirected to the 'view' page.
-	*/
-	public function actionImport()
-	{
-
-		$model=new Storage;
-		// Uncomment the following line if AJAX validation is needed
-		// $this->performAjaxValidation($model);
-
-		if(isset($_POST['Storage']))
-		{
-			if (!empty($_FILES)) {
-				$tempFile = $_FILES['Storage']['tmp_name']['fileImport'];
-				$fileTypes = array('xls','xlsx'); // File extensions
-				$fileParts = pathinfo($_FILES['Storage']['name']['fileImport']);
-				if (in_array(@$fileParts['extension'],$fileTypes)) {
-
-					Yii::import('ext.heart.excel.EHeartExcel',true);
-	        		EHeartExcel::init();
-	        		$inputFileType = PHPExcel_IOFactory::identify($tempFile);
-					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-					$objPHPExcel = $objReader->load($tempFile);
-					$sheetData = $objPHPExcel->getActiveSheet()->toArray(null,true,true,true);
-					$baseRow = 2;
-					$inserted=0;
-					$read_status = false;
-					while(!empty($sheetData[$baseRow]['A'])){
-						$read_status = true;
-						//$storage_id=  $sheetData[$baseRow]['A'];
-						$curDate=  $sheetData[$baseRow]['B'];
-						$prod_id=  $sheetData[$baseRow]['C'];
-						$curCount=  $sheetData[$baseRow]['D'];
-
-						$model2=new Storage;
-						//$model2->storage_id=  $storage_id;
-						$model2->curDate=  $curDate;
-						$model2->prod_id=  $prod_id;
-						$model2->curCount=  $curCount;
-
-						try{
-							if($model2->save()){
-								$inserted++;
-							}
-						}
-						catch (Exception $e){
-							Yii::app()->user->setFlash('error', "{$e->getMessage()}");
-							//$this->refresh();
-						}
-						$baseRow++;
-					}
-					Yii::app()->user->setFlash('success', ($inserted).' row inserted');
-				}
-				else
-				{
-					Yii::app()->user->setFlash('warning', 'Wrong file type (xlsx, xls, and ods only)');
-				}
-			}
-
-
-			$this->render('admin',array(
-				'model'=>$model,
-			));
-		}
-		else{
-			$this->render('admin',array(
-				'model'=>$model,
-			));
-		}
-	}
-
-	public function actionEditable(){
-		Yii::import('bootstrap.widgets.TbEditableSaver');
-	    $es = new TbEditableSaver('Storage');
-			    $es->update();
-	}
 
 	public function actions()
 	{
@@ -907,33 +686,6 @@ class StorageController extends Controller
 	}
 
 
-	public function actionCalendar()
-	{
-		$model=new Storage('search');
-		$model->unsetAttributes();  // clear any default values
-		if(isset($_GET['Storage']))
-			$model->attributes=$_GET['Storage'];
-		$this->render('calendar',array(
-			'model'=>$model,
-		));
-	}
-
-	public function actionCalendarEvents()
-	{
-	 	$items = array();
-	 	$model=Storage::model()->findAll();
-		foreach ($model as $value) {
-			$items[]=array(
-				'id'=>$value->storage_id,
-
-				//'color'=>'#CC0000',
-	        	//'allDay'=>true,
-	        	'url'=>'#',
-			);
-		}
-	    echo CJSON::encode($items);
-	    Yii::app()->end();
-	}
 
 
 }

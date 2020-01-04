@@ -169,19 +169,11 @@ class DepBalance extends CActiveRecord
     }
 
     public function refreshBalance($depId){
-$max_date = Yii::app()->db->createCommand()
-            ->select('b_date')
-            ->from('dep_balance')
-            ->order('b_date DESC')
-            ->group('b_date')
-            ->queryRow();
         $prod = array();
-        $stuffs = array();
         $dishes = new Dishes();
         $pBalance = array();
         $sBalance = array();
-        $prodTemp = array();
-        $stuffTemp = array();
+        $storage = new Storage();
         $dish = $dishes->getDishProd($depId);
         $prod['prod'] .= $dish['prod'];
         $prod['stuff'] .= $dish['stuff'];
@@ -200,105 +192,77 @@ $max_date = Yii::app()->db->createCommand()
         $prodTemp = array_unique(explode(':',$prod['prod']));
 
         $stuffTemp = array_unique(explode(':',$prod['stuff']));
+
         $ProdBalance = Yii::app()->db->createCommand()
-            ->select('db.dep_balance_id,db.prod_id')
-            ->from('dep_balance db')
-            ->where('db.b_date = :dates AND db.department_id = :id AND db.type = :types ',array(':dates'=>$max_date['b_date'],':id'=>$depId,':types'=>1))
+            ->select('db.storage_dep_id,db.prod_id')
+            ->from('storage_dep db')
+            ->where('db.department_id = :id AND db.prod_type = :types ',array(':id'=>$depId,':types'=>1))
             ->group('db.prod_id')
             ->queryAll();
         if(!empty($ProdBalance)) {
             foreach ($ProdBalance as $key => $val) {
-                $pBalance[$val['dep_balance_id']] = $val['prod_id'];
+                $pBalance[$val['storage_dep_id']] = $val['prod_id'];
                 if (!in_array($val['prod_id'], $prodTemp)) {
-                    Yii::app()->db->createCommand()->delete('dep_balance', 'b_date = :dates AND department_id = :depId AND prod_id = :id AND type = :types', array(':dates' => $max_date['b_date'], ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 1));
+                    Yii::app()->db->createCommand()->delete('storage_dep', 'department_id = :depId AND prod_id = :id AND prod_type = :types', array(':depId' => $depId, ':id' => $val['prod_id'], ':types' => 1));
                 }
                 if ($val['prod_id'] == 0) {
-                    Yii::app()->db->createCommand()->delete('dep_balance', 'b_date = :dates AND department_id = :depId AND prod_id = :id AND type = :types', array(':dates' => $max_date['b_date'], ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 1));
+                    Yii::app()->db->createCommand()->delete('storage_dep', 'department_id = :depId AND prod_id = :id AND prod_type = :types', array( ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 1));
                 }
             }
         }
 
         $StuffBalance = Yii::app()->db->createCommand()
-            ->select('db.dep_balance_id,db.prod_id')
-            ->from('dep_balance db')
-            ->where('db.b_date = :dates AND db.department_id = :id AND db.type = :types',array(':dates'=>$max_date['b_date'],':id'=>$depId,':types'=>2))
+            ->select('db.storage_dep_id,db.prod_id')
+            ->from('storage_dep db')
+            ->where('db.department_id = :id AND db.prod_type = :types',array(':id'=>$depId,':types'=>2))
             ->group('db.prod_id')
             ->queryAll();
         if(!empty($StuffBalance)) {
             foreach ($StuffBalance as $key => $val) {
-                $sBalance[$val['dep_balance_id']] = $val['prod_id'];
+                $sBalance[$val['storage_dep_id']] = $val['prod_id'];
                 if (!in_array($val['prod_id'], $stuffTemp)) {
-                    Yii::app()->db->createCommand()->delete('dep_balance', 'b_date = :dates AND department_id = :depId AND prod_id = :id AND type = :types', array(':dates' => $max_date['b_date'], ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 2));
+                    Yii::app()->db->createCommand()->delete('storage_dep', 'department_id = :depId AND prod_id = :id AND prod_type = :types', array(':depId' => $depId, ':id' => $val['prod_id'], ':types' => 2));
                 }
                 if ($val['prod_id'] == 0) {
-                    Yii::app()->db->createCommand()->delete('dep_balance', 'b_date = :dates AND department_id = :depId AND prod_id = :id AND type = :types', array(':dates' => $max_date['b_date'], ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 2));
+                    Yii::app()->db->createCommand()->delete('storage_dep', 'department_id = :depId AND prod_id = :id AND prod_type = :types', array( ':depId' => $depId, ':id' => $val['prod_id'], ':types' => 2));
                 }
             }
         }
+
+
         if(!empty($prodTemp)) {
             foreach ($prodTemp as $val) {
                 if ($val != 0) {
                     if (!in_array($val, $pBalance)) {
-                        Yii::app()->db->createCommand()->insert('dep_balance', array(
-                                'b_date' => $max_date['b_date'],
-                                'department_id' => $depId,
-                                'prod_id' => $val,
-                                'type' => 1)
-                        );
+                        $storage->addToStorageDep($val,0,1,$depId);
+//                        Yii::app()->db->createCommand()->insert('storage_dep', array(
+//                                'department_id' => $depId,
+//                                'prod_id' => $val,
+//                                'prod_type' => 1,
+//                                'cnt' => 0
+//                            )
+//                        );
                     }
                 }
             }
         }
+
         if(!empty($stuffTemp)) {
             foreach ($stuffTemp as $val) {
                 if ($val != 0) {
                     if (!in_array($val, $sBalance)) {
-
-                        Yii::app()->db->createCommand()->insert('dep_balance', array(
-                                'b_date' => $max_date['b_date'],
-                                'department_id' => $depId,
-                                'prod_id' => $val,
-                                'type' => 2)
-                        );
+                        $storage->addToStorageDep($val,0,2,$depId);
+//                        Yii::app()->db->createCommand()->insert('storage_dep', array(
+//                                'department_id' => $depId,
+//                                'prod_id' => $val,
+//                                'type' => 2,
+//                                'cnt' => 0
+//                            )
+//                        );
                     }
                 }
             }
         }
-
-        /*
-
-                $dish = Yii::app()->db->createCommand()
-                    ->select('dish_id')
-                    ->from('dishes d')
-                    ->where('d.department_id = :depId',array(':depId'=>$depId))
-                    ->queryAll();
-               foreach ($dish as $value) {
-                    $temp = $dishes->DishProd($max_date,$value['dish_id']);
-                    $prod = $prod + $temp['prod'];
-                    if(!empty($temp['stuff'])){
-                        $stuffs = $stuffs + $temp['stuff'];
-
-                    }
-                    //$this->addDish($value['dish_id'],$depId,$max_date['b_date']);
-                }
-
-                $stuff = Yii::app()->db->createCommand()
-                    ->select('h.halfstuff_id')
-                    ->from('halfstaff h')
-                    ->where('h.department_id = :depId',array(':depId'=>$depId))
-                    ->queryAll();
-                foreach ($stuff as $value) {
-                    $this->addStuff($value['halfstuff_id'],$depId,$max_date['b_date']);
-                }
-
-                $prod = Yii::app()->db->createCommand()
-                    ->select('p.product_id')
-                    ->from('products p')
-                    ->where('p.department_id = :depId',array(':depId'=>$depId))
-                    ->queryAll();
-                foreach ($prod as $value) {
-                    $this->addProd($value['product_id'],$depId,$max_date['b_date']);
-                }*/
 
     }
 

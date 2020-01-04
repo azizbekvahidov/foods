@@ -189,7 +189,7 @@ class DepRealize extends CActiveRecord
 	        $function = new Functions();
 	        $stuff = new Halfstaff();
 	        //Количественный расчет по отделам
-	        $fromDate = date("Y-m-d",strtotime($dates)-86400);
+	        /*$fromDate = date("Y-m-d",strtotime($dates)-86400);
 
 	            $depId = $depId;
 	            $depIn = array();
@@ -211,17 +211,16 @@ class DepRealize extends CActiveRecord
 
 	            //Приход загатовок в отдел и расход их продуктов
 
-	            $outProduct = $dish->getDishProd($depId,$dates,$dates);
+	            $outProduct = $dish->getDishProd($depId,$dates,$dates);*/
 	            $curProd = Yii::app()->db->createCommand()
 	                ->select('*')
-	                ->from('dep_balance')
-	                ->where('b_date = :dates AND department_id = :depId AND type = :type',array(':dates'=>$dates,':depId'=>$depId,':type'=>1))
+	                ->from('storage_dep')
+	                ->where('department_id = :depId AND prod_type = :type',array(':depId'=>$depId,':type'=>1))
 	                ->queryAll();
 	            foreach($curProd as $value){
-	                $endProduct[$value['prod_id']] = + ($value['startCount'] + $inProduct[$value['prod_id']]-$outProduct[$value['prod_id']]-$outStuffProd[$value['prod_id']]+$depIn[$value['prod_id']]-$depOut[$value['prod_id']]);
+	                $endProduct[$value['prod_id']] = + $value['cnt'];
 	            }
-
-							return $endProduct;
+                return $endProduct;
 		}
 
 		public function getDepStuffCurCount($depId,$dates){

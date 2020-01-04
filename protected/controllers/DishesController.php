@@ -1,6 +1,6 @@
 <?php
 
-class DishesController extends Controller
+class DishesController extends SetupController
 {
     public  $allProduct;
     public  $chosenProduct;
@@ -27,16 +27,15 @@ class DishesController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
 
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-
-		);
-	}
-
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 		/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -50,7 +49,7 @@ class DishesController extends Controller
 				'roles'=>array('2'),
 			),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('refreshAdd','create','update','admin','delete','export','import','editable','toggle','structSave','copy','checkMargin','move'),
+                'actions'=>array('refreshAdd','create','update','admin','delete','export','import','editable','toggle','structSave','copy','checkMargin'),
                 'roles'=>array('3'),
             ),
 			array('deny',  // deny all users

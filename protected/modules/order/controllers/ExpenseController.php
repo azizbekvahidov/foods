@@ -1,5 +1,7 @@
 <?php
-
+require_once Yii::app()->basePath . '/library/printer/autoload.php';
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 class ExpenseController extends Controller
 {
     public $layout='/layouts/column1';
@@ -23,7 +25,7 @@ class ExpenseController extends Controller
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array('addExp','create','update','RemoveFromOrder'),
+                'actions'=>array('PrintCheck','addExp','create','update','RemoveFromOrder','refuse'),
                 'roles'=>array('1'),
             ),
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -40,10 +42,18 @@ class ExpenseController extends Controller
         );
     }
 
-	public function actionIndex()
-	{
-		$this->render('index');
-	}
+    public function actionIndex()
+    {
+        $this->render('index');
+    }
+    
+    public function actionRefuse(){
+        Yii::app()->db->createCommand()->delete("expense","expense_id = :expId",array(":expId"=>$_POST["refuse"]));
+        $archive_message = "";
+        $archive_message .= "Отказ счета удаление";
+        $archive = new ArchiveOrder();
+        $archive->setArchive('delete', $_POST["refuse"], $archive_message);
+    }
     public function changeToFloat($number){
         $ss = $number;
         $arr = NULL;
@@ -54,33 +64,33 @@ class ExpenseController extends Controller
             if ($arr[$k] == ',')
                 $arr[$k] = '.';
             $k++;
-        } 
+        }
         $ss = implode($arr);
         return $ss;
-     }
+    }
     public function actionCreate()
     {
 
         $menuModel = Dishtype::model()->findAll('t.parent = :parent',array(':parent'=>0));
-        
-		$model=new Expense;
-        
-		// Uncomment the following line if AJAX validation is needed
-		// $this->performAjaxValidation($model);
+
+        $model=new Expense;
+
+        // Uncomment the following line if AJAX validation is needed
+        // $this->performAjaxValidation($model);
 
 
-		$this->render('create',array(
-			'model'=>$model,
+        $this->render('create',array(
+            'model'=>$model,
             'menuModel'=>$menuModel,
-		));
-		
-				
+        ));
+
+
     }
 
     public function actionAddExp(){
-
         if(isset($_POST['Expense']))
         {
+
             $_POST['Expense']['order_date'] = date('Y-m-d H:i:s');
 
             if($_POST['Expense']['comment'] == ''){
@@ -90,8 +100,8 @@ class ExpenseController extends Controller
                 $_POST['Expense']['comment'] = '';
             }
             //$_POST['Expense']['employee_id'] = Yii::app()->user->getId();
-            $transaction = Yii::app()->db->beginTransaction();
             try {
+                $expense = new Expense();
                 $dates = date('Y-m-d H:i:s');
                 $dishMsg = '*dish=>';
                 $stuffMsg = '*stuff=>';
@@ -100,15 +110,20 @@ class ExpenseController extends Controller
                 $stuffMessage = '';
                 $prodMessage = '';
                 $archive_message = '';
-                Yii::app()->db->createCommand()->insert('expense',array(
-                    'order_date'=>$dates,
-                    'employee_id'=>$_POST['Expense']['employee_id'],
+                
+                $temps = Yii::app()->db->createCommand()->insert('expense',array(
+                    'order_date'=>($_POST['prepaid'] == "true") ? '2000-01-01 00:00:00' : $dates,
+                    'employee_id'=>Yii::app()->user->getId(),
                     'status'=>0,
-                    'debt'=>(isset($_POST['Expense']['debt'])) ? $_POST['Expense']['debt'] : 0,
+                    'debt'=> (isset($_POST['Expense']['debt'])) ? $_POST['Expense']['debt'] : 0,
                     'comment'=>$_POST['Expense']['comment'],
+                    'prepaid'=>($_POST['prepaid'] == "true") ? 1 : 0,
+                    'prepaidSum'=>($_POST['prepaid'] == "true") ? $_POST['prepaidSum'] : 0,
                     'debtor_type'=>(!empty($_POST['Expense']['contr'])) ? 1 : 0,
                     'debtor_id'=>(!empty($_POST['Expense']['contr'])) ? $_POST['Expense']['contr'] : $_POST['Expense']['empId'],
-                    'mType'=>1
+                    'mType'=>1,
+                    'prepCreate'=>($_POST['prepaid'] == "true") ? time() : 0,
+                    'expSum'=>$_POST['expSum']
                 ));
                 $expId = Yii::app()->db->getLastInsertID();
                 foreach ($_POST['id'] as $key => $val) {
@@ -134,38 +149,68 @@ class ExpenseController extends Controller
                         'count'=>$count,
                         'type'=>$types
                     ));
-                    $order_id = Yii::app()->db->getLastInsertID();
-                    Yii::app()->db->createCommand()->insert('orderRefuse',array(
-                        'order_id'=>$order_id,
-                        'count'=>$count,
-                        'add'=>1,
-                        'refuse_time'=>$dates
-                    ));
+                    //$expense->addExpenseList($temp[1],$types,date("Y-m-d"),$count);
+                    //if($_POST['prepaid'] = "true"){
+                    //    $expense->addExpenseList($temp[1],$types,date("Y-m-d"),$count);
+                    //}
+
+//                    $order_id = Yii::app()->db->0000getLastInsertID();
+//
+//                    Yii::app()->db->createCommand()->insert('orderRefuse',array(
+//                        'order_id'=>$order_id,
+//                        'count'=>$count,
+//                        'add'=>1,
+//                        'refuse_time'=>$dates
+//                    ));
                 }
+//                if($_POST['prepaid'] == "true") {
+//                    Yii::app()->db->createCommand()->insert('prepaid', array(
+//                            'prepDate' => $dates,
+//                            'expense_id'=>$expId,
+//                            "terminal"=>$_POST["prepStatus"],
+//                            'expSum' => $_POST['prepaidSum']
+//                        )
+//                    );
+//                }
+                $func = new Expense();
+                echo $expId;
+                //$func->getExpenseCostPrice($expId,$dates);
                 $archive_message .= ((!empty($dishMessage)) ? $dishMsg.$dishMessage : '').((!empty($stuffMessage)) ? $stuffMsg.$stuffMessage : '').((!empty($prodMessage)) ? $prodMsg.$prodMessage : '');
                 $archive = new ArchiveOrder();
                 $archive->setArchive('create', $expId, $archive_message);
-                $transaction->commit();
-                echo $expId;
+//                $function = new Functions();
+//                $function->PrintCheck($expId,'create',$_POST['id'],$_POST['employee_id'],$_POST['count'],$_POST['table']);
+
+
             } catch (Exception $e) {
-                $transaction->rollBack();
                 Yii::app()->user->setFlash('error', "{$e->getMessage()}");
                 //$this->refresh();
             }
         }
     }
-    
+
+    public function actionPrintCheck(){
+        $expId = $_POST["expId"];
+        $function = new Functions();
+        $function->PrintCheck($expId,'create',$_POST['id'],$_POST['employee_id'],$_POST['count'],$_POST['table']);
+
+    }
+
     public function actionLists(){
         $id = $_POST['id'];
-
-        $newModel1 = Menu::model()->with('dish')->findAll('t.type_id = :types AND t.type = :type AND t.mType = :mType',array(':types'=>$id,':type'=>1,':mType'=>1));
-        $newModel3 = Menu::model()->with('stuff')->findAll('t.type_id = :types AND t.type = :type AND t.mType = :mType',array(':types'=>$id,':type'=>2,':mType'=>1));
-        $newModel2 = Menu::model()->with('products')->findAll('t.type_id = :types AND t.type = :type AND t.mType = :mType',array(':types'=>$id,':type'=>3,':mType'=>1));
+        $model = Yii::app()->db->createCommand()
+            ->select("mType")
+            ->from("employee")
+            ->where("employee_id = :id",array(":id"=>Yii::app()->user->getId()))
+            ->queryRow();
+        $newModel1 = Menu::model()->with('dish')->findAll('t.type_id = :types AND t.type = :type AND t.mType = :mType',array(':types'=>$id,':type'=>1,':mType'=>$model["mType"]));
+        $newModel3 = Menu::model()->with('stuff')->findAll('t.type_id = :types AND t.type = :type AND t.mType = :mType',array(':types'=>$id,':type'=>2,':mType'=>$model["mType"]));
+        $newModel2 = Menu::model()->with('products')->findAll('t.type_id = :types AND t.type = :type AND t.mType = :mType',array(':types'=>$id,':type'=>3,':mType'=>$model["mType"]));
 
         $this->renderPartial('lists',array(
-        'newModel1'=>$newModel1, 
-        'newModel3'=>$newModel3, 
-        'newModel2'=>$newModel2,
+            'newModel1'=>$newModel1,
+            'newModel3'=>$newModel3,
+            'newModel2'=>$newModel2,
         ));
     }
 
@@ -186,7 +231,7 @@ class ExpenseController extends Controller
     public function actionTodayOrder(){
         $dates = date('Y-m-d');
         //$model = Expense::model()->with('order','employee')->findAll('date(t.order_date) = :dates AND t.employee_id = :empId',array(':dates'=>$dates,':empId'=>Yii::app()->user->getId()));
-        $model = Expense::model()->with('order','employee')->findAll('date(t.order_date) = :dates AND employee.role = 2',array(':dates'=>$dates));
+        $model = Expense::model()->with('order','employee')->findAll('date(t.order_date) = :dates AND employee.role > 2',array(':dates'=>$dates));
         $percent = new Percent();
         $percent = new Percent();
         $this->renderPartial('todayOrder',array(
@@ -210,25 +255,25 @@ class ExpenseController extends Controller
             $types = 3;
         $count = floatval($_POST['count']);
         if(isset($expId)){
-                if ($count == 0) {
-                    $model = Yii::app()->db->createCommand()
-                        ->select()
-                        ->from('orders')
-                        ->where('expense_id = :id AND just_id = :just_id AND type = :types', array(':id' => $expId, ':just_id' => $temp[1], ':types' => $types))
-                        ->queryRow();
-                    if (!empty($model)) {
+            if ($count == 0) {
+                $model = Yii::app()->db->createCommand()
+                    ->select()
+                    ->from('orders')
+                    ->where('expense_id = :id AND just_id = :just_id AND type = :types', array(':id' => $expId, ':just_id' => $temp[1], ':types' => $types))
+                    ->queryRow();
+                if (!empty($model)) {
 
-                        Yii::app()->db->createCommand()->insert('orderRefuse',array(
-                            'order_id'=>$model['order_id'],
-                            'count'=>$model['count'],
-                            'refuse_time'=>$refuseTime
-                        ));
-                        Yii::app()->db->createCommand()->update('orders', array(
-                            'deleted' => 1
-                        ), 'order_id = :id', array(':id' => $model['order_id']));
-                    }
-
+                    Yii::app()->db->createCommand()->insert('orderRefuse',array(
+                        'order_id'=>$model['order_id'],
+                        'count'=>$model['count'],
+                        'refuse_time'=>$refuseTime
+                    ));
+                    Yii::app()->db->createCommand()->update('orders', array(
+                        'deleted' => 1
+                    ), 'order_id = :id', array(':id' => $model['order_id']));
                 }
+
+            }
         }
     }
 
@@ -259,8 +304,17 @@ class ExpenseController extends Controller
         // $this->performAjaxValidation($model);
         if(isset($_POST['expense_id']))
         {
+            $expense = new Expense();
             $model= Expense::model()->findByPk($id);
             $_POST['Expense']['order_date'] = date('Y-m-d H:i:s');
+            $summ = $expense->getExpenseSumReal($id,date('Y-m-d'));
+            $costPrice  = $expense->getExpenseCostPrice($id,date('Y-m-d'));
+            echo "<pre>";
+            print_r($costPrice);
+            echo "</pre>";
+            echo "<pre>";
+            print_r($_POST);
+            echo "</pre>";
             //$_POST['Expense']['employee_id'] = Yii::app()->user->getId();
             $transaction = Yii::app()->db->beginTransaction();
             try{
@@ -277,6 +331,8 @@ class ExpenseController extends Controller
                 $model->debt = $_POST['debt'];
                 $model->mType = 1;
                 $model->comment =$_POST['comment'];
+                $model->expSum = $summ;
+                $model->costPrice = $costPrice;
                 if($model->save()) {
                     // $tempModel = Yii::app()->db->createCommand()
                     //     ->select()
@@ -305,10 +361,10 @@ class ExpenseController extends Controller
                         }
 
                         $model = Yii::app()->db->createCommand()
-                        ->select()
-                        ->from('orders')
-                        ->where('expense_id = :id AND just_id = :just_id AND type = :types ',array(':id'=>$expId,':just_id'=>$temp[1],':types'=>$types))
-                        ->queryRow();
+                            ->select()
+                            ->from('orders')
+                            ->where('expense_id = :id AND just_id = :just_id AND type = :types ',array(':id'=>$expId,':just_id'=>$temp[1],':types'=>$types))
+                            ->queryRow();
                         if(!empty($model)){
                             if($count != 0) {
                                 if ($model['count'] > $count) {
@@ -338,7 +394,7 @@ class ExpenseController extends Controller
                                 Yii::app()->db->createCommand()->insert('orderRefuse', array(
                                     'order_id' => $model['order_id'],
                                     'count' => $model['count'],
-                                    'not_time'=>$refuseTime,    
+                                    'not_time'=>$refuseTime,
                                     'refuse_time' => $refuseTime
                                 ));
                                 Yii::app()->db->createCommand()->update('orders', array(

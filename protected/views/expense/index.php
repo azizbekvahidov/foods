@@ -38,8 +38,8 @@
         <tr>
             <th></th>
             <th>Дата и время</th>
-            <th>Выручка с процентом обслуживания</th>
-            <th>Выручка без процентом обслуживания</th>
+<!--            <th>Выручка с процентом обслуживания</th>-->
+<!--            <th>Выручка без процентом обслуживания</th>-->
             <th></th>
         </tr>
     </thead>
@@ -48,8 +48,8 @@
             <tr>
                 <td><?=$count?></td>
                 <td><?=date('Y-m-d',strtotime($value->order_date))?></td>
-                <td><?=number_format($expense->getProcProceeds(date('Y-m-d',strtotime($value->order_date))),0,'.',',')?></td>
-                <td><?=number_format($expense->getProceeds(date('Y-m-d',strtotime($value->order_date))),0,'.',',')?></td>
+<!--                <td>--><?//=number_format($expense->getProcProceeds(date('Y-m-d',strtotime($value->order_date))),0,'.',',')?><!--</td>-->
+<!--                <td>--><?//=number_format($expense->getProceeds(date('Y-m-d',strtotime($value->order_date))),0,'.',',')?><!--</td>-->
                 <td><?=CHtml::link('<i class="fa fa-eye fa-fw"></i>  Просмотр',array('expense/todayOrder?order_date='.date('Y-m-d',strtotime($value->order_date))))?></td>
             </tr>
         <? $count++; } ?>

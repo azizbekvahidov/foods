@@ -81,29 +81,12 @@
             if(tVal == 0){
                 $("#department").attr('style','display:none');
                 $('#data').html('');
-                /*$.ajax({
-                    type: "POST",
-                    url: "<?php echo Yii::app()->createUrl('settings/balanceList'); ?>",
-                    data: "types="+tVal+'&dates='+dates,
-                    success: function(data){
-                        $('#data').html(data);
-                    }
-                });*/
             }
             else{
                 $("#department").attr('style','display:block');
                 $('#data').html('');
                 $('#depId').change(function(){
                     dVal = $(this).val();
-                    /*console.log(dVal);
-                    $.ajax({
-                        type: "POST",
-                        url: "<?php echo Yii::app()->createUrl('settings/balanceList'); ?>",
-                        data: "types="+tVal+'&depId='+dVal+'&dates='+dates,
-                        success: function(data){
-                            $('#data').html(data);
-                        }
-                    });*/
                 });
             }
         });

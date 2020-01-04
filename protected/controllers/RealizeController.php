@@ -1,6 +1,6 @@
 <?php
 
-class RealizeController extends Controller
+class RealizeController extends SetupController
 {
 	public $allProducts;
     public $allProvider;
@@ -15,15 +15,15 @@ class RealizeController extends Controller
 		/**
 	 * @return array action filters
 	 */
-	public function filters()
-	{
-		return array(
-						
-			'accessControl', // perform access control for CRUD operations
-			'postOnly + delete', // we only allow deletion via POST request
-						
-		);
-	}
+
+    public function filters()
+    {
+        return array(
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
+        );
+    }
 	
 		/**
 	 * Specifies the access control rules.
@@ -193,18 +193,16 @@ class RealizeController extends Controller
 		$model=new Realize;
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
-        
 		if(isset($_POST['provider']))
 		{
-        
-                $currentDate = $_POST['from']." ".date("H:i:s");
-                $fakturaId = $this->beforeSave($currentDate,$_POST['provider']);
-                //echo $fakturaId;		
+            $currentDate = $_POST['from']." ".date("H:i:s");
+            $fakturaId = $this->beforeSave($currentDate,$_POST['provider']);
+            //echo $fakturaId;
 			$transaction = Yii::app()->db->beginTransaction();
 			try{
+			    $storage = new Storage();
 				$messageType='warning';
 				$message = "There are some errors ".count($_POST['product_id']);
-                $text = $currentDate.' : '.$fakturaId." \n";
                 if($_POST['product_id']){
                     foreach($_POST['product_id'] as $key => $val){
                         $models = new Realize;
@@ -213,22 +211,15 @@ class RealizeController extends Controller
                         $models->price = $_POST['price'][$key];
                         $models->count = $this->changeToFloat($_POST['count'][$key]);
                         if($models->save()) {
-                            $text .= $val.' --> '.$_POST['price'][$key]." --> ".$_POST['count'][$key]."\n";
+                            $storage->addToStorage($val,$this->changeToFloat($_POST['count'][$key]));
                             $messageType = 'success';
-                            $message = "<strong>Well done!</strong> You successfully create data ";
+                            $message = "<strong>Well done!</strong> You successfully create data";
                         }
-
                     }
                 }
-                $webroot = Yii::getPathOfAlias('webroot');
-                $text .= "---------------------------------------------------\n";
-                $file =  $webroot . DIRECTORY_SEPARATOR . 'files' . DIRECTORY_SEPARATOR . 'realize.php';
-                $handle = fopen($file, a);
-                fwrite($handle, $text);
-                fclose($handle);
                 Yii::app()->user->setFlash($messageType, $message);
                 $transaction->commit();
-					$this->redirect(array('create'));
+				//$this->redirect(array('create'));
 			}
 			catch (Exception $e){
 				$transaction->rollBack();

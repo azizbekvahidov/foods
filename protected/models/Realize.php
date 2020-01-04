@@ -183,4 +183,6 @@ class Realize extends CActiveRecord
         return $summ;
     }
 
+
+
 }

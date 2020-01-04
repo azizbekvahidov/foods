@@ -1,3 +1,4 @@
+<script src="/js/jquery.printPage.js"></script>
 <div class="input-prepend">
     <span class="add-on"><i class="icon-calendar"></i></span><?
     $this->widget(
@@ -29,13 +30,14 @@
     ?>
 </div> &nbsp;
 <button type="button" id="show" class="btn">Показать</button> &nbsp;
-<button type="button" id="export" class="btn btn-success">Экспорт</button>
+<a href="javascript:;" type="button" id="printReport" class="btn btn-success">Печать</a>
 <span class="heading-title">Выручка</span>
-<script src="<?php echo Yii::app()->request->baseUrl; ?>/js/jquery.table2excel.js" type="text/javascript"></script>
 </div>
 <div id="data"></div>
 <script>
+
     $(document).ready(function(){
+        $("#printReport").printPage();
         var dates = '<?=$dates?>',
             depId;
         $.ajax({
@@ -44,6 +46,7 @@
             data: "dates="+dates,
             success: function(data){
                 $('#data').html(data);
+                $("#printReport").attr('href','/expense/printReport?from='+dates+"&to="+dates);
             }
         });
         $('#show').click(function(){
@@ -55,15 +58,9 @@
                 data: "from="+from+"&to="+to,
                 success: function(data){
                     $('#data').html(data);
+                    $("#printReport").attr('href','/expense/printReport?from='+from+"&to="+to);
                 }
             });
-        });
-    });
-</script>
-<script>
-    $('#export').click(function(){
-        $('#dataTable').table2excel({
-            name: "Excel Document Name"
         });
     });
 </script>

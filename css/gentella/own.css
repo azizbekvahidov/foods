@@ -1,0 +1,31 @@
+.logo-middle img{
+    width: 100%;
+}
+.logo-middle{
+    width: 20%;
+}
+.ldBar path.mainline {
+    stroke-width: 10;
+    stroke: #09f;
+    stroke-linecap: round;
+}
+.ldBar-label {
+    color: #09f;
+    text-align: center;
+    font-family: 'varela round';
+    font-size: 15em;
+    font-weight: 900;
+}
+.ldBar path.baseline {
+    stroke-width: 14;
+    stroke: #f1f2f3;
+    stroke-linecap: round;
+    filter:url(#custom-shadow);
+}
+.ldBar{
+    width: 25%!important;
+    height: 25%!important;
+    margin: 0 auto;
+    position: relative;
+    top: 20%;
+}

@@ -1,6 +1,6 @@
 <?php
 
-class ReportController extends Controller
+class ReportController extends SetupController
 {
 
 
@@ -13,13 +13,13 @@ class ReportController extends Controller
     /**
      * @return array action filters
      */
+
     public function filters()
     {
         return array(
-
-            'accessControl', // perform access control for CRUD operations
-            'postOnly + delete', // we only allow deletion via POST request
-
+            'accessControl',
+            'postOnly + delete',
+            array('ext.yiibooster.filters.BootstrapFilter - delete')
         );
     }
 
@@ -32,11 +32,12 @@ class ReportController extends Controller
     {
         return array(
             array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions'=>array(
+
+                'actions'=>array('PrintDepDishList','departmentPrice','ajaxDepartmentPrice',
                     'ajaxDetail','ajaxSettedMargin','settedMargin','ajaxSettedMargin','prodExp','ajaxProdExp','infoReport','ajaxInfoReport',
                     'allProd','ajaxAllProd','depDish','depDishList','dishIncome','ajaxDishIncome','depIncome','ajaxDepIncome',
                     'intervalFaktura','ajaxIntervalFaktura','empExpense','ajaxEmpExpense','ReadyTime','ajaxReadyTime','ajaxReadyTimeDetail',
-                    'exchange','ajaxExchange'
+                    'exchange','ajaxExchange','archive','ajaxArchive'
                 ),
                 'roles'=>array('3'),
             ),
@@ -225,50 +226,141 @@ class ReportController extends Controller
         $dish = new Dishes();
         $stuff = new Halfstaff();
         $prod = new Products();
-        $cost = array();
+        $depId = $_GET['depId'];
+        $func = new Functions();
+        $timeShift = $func->getTime($_GET['from'],$_GET['to']);
+        $from = $timeShift[0];
+        $till = $timeShift[1];
+        //old summary script
+        $model = Yii::app()->db->createCommand()
+            ->select('(select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1) as sum, ord.just_id, d.name, ord.count, ex.order_date')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('dishes d','d.dish_id = ord.just_id')
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND d.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>1,':depId'=>$depId))
+            ->queryAll();
+        $model2 = Yii::app()->db->createCommand()
+            ->select('(select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1) as sum, ord.just_id, h.name, ord.count, ex.order_date')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('halfstaff h','h.halfstuff_id = ord.just_id')
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND h.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>2,':depId'=>$depId))
+            ->queryAll();
+        $model3 = Yii::app()->db->createCommand()
+            ->select('(select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1) as sum, ord.just_id, p.name, ord.count, ex.order_date')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('products p','p.product_id = ord.just_id')
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND p.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>3,':depId'=>$depId))
+            ->queryAll();
+
+        $cost = 0;
         $dishes = array();
-        $summ = array();
+        $stuffs = array();
+        $prods = array();
+        $summ = 0;
         $counting = array();
-        $prices = new Prices();
-        $model = Expense::model()->with('order.dish')->findAll(
-            'date(t.order_date) BETWEEN :from AND :to AND dish.department_id = :DepId',
-            array(':from'=>$_POST['from'],':to'=>$_POST['to'],':DepId'=>$_POST['depId'])
-        );
-        foreach ($model as $value) {
-            foreach ($value->getRelated('order') as $val) {
-                $counting[$val->just_id] = $counting[$val->just_id] + $val->count;
-                $summ[$val->just_id] = $summ[$val->just_id] + $val->count*$prices->getPrice($val->just_id,$value->mType,$val->type,$value->order_date);
-                $dishes[$val->just_id] = $val->getRelated('dish')->name;
-                $cost[$val->just_id] = $cost[$val->just_id] + $dish->getCostPrice($val->just_id,$value->order_date)*$val->count;
-            }
+        foreach ($model as $val) {
+            $dishes["counting"][$val["just_id"]] = $dishes["counting"][$val["just_id"]] + $val["count"];
+            $dishes["summ"][$val["just_id"]] = $dishes["summ"][$val["just_id"]] + $val["sum"]*$val["count"];
+            $dishes["name"][$val["just_id"]] = $val["name"];
+            $dishes["cost"][$val["just_id"]] = $dishes["cost"][$val["just_id"]] + $dish->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+            $summ = $summ + $val["sum"]*$val["count"];
+            $cost = $cost + $dish->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
         }
-        $model2 = Expense::model()->with('order.halfstuff')->findAll(
-            'date(t.order_date) BETWEEN :from AND :to AND halfstuff.department_id = :DepId',
-            array(':from'=>$_POST['from'],':to'=>$_POST['to'],':DepId'=>$_POST['depId'])
-        );
-        foreach ($model2 as $value) {
-            foreach ($value->getRelated('order') as $val) {
-                $counting[$val->just_id] = $counting[$val->just_id] + $val->count;
-                $summ[$val->just_id] = $summ[$val->just_id] + $val->count*$prices->getPrice($val->just_id,$value->mType,$val->type,$value->order_date);
-                $dishes[$val->just_id] = $val->getRelated('halfstuff')->name;
-                $cost[$val->just_id] = $cost[$val->just_id] + $stuff->getCostPrice($val->just_id,$value->order_date)*$val->count;
-            }
+        foreach ($model2 as $val) {
+            $stuffs["counting"][$val["just_id"]] = $stuffs["counting"][$val["just_id"]] + $val["count"];
+            $stuffs["summ"][$val["just_id"]] = $stuffs["summ"][$val["just_id"]] + $val["sum"]*$val["count"];
+            $stuffs["name"][$val["just_id"]] = $val["name"];
+            $stuffs["cost"][$val["just_id"]] = $stuffs["cost"][$val["just_id"]] + $stuff->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+            $summ = $summ + $val["sum"]*$val["count"];
+            $cost = $cost + $stuff->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
         }
-        $model3 = Expense::model()->with('order.products')->findAll(
-            'date(t.order_date) BETWEEN :from AND :to AND products.department_id = :DepId',
-            array(':from'=>$_POST['from'],':to'=>$_POST['to'],':DepId'=>$_POST['depId'])
-        );
-        foreach ($model3 as $value) {
-            foreach ($value->getRelated('order') as $val) {
-                $counting[$val->just_id] = $counting[$val->just_id] + $val->count;
-                $summ[$val->just_id] = $summ[$val->just_id] + $val->count*$prices->getPrice($val->just_id,$value->mType,$val->type,$value->order_date);
-                $dishes[$val->just_id] = $val->getRelated('products')->name;
-                $cost[$val->just_id] = $cost[$val->just_id] + $prod->getCostPrice($val->just_id,$value->order_date)*$val->count;
-            }
-        }arsort($summ);
+        foreach ($model3 as $val) {
+            $prods["counting"][$val["just_id"]] = $prods["counting"][$val["just_id"]] + $val["count"];
+            $prods["summ"][$val["just_id"]] = $prods["summ"][$val["just_id"]] + $val["sum"]*$val["count"];
+            $prods["name"][$val["just_id"]] = $val["name"];
+            $prods["cost"][$val["just_id"]] = $prods["cost"][$val["just_id"]] + $prod->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+            $summ = $summ + $val["sum"]*$val["count"];
+            $cost = $cost + $prod->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+        }
         $this->renderPartial('dishDepList',array(
             'summ' => $summ,
             'dishes' => $dishes,
+            'prods' => $prods,
+            'stuffs' => $stuffs,
+            'cost' => $cost,
+            'counting' => $counting
+        ));
+    }
+
+    public function actionPrintDepDishList(){
+        $dish = new Dishes();
+        $stuff = new Halfstaff();
+        $prod = new Products();
+        $depId = $_GET['depId'];
+        $func = new Functions();
+        $timeShift = $func->getTime($_GET['from'],$_GET['to']);
+        $from = $timeShift[0];
+        $till = $timeShift[1];
+        //old summary script
+        $model = Yii::app()->db->createCommand()
+            ->select('(select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1) as sum, ord.just_id, d.name, ord.count, ex.order_date')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('dishes d','d.dish_id = ord.just_id')
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND d.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>1,':depId'=>$depId))
+            ->queryAll();
+        $model2 = Yii::app()->db->createCommand()
+            ->select('(select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1) as sum, ord.just_id, h.name, ord.count, ex.order_date')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('halfstaff h','h.halfstuff_id = ord.just_id')
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND h.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>2,':depId'=>$depId))
+            ->queryAll();
+        $model3 = Yii::app()->db->createCommand()
+            ->select('(select pr.price from prices pr where pr.price_date <= ex.order_date AND pr.menu_type = ex.mType AND pr.types = ord.type AND pr.just_id = ord.just_id order by pr.price_date desc limit 1) as sum, ord.just_id, p.name, ord.count, ex.order_date')
+            ->from('expense ex')
+            ->join('orders ord','ord.expense_id = ex.expense_id')
+            ->join('products p','p.product_id = ord.just_id')
+            ->where('ex.order_date <= :till AND ex.order_date >= :from AND ord.type = :types AND p.department_id = :depId AND ord.deleted != 1',array(':from'=>$from,':till'=>$till,':types'=>3,':depId'=>$depId))
+            ->queryAll();
+
+        $cost = 0;
+        $dishes = array();
+        $stuffs = array();
+        $prods = array();
+        $summ = 0;
+        $counting = array();
+        foreach ($model as $val) {
+            $dishes["counting"][$val["just_id"]] = $dishes["counting"][$val["just_id"]] + $val["count"];
+            $dishes["summ"][$val["just_id"]] = $dishes["summ"][$val["just_id"]] + $val["sum"]*$val["count"];
+            $dishes["name"][$val["just_id"]] = $val["name"];
+            $dishes["cost"][$val["just_id"]] = $dishes["cost"][$val["just_id"]] + $dish->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+            $summ = $summ + $val["sum"]*$val["count"];
+            $cost = $cost + $dish->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+        }
+        foreach ($model2 as $val) {
+            $stuffs["counting"][$val["just_id"]] = $stuffs["counting"][$val["just_id"]] + $val["count"];
+            $stuffs["summ"][$val["just_id"]] = $stuffs["summ"][$val["just_id"]] + $val["sum"]*$val["count"];
+            $stuffs["name"][$val["just_id"]] = $val["name"];
+            $stuffs["cost"][$val["just_id"]] = $stuffs["cost"][$val["just_id"]] + $stuff->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+            $summ = $summ + $val["sum"]*$val["count"];
+            $cost = $cost + $stuff->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+        }
+        foreach ($model3 as $val) {
+            $prods["counting"][$val["just_id"]] = $prods["counting"][$val["just_id"]] + $val["count"];
+            $prods["summ"][$val["just_id"]] = $prods["summ"][$val["just_id"]] + $val["sum"]*$val["count"];
+            $prods["name"][$val["just_id"]] = $val["name"];
+            $prods["cost"][$val["just_id"]] = $prods["cost"][$val["just_id"]] + $prod->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+            $summ = $summ + $val["sum"]*$val["count"];
+            $cost = $cost + $prod->getCostPrice($val["just_id"],$val["order_date"])*$val["count"];
+        }
+        $this->renderPartial('printDishDepList',array(
+            'summ' => $summ,
+            'dishes' => $dishes,
+            'prods' => $prods,
+            'stuffs' => $stuffs,
             'cost' => $cost,
             'counting' => $counting
         ));
@@ -384,7 +476,39 @@ class ReportController extends Controller
             ->select('')
             ->from('department')
             ->queryAll();
+        $sumAll = Yii::app()->db->createCommand()
+            ->select("sum(expSum) as summ")
+            ->from("mDepBalance")
+            ->where("b_date between :start and :end",array(":start"=>$from,":end"=>$till))
+            ->queryRow();
         $this->renderPartial('ajaxDepIncome',array(
+            'from'=>$from,
+            'till'=>$till,
+            'model'=>$model,
+            'sumAll'=>$sumAll
+        ));
+    }
+
+    public function actionDepartmentPrice(){
+        $dates = date('Y-m-d',strtotime(date('Y-m-d'))-86400);
+        $prod = new Products(); $expense = new Expense();
+        //echo $expense->getFactCostPrice('2016-12-01','2016-12-01',1);
+        // $costPrice = $expense->getDepCost(1,'2016-12-01','2016-12-01');
+        // echo $prod->getCostPrice(32,'2016-12-01')."<br>";
+        // echo $prod->getOldCostPrice(32,'2016-12-01');
+        $this->render('departmentPrice',array(
+            'dates'=>$dates
+        ));
+    }
+
+    public function actionAjaxDepartmentPrice(){
+        $till = $_POST['till'];
+        $from = $_POST['from'];
+        $model = Yii::app()->db->createCommand()
+            ->select('')
+            ->from('department')
+            ->queryAll();
+        $this->renderPartial('ajaxDepartmentPrice',array(
             'from'=>$from,
             'till'=>$till,
             'model'=>$model
@@ -401,19 +525,19 @@ class ReportController extends Controller
         $measure = new Measurement();
         if($key == 'begin'){
             $model = Yii::app()->db->createCommand()
-                ->select('db.startCount as count,db.prod_id,p.name as name,m.name as Mname')
+                ->select('db.CurEndCount as count,db.prod_id,p.name as name,m.name as Mname')
                 ->from('dep_balance db')
                 ->join('products p','p.product_id = db.prod_id')
                 ->join('measurement m','m.measure_id = p.measure_id')
-                ->where('db.b_date = :dates AND db.department_id = :depId AND db.type = :types',array(':dates'=>$dates,':depId'=>$depId,':types'=>1))
+                ->where('db.b_date = :dates AND db.department_id = :depId AND db.type = :types',array(':dates'=>date("Y-m-d",strtotime($dates)-86400),':depId'=>$depId,':types'=>1))
                 ->queryAll();
 
             $model2 = Yii::app()->db->createCommand()
-                ->select('db.startCount as count,db.prod_id,h.name as name, m.name as Mname')
+                ->select('db.CurEndCount as count,db.prod_id,h.name as name, m.name as Mname')
                 ->from('dep_balance db')
                 ->join('halfstaff h','h.halfstuff_id = db.prod_id')
                 ->join('measurement m','m.measure_id = h.stuff_type')
-                ->where('db.b_date = :dates AND db.department_id = :depId AND db.type = :types',array(':dates'=>$dates,':depId'=>$depId,':types'=>2))
+                ->where('db.b_date = :dates AND db.department_id = :depId AND db.type = :types',array(':dates'=>date("Y-m-d",strtotime($dates)-86400),':depId'=>$depId,':types'=>2))
                 ->queryAll();
         }
         if($key == 'end'){
@@ -502,23 +626,38 @@ class ReportController extends Controller
         }
         if($key == 'costPrice'){
             $function = new Functions();
-            $temp = $expense->getDishProd($depId,$dates,$dates);
+            $prod = Yii::app()->db->createCommand()
+                ->select("sum(ex.cnt) as cnt,ex.prod_id,p.name,m.name as Mname")
+                ->from("expense_list ex")
+                ->join("products p","p.product_id = ex.prod_id")
+                ->join("measurement m","p.measure_id = m.measure_id")
+                ->where("ex.expense_date >= :from and ex.expense_date <= :to and ex.department_id = :depId and ex.prod_type = 1",array(":from"=>$dates,":to"=>$till,":depId"=>$depId))
+                ->group("ex.prod_id")
+                ->queryAll();
+            //$temp = $expense->getDishProd($depId,$dates,$dates);
             $count = 0;
-            foreach ($temp as $key => $val) {
-                $model[$count]['count'] = $val;
-                $model[$count]['prod_id'] = $key;
-                $model[$count]['name'] = $prod->getName($key);
-                $model[$count]['Mname'] = $measure->getMeasure($key,'prod');
+            foreach ($prod as $key => $val) {
+                $model[$count]['count'] = $val["cnt"];
+                $model[$count]['prod_id'] = $val["prod_id"];
+                $model[$count]['name'] = $val["name"];
+                $model[$count]['Mname'] = $val["Mname"];
                 $count++;
             }
-
-            $temp2 = $expense->getDishStuff($depId,$dates,$dates);
+            $stuff = Yii::app()->db->createCommand()
+                ->select("sum(ex.cnt) as cnt,ex.prod_id,p.name,m.name as Mname")
+                ->from("expense_list ex")
+                ->join("halfstaff p","p.halfstuff_id = ex.prod_id")
+                ->join("measurement m","p.stuff_type = m.measure_id")
+                ->where("ex.expense_date >= :from and ex.expense_date <= :to and ex.department_id = :depId and ex.prod_type = 2",array(":from"=>$dates,":to"=>$till,":depId"=>$depId))
+                ->group("ex.prod_id")
+                ->queryAll();
+            //$temp2 = $expense->getDishStuff($depId,$dates,$dates);
             $count = 0;
-            foreach ($temp2 as $key => $val) {
-                $model2[$count]['count'] = $val;
-                $model2[$count]['prod_id'] = $key;
-                $model2[$count]['name'] = $stuff->getName($key);
-                $model2[$count]['Mname'] = $measure->getMeasure($key,'stuff');
+            foreach ($stuff as $key => $val) {
+                $model2[$count]['count'] = $val["cnt"];
+                $model2[$count]['prod_id'] = $val["prod_id"];
+                $model2[$count]['name'] = $val["name"];
+                $model2[$count]['Mname'] = $val["Mname"];
                 $count++;
             }
 
@@ -702,6 +841,7 @@ class ReportController extends Controller
             ->group('o.just_id')
             ->order('sumCount DESC')
             ->queryAll();
+
         $this->renderPartial('ajaxReadyTimeDetail',array(
             'model'=>$model,
             'model2'=>$model2,
@@ -786,6 +926,23 @@ class ReportController extends Controller
         $this->renderPartial('ajaxExchange',array(
             'model'=>$model,
             'model2'=>$model2
+        ));
+    }
+
+    public function actionArchive(){
+        $this->render("archive");
+    }
+
+    public function actionAjaxArchive(){
+
+        $model = Yii::app()->db->createCommand()
+            ->select()
+            ->from("archiveOrder")
+            ->where("expense_id = :id",array(":id"=>$_POST["expId"]))
+            ->queryAll();
+
+        $this->renderPartial("ajaxArchive",array(
+            "model"=>$model
         ));
     }
 }
